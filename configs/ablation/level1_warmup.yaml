@@ -1,0 +1,32 @@
+# DPLEvolve Ablation: Level 1 Warm-Up Effectiveness
+# Quantifies the benefit of the calibration warm-up database.
+# Post-deadline experiment (reviewer-requested).
+
+experiment: ablation
+ablation_target: level1_warmup
+description: >
+  Compare full ReviewDSE with and without Level 1 calibration warm-up.
+  Measures: runtime savings, convergence speed, final HPWL impact.
+
+conditions:
+  - name: full_system
+    level1_enabled: true
+    level2_enabled: true
+  - name: no_warmup
+    level1_enabled: false
+    level2_enabled: true
+
+cases:
+  - aes_nangate45
+  - jpeg_nangate45
+
+metrics:
+  - wall_time_to_first_useful_candidate
+  - wall_time_to_convergence
+  - final_hpwl
+  - total_compilations
+  - token_usage
+
+budget:
+  max_rounds: 6
+  candidates_per_round: 8

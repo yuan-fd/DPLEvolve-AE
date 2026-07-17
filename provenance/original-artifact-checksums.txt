@@ -1,0 +1,31 @@
+# DPLEvolve Artifact Evaluation — Original Artifact Checksums
+# Generated from the audited Phase 2 baseline validation.
+# Date: 2026-07-17
+# These checksums anchor the reference input and expected outputs.
+
+# --- AES Nangate45 Reference Input (3_4_place_resized.odb) ---
+# Flow variant: ae_probe_aes_n45_yosys8449_20260717
+# Yosys: 0.64 @ 8449dd4700821ea021b241a6addaaf8ccd171dfc
+SHA256 (aes_nangate45/3_4_place_resized.odb) = d8e58c2422cf54894ca7debc67c9aed2d877d8c2d0288db89303411dc1240adc
+
+# --- Reference Binaries ---
+# Yosys binary
+SHA256 (yosys/8449dd470/bin/yosys) = 0024df9b188fd031f2caf6f5334ba3632831e4f48a73a66867f0f5332e2df667
+
+# OpenROAD binary (DPLEvolve custom core)
+SHA256 (openroad/d5ff63a/install/OpenROAD/bin/openroad) = f26d9b88ff246c114249a06d25f9098b50f16e99f59db22bc2d823bbf91cb775
+
+# --- Reference Baseline Results (openroad_dpl_flow) ---
+# These are the canonical expected values for the AES smoke test.
+# Instance count:      14,676
+# Instance area:        18,648.2 µm²
+# Global HPWL:          188,569.2 µm
+# OpenROAD default final HPWL: 176,845.1 µm
+
+# --- Important Notes ---
+# 1. The above HPWL values are exact-match references for the pinned tool versions.
+#    Cross-machine reproduction may observe minor floating-point differences.
+# 2. The openroad_dpl_negotiation and evolve_default baselines depend on
+#    historical source versions not preserved in the current repository.
+#    Their old values (176,083.1 and 178,566.1 respectively) are provided
+#    as reference evidence, not as strict reproduction targets.

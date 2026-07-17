@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use this artifact, please cite the MLCAD 2026 paper."
+title: "From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA"
+type: conference-paper
+conference: "2026 ACM/IEEE Workshop on Machine Learning for CAD (MLCAD)"
+year: 2026
+repository-code: "https://github.com/CODA-Team/DPLEvolve"
+license: BSD-3-Clause

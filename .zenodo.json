@@ -1,0 +1,28 @@
+{
+  "title": "DPLEvolve: Protected White-Box DSE for Open-Source EDA — Artifact Evaluation",
+  "description": "Artifact Evaluation repository for the MLCAD 2026 short paper: 'From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA'. Provides automated environment setup, version-pinned builds, baseline evaluation scripts, and configuration files for reproducing the ReviewDSE framework's key results. The minimal validation path runs in under 40 minutes without LLM API calls; full reproduction requires Claude API access.",
+  "creators": [
+    {
+      "name": "DPLEvolve Contributors"
+    }
+  ],
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "EDA",
+    "design-space-exploration",
+    "LLM-agent",
+    "OpenROAD",
+    "detailed-placement",
+    "white-box-optimization",
+    "MLCAD",
+    "artifact-evaluation"
+  ],
+  "related_identifiers": [
+    {
+      "relation": "isSupplementTo",
+      "identifier": "https://github.com/CODA-Team/DPLEvolve"
+    }
+  ],
+  "language": "eng",
+  "notes": "This artifact requires the sibling repositories dpl_evolve_agent/ and OpenROAD-flow-scripts/ at the exact commits recorded in provenance/source-commits.json. The full LLM-powered DSE pipeline consumes ~2.15B tokens per design and requires Claude API credentials."
+}

@@ -1,0 +1,28 @@
+# DPLEvolve Artifact Evaluation — Version Lock File
+# Machine-readable version pins for all dependencies.
+# Format: TOOL=version=commit=path_type
+# path_type: system (on PATH), project (built under state root), module (loaded via module)
+
+# Core build tools
+GCC_MIN=9.0
+CMAKE_MIN=3.20
+GNU_MAKE_MIN=4.0
+BISON_MIN=3.6
+FLEX_MIN=2.6
+
+# Python
+PYTHON_MIN=3.11
+PYTHON_MAX=3.12
+PYAML_PIN=6.0.3
+
+# EDA Tools — project-built
+YOSYS_VERSION=0.64
+YOSYS_COMMIT=8449dd4700821ea021b241a6addaaf8ccd171dfc
+YOSYS_PATH_TYPE=project
+
+OPENROAD_COMMIT=d5ff63abe1a1470581feef22063362641b32e41b
+OPENROAD_PATH_TYPE=project
+
+# EDA Tools — system modules (for build deps only, NOT for synthesis)
+# The openroad module provides Bison, Flex, and shared libraries.
+# Yosys for synthesis MUST use the project-built version above.

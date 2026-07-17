@@ -1,0 +1,80 @@
+# DPLEvolve Artifact Evaluation — .gitignore
+# Generated artifacts, build outputs, and machine-local state.
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+*.venv/
+
+# Build outputs
+build/
+*.o
+*.so
+*.a
+
+# EDA run outputs (large binary files)
+*.odb
+*.sdc
+*.v
+*.def
+*.lef
+*.lib
+*.spef
+*.sdf
+*.gds
+*.oas
+
+# Results (reproduced at eval time)
+results/reproduced/
+results/tables/*.csv
+results/tables/*.tsv
+results/tables/*.json
+
+# Experiment logs
+experiments/*/logs/
+experiments/*/runs/
+
+# Environment lock (machine-local)
+env/environment.local.sh
+**/environment.local.sh
+**/env.local.sh
+
+# API keys, tokens, secrets
+*.key
+*.token
+.env
+.env.*
+secrets/
+credentials/
+
+# IDE and editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Provenance checksums (generated per machine)
+provenance/current-machine.json
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
+
+# Zenodo export archive
+*.zip
+*.tar.gz
+*.tar.xz
+DPLEvolve-AE-*.zip

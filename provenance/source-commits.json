@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "description": "Pinned source revisions for DPLEvolve artifact evaluation reproducibility.",
+  "generated_from": "phase2_aes_baseline_validation",
+  "repositories": {
+    "dpl_evolve_agent": {
+      "url": "https://github.com/CODA-Team/DPLEvolve",
+      "base_commit": "96d8c613d62bf3431083bb5e52c7df8853d5a622",
+      "role": "core framework — scripts, patches, prompts, knowledge base"
+    },
+    "openroad_flow_scripts": {
+      "url": "https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts",
+      "base_commit": "dcded6834fa6aa5b20f45d66eb3fb0dd7c0c6483",
+      "prepared_commit": "9e2467a6a1bf1c5786c3bbed5bc44ee14230d7e8",
+      "role": "synthesis and physical design flow infrastructure"
+    },
+    "openroad": {
+      "url": "https://github.com/The-OpenROAD-Project/OpenROAD",
+      "base_commit": "d14d526a6f8ce5388e2a8dc30da88a0189df2f46",
+      "prepared_commit": "d5ff63abe1a1470581feef22063362641b32e41b",
+      "role": "detailed placement engine — DPL-Evolve overlay target"
+    }
+  },
+  "submodules": {
+    "opensta": {
+      "commit": "8e42af1759e09a3e528e0b5b4332a4250f8a8de9",
+      "role": "static timing analysis"
+    },
+    "openroad_abc": {
+      "commit": "17cadca080b33edc5a13c8e6e8e8092f8c350b25",
+      "role": "logic synthesis and optimization"
+    },
+    "yosys": {
+      "url": "https://github.com/YosysHQ/yosys",
+      "version": "0.64",
+      "commit": "8449dd4700821ea021b241a6addaaf8ccd171dfc",
+      "role": "RTL synthesis — must use this exact commit for input reproducibility"
+    },
+    "yosys_abc": {
+      "commit": "180a6adb68e855942e859f3646eff7762c7bc3e6",
+      "role": "Yosys-internal ABC"
+    },
+    "yosys_cxxopts": {
+      "commit": "4bf61f08697b110d9e3991864650a405b3dd515d",
+      "role": "Yosys C++ options library"
+    }
+  },
+  "python": {
+    "major_minor": "3.11",
+    "packages": {
+      "PyYAML": "6.0.3"
+    }
+  }
+}

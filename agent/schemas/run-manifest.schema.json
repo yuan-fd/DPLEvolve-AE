@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CODA-Team/DPLEvolve/ae/schemas/run-manifest.schema.json",
+  "title": "DPLEvolve Run Manifest",
+  "description": "Schema for recording experiment run metadata. One manifest per run.",
+  "type": "object",
+  "required": ["run_id", "experiment", "start_time", "config", "environment"],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Unique run identifier (timestamp-based)."
+    },
+    "experiment": {
+      "type": "string",
+      "enum": ["smoke", "baseline", "bo_search", "evolve_dse", "ablation", "joint_search", "multi_seed"]
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 start timestamp."
+    },
+    "end_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 end timestamp."
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "config_file": { "type": "string" },
+        "flow_variant": { "type": "string" },
+        "run_tag": { "type": "string" },
+        "thread_count": { "type": "integer" },
+        "random_seeds": {
+          "type": "array",
+          "items": { "type": "integer" }
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "hostname": { "type": "string" },
+        "kernel": { "type": "string" },
+        "gcc_version": { "type": "string" },
+        "python_version": { "type": "string" },
+        "dpl_evolve_agent_commit": { "type": "string" },
+        "orfs_commit": { "type": "string" },
+        "openroad_commit": { "type": "string" },
+        "yosys_commit": { "type": "string" },
+        "yosys_binary_sha256": { "type": "string" },
+        "openroad_binary_sha256": { "type": "string" }
+      }
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "odb_sha256": { "type": "string" },
+        "instance_count": { "type": "integer" },
+        "instance_area_micron2": { "type": "number" }
+      }
+    },
+    "results": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "enum": ["ok", "error", "timeout"] },
+        "exit_code": { "type": "integer" },
+        "cases_completed": { "type": "integer" },
+        "cases_total": { "type": "integer" },
+        "cases_failed": { "type": "integer" }
+      }
+    },
+    "metrics_summary": {
+      "type": "object",
+      "properties": {
+        "hpwl_mean_improvement_pct": { "type": "number" },
+        "hpwl_std_pct": { "type": "number" },
+        "total_tokens": { "type": "integer" },
+        "total_wall_time_seconds": { "type": "number" }
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CODA-Team/DPLEvolve/ae/schemas/experiment_config.schema.json",
+  "title": "DPLEvolve Experiment Configuration",
+  "description": "Schema for DPLEvolve Artifact Evaluation experiment configuration files.",
+  "type": "object",
+  "required": ["case", "design_config", "platform", "input_stage"],
+  "properties": {
+    "case": {
+      "type": "string",
+      "description": "Case identifier, e.g. aes_nangate45."
+    },
+    "design_config": {
+      "type": "string",
+      "description": "Path to the ORFS design config, relative to ORFS flow directory."
+    },
+    "platform": {
+      "type": "string",
+      "enum": ["nangate45", "asap7"]
+    },
+    "input_stage": {
+      "type": "string",
+      "description": "ORFS stage providing the input ODB, e.g. 3_4_place_resized."
+    },
+    "baseline_lines": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["openroad_dpl_flow", "openroad_dpl_negotiation", "evolve_default"]
+      }
+    },
+    "threads": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 8
+    },
+    "expected": {
+      "type": "object",
+      "properties": {
+        "instance_count": { "type": "integer" },
+        "instance_area_micron2": { "type": "number" },
+        "global_hpwl_micron": { "type": "number" },
+        "final_hpwl_micron": { "type": "number" }
+      }
+    },
+    "absolute_tolerances": {
+      "type": "object",
+      "properties": {
+        "instance_area_micron2": { "type": "number" },
+        "global_hpwl_micron": { "type": "number" },
+        "final_hpwl_micron": { "type": "number" }
+      }
+    }
+  }
+}

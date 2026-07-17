@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "verified_date": "2026-07-18",
+  "case": "aes_nangate45",
+  "design_config": "designs/nangate45/aes/config.mk",
+  "yosys_commit": "8449dd4700821ea021b241a6addaaf8ccd171dfc",
+  "openroad_commit": "d5ff63abe1a1470581feef22063362641b32e41b",
+  "input_odb_sha256": "d8e58c2422cf54894ca7debc67c9aed2d877d8c2d0288db89303411dc1240adc",
+  "expected": {
+    "instance_count": 14676,
+    "instance_area_micron2": 18648.2,
+    "global_hpwl_micron": 188569.2
+  },
+  "baselines": {
+    "openroad_dpl_flow": {
+      "final_hpwl": 176845.1,
+      "verified_match": true,
+      "match_paper": true,
+      "paper_reports": "176.8k"
+    },
+    "openroad_dpl_negotiation": {
+      "final_hpwl": 177589.1,
+      "verified_match": true,
+      "match_paper": false,
+      "note": "当前框架值; 旧备份记录176083.1, 旧源码版本已不可恢复"
+    },
+    "evolve_default": {
+      "final_hpwl": 176886.8,
+      "verified_match": true,
+      "match_paper": false,
+      "note": "当前框架行为已变化; 旧备份记录178566.1"
+    }
+  }
+}
