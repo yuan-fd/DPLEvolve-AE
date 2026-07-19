@@ -1,0 +1,129 @@
+# DPO-focused Ray Tune search space for OpenROAD native detailed placement.
+#
+# Purpose:
+#   Measure the boundary of public improve_placement knobs after the OpenROAD
+#   default detailed_placement basin.  This is intentionally not a source-level
+#   white-box evolution space.
+#
+# Important source fact:
+#   Opendp::improvePlacement hardcodes the internal DPO script:
+#     mis -p 10 -t 0.005;
+#     gs  -p 10 -t 0.005;
+#     vs  -p 10 -t 0.005;
+#     ro  -p 10 -t 0.005;
+#     default -p 5 -f 20 -gen rng -obj hpwl -cost (hpwl);
+#   Because `gs -p/-t` are passed in the script, public GlobalSwapParams.passes
+#   and tolerance are not a meaningful frontier knob for native DPL.  This file
+#   focuses on knobs that still affect the implementation: random seed, DPO
+#   displacement window, extra-DPL enable, utilization/congestion weights,
+#   random move sampling, normalization, profiling budget, and budget schedule.
+#
+# Runtime/quality intent:
+#   This space is allowed to spend time for HPWL, but still records G_HR so the
+#   article can show when extra runtime stops being worth it.
+
+line: openroad_dpl_flow
+env_prefix: OPENROAD_DPL
+objective:
+  reference_line: openroad_dpl_flow
+  hpwl_weight: 1.0
+  runtime_deadband_ratio: 1.10
+  runtime_penalty_at_2x: 1.0
+  fail_score: 1000000000.0
+parameters:
+  # Keep the legalizer at OpenROAD default diamond.  The experiment isolates
+  # improve_placement/DPO public-knob frontier after the same legalizer basin.
+  - name: improve_random_seed
+    stage: improve
+    flag: -random_seed
+    type: int
+    min: 1
+    max: 128
+    default: 1
+  - name: improve_max_displacement
+    stage: improve
+    flag: -max_displacement
+    type: categorical
+    choices:
+      - omit
+      - 32
+      - 64
+      - 128
+      - 256
+      - 512
+      - 1024
+      - "64 8"
+      - "128 16"
+      - "256 32"
+      - "512 64"
+      - "1024 128"
+    default: omit
+  - name: improve_enable_extra_dpl
+    stage: improve
+    flag: -enable_extra_dpl
+    type: categorical
+    choices: [0, 1]
+    default: 0
+  - name: global_swap_tradeoff
+    stage: improve_global_swap
+    flag: -tradeoff
+    type: float
+    min: 0.0
+    max: 1.0
+    default: 0.4
+  - name: global_swap_area_weight
+    stage: improve_global_swap
+    flag: -area_weight
+    type: float
+    min: 0.0
+    max: 2.0
+    default: 0.4
+  - name: global_swap_pin_weight
+    stage: improve_global_swap
+    flag: -pin_weight
+    type: float
+    min: 0.05
+    max: 2.0
+    default: 0.6
+  - name: global_swap_congestion_user_weight
+    stage: improve_global_swap
+    flag: -congestion_user_weight
+    type: float
+    min: 0.0
+    max: 150.0
+    default: 35.0
+  - name: global_swap_sampling_moves
+    stage: improve_global_swap
+    flag: -sampling_moves
+    type: int
+    min: 50
+    max: 1200
+    default: 150
+  - name: global_swap_normalization_interval
+    stage: improve_global_swap
+    flag: -normalization_interval
+    type: int
+    min: 100
+    max: 4000
+    default: 1000
+  - name: global_swap_profiling_excess
+    stage: improve_global_swap
+    flag: -profiling_excess
+    type: float
+    min: 1.0
+    max: 2.0
+    default: 1.10
+  - name: global_swap_budget_multipliers
+    stage: improve_global_swap
+    flag: -budget_multipliers
+    type: categorical
+    choices:
+      - omit
+      - "1.50 1.25 1.10 1.04"
+      - "1.75 1.35 1.15 1.05"
+      - "2.00 1.50 1.20 1.05"
+      - "2.50 1.75 1.25 1.08"
+      - "1.25 1.10 1.04"
+      - "1.10 1.04"
+      - "1.04"
+    default: omit

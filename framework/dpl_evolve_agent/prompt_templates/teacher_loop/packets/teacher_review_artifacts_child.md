@@ -1,0 +1,25 @@
+## $student_id
+- route_label: `$route_label`
+- operation_id: `$operation_id`
+- operation_dir: `$operation_dir`
+- run_tag: `$run_tag`
+- prompt: `$prompt_path`
+- workspace_packet: `$workspace_packet`
+- last_message: `$last_message`
+- usage_summary: `$usage_summary`
+- stderr_log: `$stderr_log`
+- events_large_do_not_read_by_default: `$events_jsonl`
+- student_workspace: `$student_workspace`
+- private_dpl_src: `$dpl_src`
+- source_branch: `$source_branch`
+- private_binary: `$private_binary`
+- failed_attempts: `$failed_attempts`
+- source_trials: `$source_trials`
+- implementation_diff: `$implementation_diff`
+- knowledge_card: `$knowledge_card`
+- source_base_commit: `$source_base_record`
+- source_repo: `$dpl_src`
+- source_commit_record: `$source_commit_record`
+- codex_session_state: `$session_state`
+- codex_identity_env: `$session_env_file`
+$artifact_status_block

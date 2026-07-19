@@ -1,0 +1,96 @@
+# DPLEvolve Paper Experiment: ReviewDSE Level 2 Multi-Agent DSE
+# White-box source-code-level design space exploration.
+# Requires LLM API (Teacher + Student agents).
+#
+# WARNING: This experiment consumes significant LLM tokens.
+# Paper reports ~2.15B tokens per design.
+
+experiment: evolve_dse
+description: >
+  ReviewDSE Level 2: Teacher-Student multi-agent design space exploration.
+  Student agents propose and evaluate source-code-level modifications to
+  OpenROAD's detailed placement. Teacher agent reviews results and guides
+  further exploration.
+
+cases:
+  nangate45:
+    - aes
+    - ibex
+    - jpeg
+    - ariane133
+    - swerv_wrapper
+  asap7:
+    - aes
+    - ibex
+    - jpeg
+    - swerv_wrapper
+
+# Two-level architecture
+architecture:
+  level1:
+    enabled: true
+    description: Calibration warm-up database
+    warm_up_db_path: $DPL_EVOLVE_STATE_ROOT/calibration/
+  level2:
+    enabled: true
+    description: Teacher-Student multi-agent DSE
+    num_students: 4
+    teacher_model: gpt-5.5
+    student_model: gpt-5.4
+
+# Search configuration
+search:
+  start_kind: per_case_level1_selection
+  selected_start_kinds:
+    framework:
+      - aes_asap7
+      - aes_nangate45
+      - swerv_wrapper_asap7
+      - swerv_wrapper_nangate45
+    evolved_legalm:
+      - ariane133_nangate45
+      - ibex_asap7
+      - ibex_nangate45
+      - jpeg_asap7
+      - jpeg_nangate45
+  max_rounds: 10
+  candidates_per_round: 4
+  breadth: 4
+  source_mechanisms:
+    - legalizer
+    - DPO
+    - handoff
+    - global_placement_guidance
+
+# Budget (paper values)
+budget:
+  tokens_per_design: 2150000000  # ~2.15B
+  estimated_wall_time_per_design_hours: 4
+  total_estimated_wall_time_hours: 36
+
+baseline_for_comparison: openroad_dpl_flow
+threads: 8
+
+# Expected result from paper
+expected:
+  mean_hpwl_improvement_pct: 1.78
+  mean_hpwl_runtime_ratio: 1.34
+  mean_ghr_improvement_pct: 1.68
+  mean_ghr_runtime_ratio: 1.11
+  constraint_repair_success_rate: 1.0  # 9/9
+
+# Script launcher
+launcher: experiments/launchers/run_evolve_9case_place_batch.sh
+
+# Configuration files in dpl_evolve_agent
+agent_configs:
+  smoke: framework/dpl_evolve_agent/configs/codex_smoke.yaml
+  design_specific: framework/dpl_evolve_agent/configs/codex_design_specific.yaml
+  mutation_contract: framework/dpl_evolve_agent/configs/mutation_contract.yaml
+
+# Note on reproducibility
+notes: >
+  Paper Table 4 uses ten target iterations and reports two candidate-selection
+  objectives from the same protected evaluator: minimum final HPWL within a 2x
+  runtime gate, and runtime-aware GHR. T0/T1 replay is the recommended AE path;
+  repeating the nondeterministic LLM discovery is not required.

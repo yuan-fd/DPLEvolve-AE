@@ -1,0 +1,12 @@
+SEED: 42
+TARGET_PLANE_ROOT: tools/OpenROAD/src/dpl_evolve
+ARTIFACT_ROOT: flow
+EVALUATION_MODE: strict_legalizer
+BUDGET_CONFIG:
+  build_mode: openroad_only
+  openroad_build_dir: ${DPL_EVOLVE_STATE_ROOT}/variants/agent_a/build
+  openroad_install_root: ${DPL_EVOLVE_STATE_ROOT}/variants/agent_a/install/OpenROAD
+  openroad_binary: ${DPL_EVOLVE_STATE_ROOT}/variants/agent_a/install/OpenROAD/bin/openroad
+  eval_timeout_sec: 2400
+  build_timeout_sec: 1800
+  monitor_interval_sec: 0.5

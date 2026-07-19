@@ -1,226 +1,70 @@
 # Troubleshooting
 
-Common problems and their solutions.
+## `make evidence` cannot find Python
 
----
-
-## Environment Check Failures
-
-### "module: command not found"
-
-**Symptom**: `make setup` fails with module-related errors.
-
-**Solution**: Your server may not use Environment Modules. Install build
-dependencies manually:
+Install Python 3.11 or newer, or select an interpreter explicitly:
 
 ```bash
-# RHEL/Rocky/CentOS
-sudo dnf install gcc gcc-c++ cmake make bison flex python3
-
-# Ubuntu/Debian
-sudo apt install gcc g++ cmake make bison flex python3
+DPL_EVOLVE_PYTHON=/path/to/python make evidence
 ```
 
-Or set `DPL_EVOLVE_SKIP_MODULES=1` before running setup.
+The evidence verifiers use only the Python standard library.
 
----
+## Permission denied when running a bundle
 
-### "Could not load gcc/default module"
+The documented commands invoke scripts through Bash and work even if archive
+extraction removed executable bits:
 
-**Symptom**: Server has modules but GCC module name differs.
-
-**Solution**: Find the correct module name:
 ```bash
-module avail gcc
+bash artifacts/01-table4-qor/run.sh
 ```
 
-Then set it before running setup:
+Repository tests still check executable bits because Git preserves them.
+
+## A digest or paper-claim check fails
+
+Do not edit the expected value to make the check pass. Run `git status`, then
+compare the affected `inputs/` or `expected/` file with the released archive.
+Generated files belong only in `output/`.
+
+## `make smoke-check` cannot find ORFS
+
+The smoke path requires a sibling ORFS workspace. Prepare it with:
+
 ```bash
-module load gcc/12.3.0  # or whatever is available
+make bootstrap
 make setup
+make check
 ```
 
----
+If the workspace is elsewhere, set `ORFS_ROOT`. See
+[`environment.md`](environment.md) for all overrides.
 
-### "Bison version too old (need >= 3.6)"
+## Smoke input hash mismatch
 
-**Symptom**: Yosys build fails with bison-related errors.
+The generated AES ODB does not match the reproduction lock. Confirm both the
+ORFS and nested OpenROAD prepared tree hashes in
+`provenance/source-commits.json`, then regenerate the input with a new smoke
+run. Do not reuse an ODB from a different commit or flow variant.
 
-**Solution**: The server's `openroad` module provides Bison 3.8.2:
-```bash
-module load openroad
-```
+## Smoke metrics differ
 
-Or install manually:
-```bash
-# RHEL
-sudo dnf install bison
-# Ubuntu
-sudo apt install bison
-```
+Check the complete log for tool errors and confirm placement legality. Also
+verify the pinned binary hashes, design configuration, input stage, and thread
+count. The validator applies the tolerances in the reproduction lock; it does
+not use approximate string matching.
 
----
+## The selected-program replay asks for ODB inputs
 
-## Build Failures
+This is expected. The 18 selected source trees are packaged, but the original
+nine paper-time ODB inputs were deleted because they occupied several
+terabytes. The default Table 4 command therefore performs source integrity and
+archived-record checks only.
 
-### Yosys build fails
+## Full DSE is not available
 
-**Symptom**: `make setup` fails during Yosys build.
-
-**Solutions**:
-1. Check Bison and Flex versions:
-   ```bash
-   bison --version  # Need >= 3.6
-   flex --version    # Need >= 2.6
-   ```
-2. Try with fewer parallel jobs:
-   ```bash
-   make setup JOBS=4
-   ```
-3. Check disk space:
-   ```bash
-   df -h .
-   ```
-
----
-
-### OpenROAD build fails
-
-**Symptom**: `make setup` fails during OpenROAD build.
-
-**Solutions**:
-1. Check that all OpenROAD dependencies are available
-2. Try building with `--skip-openroad-build` and use system OpenROAD if
-   available (but note this may produce different results)
-3. Check for CMake errors in the build log
-
----
-
-## Smoke Test Failures
-
-### Wrong input ODB checksum
-
-**Symptom**: Smoke test fails with "input ODB SHA-256 mismatch".
-
-**Root cause**: Wrong Yosys version was used for synthesis.
-
-**Solution**:
-1. Verify which Yosys is on PATH: `which yosys`
-2. The correct Yosys is at: `$DPL_EVOLVE_STATE_ROOT/yosys/8449dd470/bin/yosys`
-3. Run `make setup` to ensure the correct Yosys is built and set in the environment
-4. Re-run `make smoke`
-
----
-
-### Instance count mismatch
-
-**Symptom**: 15,764 instances instead of 14,676.
-
-**Root cause**: Yosys 0.63 was used instead of Yosys 0.64.
-
-**Solution**: As above — use the pinned Yosys version.
-
----
-
-### Final HPWL differs by more than tolerance
-
-**Symptom**: Final HPWL is ~192,546 instead of ~176,845.
-
-**Root cause**: Different netlist due to wrong Yosys version.
-
-**Solution**: As above — use the pinned Yosys version.
-
----
-
-### "Refusing to overwrite existing smoke run"
-
-**Symptom**: `make smoke --run` refuses to run.
-
-**Solution**: Use a different flow variant name:
-```bash
-./scripts/human/smoke_test.sh --run --flow-variant my_custom_variant
-```
-
-Or use `--rebuild` instead of `--run`.
-
----
-
-### "metrics.json not found"
-
-**Symptom**: Validation fails because metrics.json is missing.
-
-**Solutions**:
-1. Check that the baseline run actually completed: look for error messages
-   in the OpenROAD log
-2. Check disk space
-3. Check that OpenROAD binary is working:
-   ```bash
-   $OPENROAD_EXE -help
-   ```
-
----
-
-## LLM/DSE Issues
-
-### "API key not found"
-
-**Symptom**: Full DSE reproduction fails with authentication errors.
-
-**Solution**: Set your API key:
-```bash
-export ANTHROPIC_API_KEY=sk-ant-...
-```
-Or configure in `dpl_evolve_agent/env.sh`.
-
----
-
-### Token cost concerns
-
-If you're concerned about the token cost (~2.15B tokens/design):
-
-1. Run on fewer cases: modify `configs/paper/evolve_search.yaml`
-2. Reduce search breadth: edit the experiment plan
-3. Run a smoke-level DSE first: use `configs/paper/evolve_smoke.yaml` if available
-
----
-
-## Still Stuck?
-
-1. Check the Phase 2 audit report: `../audit/phase2_aes_baseline_validation.md`
-2. Run `make provenance` to capture your machine state
-3. File an issue with the provenance report attached
-
----
-
-## Quick Diagnostic Checklist
-
-```bash
-# 1. Basic system
-uname -a && cat /etc/os-release | head -3
-
-# 2. Toolchain
-gcc --version | head -1
-cmake --version | head -1
-bison --version | head -1
-flex --version | head -1
-
-# 3. Python
-$DPL_EVOLVE_PYTHON --version
-$DPL_EVOLVE_PYTHON -c "import yaml; print('PyYAML:', yaml.__version__)"
-
-# 4. Yosys
-$YOSYS_EXE -V 2>&1 | head -1
-sha256sum $YOSYS_EXE
-
-# 5. OpenROAD
-$OPENROAD_EXE -version 2>&1 | head -1
-ldd $OPENROAD_EXE | grep "not found" || echo "All libraries resolved"
-
-# 6. Disk
-df -h .
-
-# 7. Repo commits
-git -C $DPL_EVOLVE_AGENT_ROOT rev-parse HEAD
-git -C $ORFS_ROOT rev-parse HEAD
-git -C $ORFS_ROOT/tools/yosys rev-parse HEAD
-```
+The artifact does not expose a one-command full discovery search. Such a run
+would need authenticated model access, many persistent agent sessions,
+hundreds of candidate generations and compilations, repeated EDA evaluations,
+and the complete original intermediate state. This is outside the supported
+review path.

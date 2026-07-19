@@ -1,4 +1,5 @@
 cff-version: 1.2.0
+# Release blocker: add the ordered paper authors before the Zenodo deposit.
 message: "If you use this artifact, please cite the MLCAD 2026 paper."
 title: "From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA"
 type: conference-paper

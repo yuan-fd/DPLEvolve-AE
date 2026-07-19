@@ -1,0 +1,53 @@
+schema_version: 1
+purpose: >
+  Tracked source-start specifications for the active prepared starts consumed
+  by target-case Teacher/Student rounds. Generated source trees are materialized
+  under DPL_EVOLVE_STATE_ROOT by scripts/workspace/prepare_workspace.sh.
+
+source_starts:
+  - source_start_id: framework
+    role: framework
+    state_path: $DPL_EVOLVE_STATE_ROOT/seed_sources/framework_dpl_evolve
+    provenance:
+      base_anchor: metadata/anchors.json:openroad
+      patches:
+        - patches/openroad_dpl_evolve_base.patch
+        - patches/openroad_dpl_evolve_framework.patch
+      construction: >
+        prepare_workspace.sh snapshots the constrained dpl_evolve framework
+        after applying the base and framework patches.
+    teacher_use: >
+      Default source basin for target-case exploration. Treat as a coherent
+      producer/frontier/handoff scaffold, not as a universal answer.
+
+  - source_start_id: diamond
+    role: diamond
+    state_path: $DPL_EVOLVE_STATE_ROOT/seed_sources/diamond_dpl_evolve
+    provenance:
+      base_anchor: metadata/anchors.json:openroad
+      patches:
+        - patches/openroad_dpl_evolve_base.patch
+      construction: >
+        prepare_workspace.sh snapshots the clean dpl_evolve base before the
+        framework patch is applied.
+    teacher_use: >
+      Contrast and local-search donor basin. Use when current evidence calls
+      for Diamond-like source behavior or an ablation from the framework start.
+
+  - source_start_id: default_negotiation
+    role: default_negotiation
+    state_path: $DPL_EVOLVE_STATE_ROOT/seed_sources/default_negotiation_dpl_evolve
+    provenance:
+      base_anchor: metadata/anchors.json:openroad
+      patches:
+        - patches/openroad_dpl_evolve_base.patch
+        - patches/openroad_dpl_evolve_framework.patch
+        - patches/openroad_dpl_evolve_default_negotiation_seed.patch
+      construction: >
+        prepare_workspace.sh applies the default-negotiation seed patch to a
+        framework seed copy and records a seed manifest in the generated source
+        tree.
+    teacher_use: >
+      Negotiation-primary source basin. Teacher should require logs or counters
+      proving negotiation executed as the primary route before treating it as
+      useful donor evidence.

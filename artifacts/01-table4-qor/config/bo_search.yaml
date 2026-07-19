@@ -1,0 +1,54 @@
+# DPLEvolve Paper Experiment: Black-Box Bayesian Optimization Baseline
+# Traditional BO over OpenROAD detailed-placement parameters.
+# No source-code modification and no LLM API calls.
+
+experiment: bo_search
+description: >
+  Black-box Bayesian optimization over OpenROAD detailed-placement parameters.
+  This is the traditional DSE baseline — tunes external parameters only,
+  does not modify source code.
+
+cases:
+  nangate45:
+    - aes
+    - ibex
+    - jpeg
+    - ariane133
+    - swerv_wrapper
+  asap7:
+    - aes
+    - ibex
+    - jpeg
+    - swerv_wrapper
+
+# The exact parameter bounds live in the bundled framework.
+search_space_file: framework/dpl_evolve_agent/configs/bo_search_spaces/openroad_dpl_native.yaml
+search_space:
+  - legalization controls
+  - DPO controls
+  - extra-invocation controls
+  - global-swap controls
+
+budget:
+  iterations_per_case: 400
+  total_iterations: 3600
+  parallel_trials: 4
+
+selection:
+  metric: final_post_dpl_hpwl
+  runtime_gate: 2.0
+
+baseline_for_comparison: openroad_dpl_flow
+threads: 8
+
+# Expected result from paper
+expected:
+  mean_hpwl_improvement_pct: 0.38
+
+notes: >
+  The 3,600 archived seed-1 trials currently bundled in T0 are a different BO
+  campaign and produce 0.2072%, so they must not be labeled as the Table 4 BO
+  evidence. The exact paper BO trial archive remains missing.
+
+# Script launcher
+launcher: experiments/launchers/run_bo_9case_openroad_dpl.sh

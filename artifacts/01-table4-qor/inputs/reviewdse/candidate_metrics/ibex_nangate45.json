@@ -1,0 +1,55 @@
+{
+  "canonical": {
+    "avg_displacement_micron": 1.5707766297651202,
+    "final_hpwl_micron": 199016.1,
+    "hpwl_before_micron": 197778.3,
+    "hpwl_delta_micron": 1237.8000000000175,
+    "hpwl_delta_percent": 0.6258522800529772,
+    "legality": "clean",
+    "max_displacement_micron": 70.33922477892402,
+    "runtime_seconds": 4.802
+  },
+  "case_report_dir": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_06_student_01_ibex_nangate45",
+  "commands": {
+    "improve_command": "improve_placement_evolve",
+    "optimize_command": "optimize_mirroring_evolve",
+    "place_command": "detailed_placement_evolve -report_file_name <ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_06_student_01_ibex_nangate45/detailed_placement_report.json",
+    "stage_sequence": "detailed_placement_evolve,improve_placement_evolve,optimize_mirroring_evolve"
+  },
+  "engine": "evolve_default",
+  "legalize_exit_status": 0,
+  "legalize_summary_status": "ok",
+  "legalize_timeout_seconds": 9,
+  "legalizer_mode": "evolve_default",
+  "line": "evolve_default",
+  "log_counter_lines": [
+    "[INFO DPL-1220] Running DPL-Evolve pipeline: diamond legalization with post-placement frontier handoff.",
+    "[INFO DPL-1211] DPL-Evolve stage diamond_frontier DP metrics: moved 14594/14594, avg disp 1.003 u, max disp 15.004 u.",
+    "[INFO DPL-0960] Edge-critical global pair consumer: selected=96 probes=51 accepts=0 rejects=51 accepted_delta=0.0.",
+    "[INFO DPL-0961] Edge-critical vertical pair consumer: selected=64 probes=39 accepts=0 rejects=39 accepted_delta=0.0.",
+    "[INFO DPL-0350] Residual reorder frontier size 0, active 0, prioritized 0, targeted segments 0, intervals 0, exact probes 0, perm candidates 0, chain candidates 0, accepted 0, adjacent clusters/probes/accepts/rejects/rollbacks 0/0/0/0/0, exact HPWL gain 0.00, adjacent gain 0.00, staged sweep selected/attempted/accepted/rejected/rollbacks 256/256/239/17/0, staged sweep windows/probes/perms 13826/149666/82956, staged sweep gain 1301265.00, global rollback 0, early stop 0."
+  ],
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_06_student_01_ibex_nangate45/metrics.json",
+  "paths": {
+    "check_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_06_student_01_ibex_nangate45/check_placement_report.json",
+    "legalize_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_06_student_01_ibex_nangate45/legalize_summary.json",
+    "log": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/logs/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_06_student_01_ibex_nangate45/dpl_evolve_rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_06_student_01_ibex_nangate45_legalize.log",
+    "metrics_json": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_06_student_01_ibex_nangate45/metrics.json",
+    "metrics_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_06_student_01_ibex_nangate45/3_detailed_place.rpt",
+    "post_metrics_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_06_student_01_ibex_nangate45/post_metrics_summary.json"
+  },
+  "run_tag": "rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_06_student_01_ibex_nangate45",
+  "stages": {
+    "after_improve_micron": 199101.0,
+    "delta_final_micron": 1237.8000000000175,
+    "delta_final_percent": 0.6258522800529772,
+    "delta_improve_micron": -4792.799999999988,
+    "delta_improve_percent": -2.423319444044159,
+    "delta_legalization_micron": 6115.5,
+    "delta_legalization_percent": 3.092098577043083,
+    "final_micron": 199016.1,
+    "global_micron": 197778.3,
+    "legalized_micron": 203893.8
+  },
+  "status": "ok"
+}

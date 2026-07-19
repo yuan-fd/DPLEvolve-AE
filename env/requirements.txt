@@ -1,3 +1,0 @@
-# DPLEvolve Artifact Evaluation — Python Requirements
-# Install with: pip install -r requirements.txt
-PyYAML==6.0.3

@@ -19,27 +19,22 @@ build/
 *.so
 *.a
 
-# EDA run outputs (large binary files)
+# Large generated EDA databases and signoff products. Do not blanket-ignore
+# Verilog, SDC, DEF, LEF, or Liberty files; they may be intentional inputs.
 *.odb
-*.sdc
-*.v
-*.def
-*.lef
-*.lib
 *.spef
 *.sdf
 *.gds
 *.oas
 
-# Results (reproduced at eval time)
-results/reproduced/
-results/tables/*.csv
-results/tables/*.tsv
-results/tables/*.json
+# Generated artifact outputs. Keep the empty output directories in Git.
+artifacts/*/output/*
+artifacts/*/selected-programs/output/*
+!artifacts/*/output/.gitkeep
+!artifacts/*/selected-programs/output/.gitkeep
 
-# Experiment logs
-experiments/*/logs/
-experiments/*/runs/
+# Local preservation area; never include it in Git or release archives.
+extras/unsupported/
 
 # Environment lock (machine-local)
 env/environment.local.sh
@@ -78,3 +73,17 @@ temp/
 *.tar.gz
 *.tar.xz
 DPLEvolve-AE-*.zip
+
+# ── Bundled dpl_evolve_agent gitignore patterns ──────────────────────────
+# These apply to the bundled framework under framework/.
+framework/dpl_evolve_agent/env.sh
+framework/dpl_evolve_agent/.dpl_evolve_state/
+framework/dpl_evolve_agent/.runtime_aliases/
+framework/dpl_evolve_agent/.venv_raytune/
+framework/dpl_evolve_agent/local_backups/
+framework/dpl_evolve_agent/family_ideas/
+framework/dpl_evolve_agent/variant_ideas/
+framework/dpl_evolve_agent/checkpoints/
+framework/dpl_evolve_agent/knowledge/packets/current_run_packet.md
+framework/dpl_evolve_agent/knowledge/packets/current_run_packet.json
+framework/dpl_evolve_agent/knowledge/reference/papers/pdf_cache/

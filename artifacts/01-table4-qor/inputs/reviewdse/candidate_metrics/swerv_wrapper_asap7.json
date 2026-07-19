@@ -1,0 +1,72 @@
+{
+  "canonical": {
+    "avg_displacement_micron": 0.8439689978177882,
+    "final_hpwl_micron": 911152.2,
+    "hpwl_before_micron": 937717.9,
+    "hpwl_delta_micron": -26565.70000000007,
+    "hpwl_delta_percent": -2.833016198155124,
+    "legality": "clean",
+    "max_displacement_micron": 264.99700530006,
+    "runtime_seconds": 59.575
+  },
+  "case_report_dir": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/swerv_wrapper/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_swerv_wrapper_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_04_student_01_swerv_wrapper_asap7",
+  "commands": {
+    "improve_command": "improve_placement_evolve",
+    "optimize_command": "optimize_mirroring_evolve",
+    "place_command": "detailed_placement_evolve -report_file_name <ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/swerv_wrapper/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_swerv_wrapper_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_04_student_01_swerv_wrapper_asap7/detailed_placement_report.json",
+    "stage_sequence": "detailed_placement_evolve,improve_placement_evolve,optimize_mirroring_evolve"
+  },
+  "engine": "evolve_default",
+  "headline_vs_openroad_default": {
+    "delta_hpwl_micron": -2747.600000000093,
+    "delta_hpwl_percent": -0.3006456506501142,
+    "hpwl_reduction_percent": 0.3006456506501142,
+    "reference_final_hpwl_micron": 913899.8,
+    "reference_line": "openroad_dpl_flow",
+    "reference_metrics_json": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/swerv_wrapper/place_batch_20260421_220319/dpl_evolve_baseline/swerv_wrapper_framework_4x12_gpt55_xhigh_r3_baseline_probe_openroad_dpl_flow/metrics.json",
+    "reference_runtime_seconds": 54.545,
+    "runtime_ratio": 1.092217435145293,
+    "status": "ok"
+  },
+  "legalize_exit_status": 0,
+  "legalize_summary_status": "ok",
+  "legalize_timeout_seconds": 110,
+  "legalizer_mode": "evolve_default",
+  "line": "evolve_default",
+  "log_counter_lines": [
+    "[INFO DPL-0342] Focused exact polish candidates: anchors=192 frontier=192 union=192 limit=192.",
+    "[INFO DPL-0345] Generator touched_endpoint, frontier 256, cumulative attempts 935, swaps 0, moves   935 since last reset.",
+    "[INFO DPL-0343] Focused generator touched_pair: probes=985 generated=985 accepted=47 rejected=938 replay_failures=0 accepted_delta=24606.00.",
+    "[INFO DPL-0343] Focused generator touched_endpoint: probes=935 generated=935 accepted=532 rejected=403 replay_failures=0 accepted_delta=48197.00.",
+    "[INFO DPL-0346] Focused exact polish refresh: accepted_moves=29 anchor_nodes=37 frontier_edges=92 frontier_nodes=271.",
+    "[INFO DPL-0343] Focused generator random: probes=2206280 generated=2205974 accepted=102575 rejected=2103399 replay_failures=306 accepted_delta=2973424.00.",
+    "[INFO DPL-0342] Focused exact polish candidates: anchors=128 frontier=128 union=128 limit=128.",
+    "[INFO DPL-0345] Generator touched_endpoint, frontier 256, cumulative attempts 521, swaps 0, moves   521 since last reset.",
+    "[INFO DPL-0343] Focused generator touched_pair: probes=503 generated=503 accepted=43 rejected=460 replay_failures=0 accepted_delta=3704.00.",
+    "[INFO DPL-0343] Focused generator touched_endpoint: probes=521 generated=521 accepted=291 rejected=230 replay_failures=0 accepted_delta=9524.00.",
+    "[INFO DPL-0346] Focused exact polish refresh: accepted_moves=14 anchor_nodes=22 frontier_edges=61 frontier_nodes=198."
+  ],
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/swerv_wrapper/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_swerv_wrapper_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_04_student_01_swerv_wrapper_asap7/metrics.json",
+  "paths": {
+    "check_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/swerv_wrapper/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_swerv_wrapper_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_04_student_01_swerv_wrapper_asap7/check_placement_report.json",
+    "legalize_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/swerv_wrapper/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_swerv_wrapper_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_04_student_01_swerv_wrapper_asap7/legalize_summary.json",
+    "log": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/logs/asap7/swerv_wrapper/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_swerv_wrapper_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_04_student_01_swerv_wrapper_asap7/dpl_evolve_evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_swerv_wrapper_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_04_student_01_swerv_wrapper_asap7_legalize.log",
+    "metrics_json": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/swerv_wrapper/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_swerv_wrapper_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_04_student_01_swerv_wrapper_asap7/metrics.json",
+    "metrics_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/swerv_wrapper/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_swerv_wrapper_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_04_student_01_swerv_wrapper_asap7/3_detailed_place.rpt",
+    "post_metrics_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/swerv_wrapper/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_swerv_wrapper_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_04_student_01_swerv_wrapper_asap7/post_metrics_summary.json"
+  },
+  "run_tag": "evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_swerv_wrapper_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_04_student_01_swerv_wrapper_asap7",
+  "stages": {
+    "after_improve_micron": 912234.3,
+    "delta_final_micron": -26565.70000000007,
+    "delta_final_percent": -2.833016198155124,
+    "delta_improve_micron": -19684.599999999977,
+    "delta_improve_percent": -2.099202755967437,
+    "delta_legalization_micron": -5799.0,
+    "delta_legalization_percent": -0.6184162635692462,
+    "final_micron": 911152.2,
+    "global_micron": 937717.9,
+    "legalized_micron": 931918.9
+  },
+  "status": "ok"
+}

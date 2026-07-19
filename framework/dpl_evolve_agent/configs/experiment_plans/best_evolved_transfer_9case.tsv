@@ -1,0 +1,10 @@
+# enabled	case	core_utilization	flow_variant	round_id	start_kind	notes
+1	aes_asap7	default	place_batch_20260421_220319	best_evolved_transfer_9case	framework	main-table transfer target
+1	aes_nangate45	default	place_batch_20260421_220319	best_evolved_transfer_9case	framework	main-table transfer target
+1	ariane133_nangate45	default	place_batch_20260421_220319	best_evolved_transfer_9case	framework	main-table transfer target
+1	ibex_asap7	default	place_batch_20260421_220319	best_evolved_transfer_9case	framework	main-table transfer target
+1	ibex_nangate45	default	place_batch_20260421_220319	best_evolved_transfer_9case	framework	main-table transfer target
+1	jpeg_asap7	default	place_batch_20260421_220319	best_evolved_transfer_9case	framework	main-table transfer target
+1	jpeg_nangate45	default	place_batch_20260421_220319	best_evolved_transfer_9case	framework	main-table transfer target
+1	swerv_wrapper_asap7	default	place_batch_20260421_220319	best_evolved_transfer_9case	framework	main-table transfer target
+1	swerv_wrapper_nangate45	default	place_batch_20260421_220319	best_evolved_transfer_9case	framework	main-table transfer target

@@ -1,0 +1,3 @@
+name	stable_start_kind	from_clean_patch	framework_delta_patch	changed_files_delta	source_note
+negotiation	evolved_negotiation	patches/evolved_legalizers/openroad_dpl_evolve_negotiation_iter30_from_clean.patch	patches/evolved_legalizers/openroad_dpl_evolve_negotiation_iter30_framework_delta.patch	6	negotiation-primary donor source; use patch/start kind as the portable interface
+diamond	evolved_diamond	patches/evolved_legalizers/openroad_dpl_evolve_diamond_iter30_from_clean.patch	patches/evolved_legalizers/openroad_dpl_evolve_diamond_iter30_framework_delta.patch	3	Diamond/local-greedy donor source; use patch/start kind as the portable interface

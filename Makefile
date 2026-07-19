@@ -1,139 +1,114 @@
-# DPLEvolve Artifact Evaluation — Makefile
-# Human-facing entry points for the artifact evaluation workflow.
-#
-# Quick start:
-#   make check          # Validate the environment
-#   make setup          # Build all dependencies
-#   make smoke          # Run the minimal AES smoke test
-#   make reproduce-main # Reproduce the main paper results
-#
-# Each paper table/figure has a dedicated target:
-#   make table-1        # Baseline comparison table
-#   make table-2        # Main HPWL results
-#   make table-3        # Constraint repair results
+# DPLEvolve Artifact Evaluation
+# Reviewer-facing commands delegate to self-contained bundles under artifacts/.
 
 SHELL := /bin/bash
 .SHELLFLAGS := -euo pipefail -c
 
-# ── Paths ──────────────────────────────────────────────────────────────────
-AE_ROOT          := $(CURDIR)
-SCRIPTS_DIR      := $(AE_ROOT)/scripts
-INTERNAL_DIR     := $(SCRIPTS_DIR)/internal
-HUMAN_DIR        := $(SCRIPTS_DIR)/human
-AGENT_DIR        := $(SCRIPTS_DIR)/agent
-CONFIGS_DIR      := $(AE_ROOT)/configs
-RESULTS_DIR      := $(AE_ROOT)/results
-PROVENANCE_DIR   := $(AE_ROOT)/provenance
-ENV_DIR          := $(AE_ROOT)/env
+AE_ROOT := $(CURDIR)
+ARTIFACTS_DIR := $(AE_ROOT)/artifacts
+HUMAN_SCRIPTS := $(AE_ROOT)/scripts/human
+SHARED_SCRIPTS := $(AE_ROOT)/scripts/shared
+MAINTENANCE_SCRIPTS := $(AE_ROOT)/scripts/maintenance
 
-# These must be set in the environment or env.local.sh
-DPL_EVOLVE_AGENT_ROOT ?= $(CURDIR)/../dpl_evolve_agent
-ORFS_ROOT           ?= $(CURDIR)/../OpenROAD-flow-scripts
-DPL_EVOLVE_STATE_ROOT ?= $(CURDIR)/../dpl_evolve_state
-DPL_EVOLVE_PYTHON   ?= python3
+DPL_EVOLVE_AGENT_ROOT ?= $(AE_ROOT)/framework/dpl_evolve_agent
+ORFS_ROOT ?= $(AE_ROOT)/../OpenROAD-flow-scripts
+DPL_EVOLVE_STATE_ROOT ?= $(AE_ROOT)/../dpl_evolve_state
+DPL_EVOLVE_PYTHON ?= python3
 
-# Machine-local overrides: create env.local.sh (optional, not tracked)
-# The scripts internally source the agent's env.sh and state's environment.sh.
-# No bash include in Makefile — GNU Make can only include makefile syntax.
--include $(AE_ROOT)/env.local.sh
+-include env.local.sh
 
+export AE_ROOT
 export DPL_EVOLVE_AGENT_ROOT
 export ORFS_ROOT
 export DPL_EVOLVE_STATE_ROOT
 export DPL_EVOLVE_PYTHON
-export AE_ROOT
 
-# ── Phony targets ──────────────────────────────────────────────────────────
-.PHONY: all check setup smoke reproduce-baseline reproduce-main clean distclean
-.PHONY: table-1 table-2 table-3 figure-3
-.PHONY: help provenance
+.PHONY: help evidence table4 table5 table6 smoke smoke-check
+.PHONY: check bootstrap setup test test-structure test-integration test-unit
+.PHONY: validate-configs provenance zenodo zenodo-audit clean
 
 .DEFAULT_GOAL := help
 
-# ── Help ────────────────────────────────────────────────────────────────────
 help:
 	@echo "DPLEvolve Artifact Evaluation"
 	@echo ""
-	@echo "Quick start:"
-	@echo "  make check           Validate environment"
-	@echo "  make setup           Build all dependencies"
-	@echo "  make smoke           Run minimal AES smoke test"
-	@echo "  make reproduce-main  Reproduce main paper results"
+	@echo "Reviewer path:"
+	@echo "  make evidence       Run the Table 4, Table 5, and Table 6 bundles"
+	@echo "  make table4         Run only the Table 4 QoR bundle"
+	@echo "  make table5         Run only the Table 5 composability bundle"
+	@echo "  make table6         Run only the Table 6 cut-row bundle"
+	@echo "  make smoke          Run a fresh AES Nangate45 OpenROAD smoke flow"
+	@echo "  make smoke-check    Validate an existing reference smoke run"
 	@echo ""
-	@echo "Individual results:"
-	@echo "  make table-1         Baseline comparison"
-	@echo "  make table-2         Main HPWL results"
-	@echo "  make table-3         Constraint repair results"
+	@echo "Environment:"
+	@echo "  make check          Inspect the prepared tool environment"
+	@echo "  make bootstrap      Create a pinned sibling ORFS workspace"
+	@echo "  make setup          Build the pinned Python/Yosys/OpenROAD environment"
 	@echo ""
 	@echo "Maintenance:"
-	@echo "  make provenance      Generate provenance record"
-	@echo "  make clean           Remove reproduced results"
-	@echo "  make distclean       Remove all build artifacts"
+	@echo "  make test           Run repository tests"
+	@echo "  make zenodo-audit   Build an audit archive with placeholder authors allowed"
+	@echo "  make zenodo         Build the release archive"
+	@echo "  make clean          Remove generated artifact-bundle outputs"
 	@echo ""
-	@echo "Full documentation: docs/"
+	@echo "Each bundle can also be run directly from artifacts/."
 
-# ── Environment Check ──────────────────────────────────────────────────────
-check:
-	@echo "=== DPLEvolve AE: Environment Check ==="
-	@bash $(HUMAN_DIR)/check_environment.sh
+evidence: table4 table5 table6
+	@echo ""
+	@echo "[PASS] All packaged paper-evidence bundles passed"
 
-# ── Setup ───────────────────────────────────────────────────────────────────
-setup:
-	@echo "=== DPLEvolve AE: Environment Setup ==="
-	@bash $(HUMAN_DIR)/setup.sh
+table4:
+	@bash "$(ARTIFACTS_DIR)/01-table4-qor/run.sh"
 
-# ── Smoke Test ──────────────────────────────────────────────────────────────
+table5:
+	@bash "$(ARTIFACTS_DIR)/02-table5-composability/run.sh"
+
+table6:
+	@bash "$(ARTIFACTS_DIR)/03-table6-cutrow/run.sh"
+
 smoke:
-	@echo "=== DPLEvolve AE: AES Smoke Test ==="
-	@bash $(HUMAN_DIR)/smoke_test.sh --run --threads 8
+	@bash "$(ARTIFACTS_DIR)/04-aes-smoke/run.sh" --run --threads 8
 
 smoke-check:
-	@echo "=== DPLEvolve AE: AES Smoke Test (check-only) ==="
-	@bash $(HUMAN_DIR)/smoke_test.sh --check-only
+	@bash "$(ARTIFACTS_DIR)/04-aes-smoke/run.sh" --check-only
 
-# ── Baseline Reproduction ───────────────────────────────────────────────────
-reproduce-baseline:
-	@echo "=== DPLEvolve AE: Baseline Reproduction ==="
-	@bash $(HUMAN_DIR)/reproduce_baseline.sh
+check:
+	@bash "$(HUMAN_SCRIPTS)/check_environment.sh"
 
-# ── Main Results Reproduction ──────────────────────────────────────────────
-reproduce-main:
-	@echo "=== DPLEvolve AE: Main Results Reproduction ==="
-	@bash $(HUMAN_DIR)/reproduce_main.sh
+bootstrap:
+	@bash "$(HUMAN_SCRIPTS)/bootstrap_workspace.sh"
 
-# ── Table/Figure Targets ───────────────────────────────────────────────────
-table-1:
-	@echo "=== DPLEvolve AE: Table 1 — Baseline Comparison ==="
-	@bash $(HUMAN_DIR)/generate_tables.sh --table 1
+setup:
+	@bash "$(HUMAN_SCRIPTS)/setup.sh"
 
-table-2:
-	@echo "=== DPLEvolve AE: Table 2 — Main HPWL Results ==="
-	@bash $(HUMAN_DIR)/generate_tables.sh --table 2
+test: test-structure test-integration test-unit
+	@echo ""
+	@echo "[PASS] All repository tests passed"
 
-table-3:
-	@echo "=== DPLEvolve AE: Table 3 — Constraint Repair ==="
-	@bash $(HUMAN_DIR)/generate_tables.sh --table 3
+test-structure:
+	@bash "$(AE_ROOT)/tests/artifact/test_ae_structure.sh"
 
-figure-3:
-	@echo "=== DPLEvolve AE: Figure 3 ==="
-	@bash $(HUMAN_DIR)/generate_tables.sh --figure 3
+test-integration:
+	@bash "$(AE_ROOT)/tests/integration/test_smoke_pipeline.sh"
 
-# ── Provenance ──────────────────────────────────────────────────────────────
+test-unit:
+	@"$(DPL_EVOLVE_PYTHON)" -m pytest "$(AE_ROOT)/tests/unit/" -v 2>/dev/null || \
+	 "$(DPL_EVOLVE_PYTHON)" -m unittest discover -s "$(AE_ROOT)/tests/unit/" -v
+
+validate-configs:
+	@"$(DPL_EVOLVE_PYTHON)" "$(SHARED_SCRIPTS)/validate_config.py" --all
+
 provenance:
-	@echo "=== DPLEvolve AE: Generating Provenance Record ==="
-	@bash $(INTERNAL_DIR)/record_provenance.sh
+	@bash "$(MAINTENANCE_SCRIPTS)/record_provenance.sh"
 
-# ── Cleanup ─────────────────────────────────────────────────────────────────
+zenodo:
+	@bash "$(MAINTENANCE_SCRIPTS)/prepare_zenodo.sh"
+
+zenodo-audit:
+	@bash "$(MAINTENANCE_SCRIPTS)/prepare_zenodo.sh" --allow-placeholder-authors
+
 clean:
-	@echo "=== DPLEvolve AE: Cleaning reproduced results ==="
-	@rm -rf $(RESULTS_DIR)/reproduced/*
-	@rm -rf $(RESULTS_DIR)/tables/*
-	@echo "Reproduced results removed. Reference results preserved."
-
-distclean: clean
-	@echo "=== DPLEvolve AE: Deep cleaning ==="
-	@echo "WARNING: This removes all build artifacts."
-	@echo "To rebuild, run: make setup"
-	@# Only clean AE-owned build artifacts, never touch third-party source trees
-	@rm -rf $(AE_ROOT)/build/
-	@echo "Build artifacts removed."
+	@echo "Removing generated artifact outputs..."
+	@find "$(ARTIFACTS_DIR)" -type d -name output -exec \
+	  find {} -mindepth 1 ! -name .gitkeep -delete \;
+	@echo "Archived inputs and expected values were preserved."

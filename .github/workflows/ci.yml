@@ -1,0 +1,69 @@
+name: DPLEvolve AE — CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  structure-test:
+    name: Repository Structure Self-Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run structural self-test
+        run: bash tests/artifact/test_ae_structure.sh
+
+  integration-test:
+    name: Integration Test — Smoke Pipeline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run integration test
+        run: bash tests/integration/test_smoke_pipeline.sh
+
+  python-tests:
+    name: Python Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install PyYAML==6.0.3
+      - name: Run unit tests
+        run: python3 -m pytest tests/unit/ -v || python3 -m unittest discover -s tests/unit/ -v
+
+  config-validation:
+    name: Config Schema Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install PyYAML==6.0.3
+      - name: Validate all configs
+        run: python3 scripts/shared/validate_config.py --all
+
+  shellcheck:
+    name: ShellCheck Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './scripts'
+          format: tty
+          severity: warning

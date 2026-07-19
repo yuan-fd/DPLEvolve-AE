@@ -1,0 +1,35 @@
+# AES Nangate45 Smoke Test Configuration
+# This is the minimal, lowest-cost validation path.
+# It does NOT invoke Teacher, Student, or any LLM API.
+
+experiment: smoke
+case: aes_nangate45
+design_config: designs/nangate45/aes/config.mk
+platform: nangate45
+input_stage: 3_4_place_resized
+
+# Baseline lines to run for smoke validation
+baseline_lines:
+  - openroad_dpl_flow
+
+# Thread configuration
+threads: 8
+
+# Expected input characteristics (hard gates)
+expected:
+  instance_count: 14676
+  instance_area_micron2: 18648.2
+  global_hpwl_micron: 188569.2
+  final_hpwl_micron: 176845.1
+
+# Absolute tolerances for floating-point comparisons
+absolute_tolerances:
+  instance_area_micron2: 0.05
+  global_hpwl_micron: 0.05
+  final_hpwl_micron: 0.05
+
+# Reference flow variant from the audited baseline
+reference:
+  flow_variant: ae_probe_aes_n45_yosys8449_20260717
+  run_tag: phase2_pinned_yosys_openroad_dpl_flow
+  input_odb_sha256: d8e58c2422cf54894ca7debc67c9aed2d877d8c2d0288db89303411dc1240adc

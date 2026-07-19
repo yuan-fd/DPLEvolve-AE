@@ -1,0 +1,68 @@
+{
+  "canonical": {
+    "avg_displacement_micron": 1.1060282515340336,
+    "final_hpwl_micron": 459636.5,
+    "hpwl_before_micron": 439332.7,
+    "hpwl_delta_micron": 20303.79999999999,
+    "hpwl_delta_percent": 4.621508938442321,
+    "legality": "clean",
+    "max_displacement_micron": 67.7705264052892,
+    "runtime_seconds": 29.491
+  },
+  "case_report_dir": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_01_jpeg_nangate45",
+  "commands": {
+    "improve_command": "improve_placement_evolve",
+    "optimize_command": "optimize_mirroring_evolve",
+    "place_command": "detailed_placement_evolve -report_file_name <ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_01_jpeg_nangate45/detailed_placement_report.json",
+    "stage_sequence": "detailed_placement_evolve,improve_placement_evolve,optimize_mirroring_evolve"
+  },
+  "engine": "evolve_default",
+  "legalize_exit_status": 0,
+  "legalize_summary_status": "ok",
+  "legalize_timeout_seconds": 77,
+  "legalizer_mode": "evolve_default",
+  "line": "evolve_default",
+  "log_counter_lines": [
+    "[INFO DPL-1244] Vertical-frontier elite control donor enabled (iter 10 attribution only).",
+    "[INFO DPL-1220] Running DPL-Evolve pipeline: LEGALM guidance, complete target handoff, LEGALM legalization.",
+    "[INFO DPL-1227] LEGALM row escape policy low-residual 1 (residual 0 sites / 0 bins, limits 29 / 16), target radius 1, budget 4876 used 0 (rejects 0, pressure overflows 0), target accepts 58513 + 0, partition escapes 0, HPWL escapes 0, tail rejects 0, threshold rejects 0.",
+    "[INFO DPL-1239] LEGALM assignment HPWL projection enabled 0 (low-residual guided 0), terms 0, sites 0 (shadows 0), accepted 0, exact-target 57733, target deviation avg row/site 0.002/0.029 max row/site 3 / 17.",
+    "[INFO DPL-1229] LEGALM stage3 exact refinement enabled 1, frontier 800/800, attempted 800, scored 2322, moved 31 (row moves 6), candidate/exact evals 49811 / 2322, rejects legal/static/no-bbox/tail 46460/0/11/538, top-k prunes 902, target miss/gain 800 / 138, current-net raw/terms/cands/adj/near/scored/moves 2212 / 954 / 1206 / 1328 / 1453 / 215 / 23, exact HPWL gain 79.00 sites, displacement gain -26 sites, fast delta/full-net scans/avoided 2322 / 6575 / 11.",
+    "[INFO DPL-1230] LEGALM low-residual exact HPWL refinement enabled 0, frontier 0, attempted 0, moved 0 (row moves 0), evals 0, accepted free/swap 0 / 0, swaps eval 0, legal/static/tail rejects 0/0/0, exact HPWL gain 0.00 sites, displacement gain 0 sites.",
+    "[INFO DPL-1231] LEGALM low-residual refinement pruning before-cap 0, final 0, pruned no-bbox/low-density 0 / 0, no-bbox candidate skips 0, fast delta calls 0, exact calls avoided 0, full net scans 0.",
+    "[INFO DPL-1232] LEGALM low-residual chain compaction candidates 0, accepted 0 (cells 0), legal/static/tail/no-bbox rejects 0/0/0/0, HPWL gain 0.00 sites, displacement gain 0 sites, frontier regions skipped 0, fast delta calls 0, exact calls avoided 0, full net scans 0.",
+    "[INFO DPL-1240] LEGALM low-residual current-net anchors raw terms 0, active terms 0, prefilter rejects 0, target rejects 0, safe alternates 0, candidates 0, scored 0, moves 0, HPWL gain 0.00 sites, displacement gain 0 sites.",
+    "[INFO DPL-1241] LEGALM low-residual target correction frontier 0, candidates 0 (nearby 0, self-overlap 0), scored 0, moves 0 (free/swap 0 / 0), potential eval/skip 0 / 0, rejects prefilter/potential/exact-cap/legal/static/disp/hpwl 0/0/0/0/0/0/0, HPWL gain 0.00 sites, displacement gain 0 sites, target gain 0 sites.",
+    "[INFO DPL-1242] LEGALM low-residual target release frontier 0, blockers 0, old-slot/neighbor probes 0 / 0, candidates 0, scored 0, moves 0, rejects multi/exact-cap/legal/static/disp/hpwl 0/0/0/0/0/0, exact avoided/full-net scans 0 / 0, HPWL gain 0.00 sites, displacement gain 0 sites, target gain 0 sites.",
+    "[INFO DPL-1233] LEGALM high-pressure tail refinement enabled 0, frontier 0/0 attempted 0, moved 0 (cells 0, interval/swap/chain 0 / 0 / 0), candidates interval/swap/chain 0 / 0 / 0, rejects legal/static/hpwl/disp/tail 0/0/0/0/0, exact HPWL gain/loss 0.00/0.00 sites, displacement gain 0 sites, no-bbox accepts 0, fast delta calls 0, exact calls avoided 0, full net scans 0.",
+    "[INFO DPL-1214] LEGALM full legalization placed 58513 / 58513 cells self-legally (guided 58513, row escapes 0, failures 0, stage3 moved 838, stage3 row moves 91, stage3 evals 181012118).",
+    "[INFO DPL-0310] Vertical swap baseline preserved for low-residual frontier control.",
+    "[INFO DPL-1235] Low-residual frontier global/vertical frontier 48, exact anchors 0, target misses 24, vertical/global candidates 24 / 46, scored 25, accepts 2 (vertical/global 2 / 0), exact HPWL gain 2625.00.",
+    "[INFO DPL-1236] Vertical-frontier elite control donor guard enabled 1, frontier 48, vertical accepts 2, global accepts 0.",
+    "[INFO DPL-1234] Selected-anchor transactions scan armed 0, run armed 0, segments 0, anchor cells 0, exact anchor cells 0, pair candidates 0, cycle candidates 0, scored 0, accepts 0, exact HPWL gain 0.00.",
+    "[INFO DPL-1245] Vertical-frontier donor selected-segment guard enabled 1, segments 24, accepts 6, txn run armed 0."
+  ],
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_01_jpeg_nangate45/metrics.json",
+  "paths": {
+    "check_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_01_jpeg_nangate45/check_placement_report.json",
+    "legalize_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_01_jpeg_nangate45/legalize_summary.json",
+    "log": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/logs/nangate45/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_01_jpeg_nangate45/dpl_evolve_rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_01_jpeg_nangate45_legalize.log",
+    "metrics_json": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_01_jpeg_nangate45/metrics.json",
+    "metrics_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_01_jpeg_nangate45/3_detailed_place.rpt",
+    "post_metrics_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_01_jpeg_nangate45/post_metrics_summary.json"
+  },
+  "run_tag": "rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_01_jpeg_nangate45",
+  "stages": {
+    "after_improve_micron": 460172.3,
+    "delta_final_micron": 20303.79999999999,
+    "delta_final_percent": 4.621508938442321,
+    "delta_improve_micron": -26387.70000000001,
+    "delta_improve_percent": -6.006313666157792,
+    "delta_legalization_micron": 47227.29999999999,
+    "delta_legalization_percent": 10.749780291792527,
+    "final_micron": 459636.5,
+    "global_micron": 439332.7,
+    "legalized_micron": 486560.0
+  },
+  "status": "ok"
+}

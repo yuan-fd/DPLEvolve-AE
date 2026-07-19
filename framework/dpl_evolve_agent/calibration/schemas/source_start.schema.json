@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reviewdse.local/schemas/source_start.schema.json",
+  "title": "ReviewDSE Source Start",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "source_start_id",
+    "role",
+    "provenance",
+    "materialization"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "source_start_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "framework",
+        "diamond",
+        "default_negotiation",
+        "calibrated_source_start",
+        "reference_donor"
+      ]
+    },
+    "mechanism_family": {
+      "type": "string"
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "base_anchor",
+        "construction"
+      ],
+      "properties": {
+        "base_anchor": {
+          "type": "string"
+        },
+        "patches": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "construction": {
+          "type": "string"
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "materialization": {
+      "type": "object",
+      "required": [
+        "tracked_spec_only"
+      ],
+      "properties": {
+        "tracked_spec_only": {
+          "type": "boolean",
+          "const": true
+        },
+        "state_root_pattern": {
+          "type": "string",
+          "default": "$DPL_EVOLVE_STATE_ROOT/seed_sources/<source_start_id>"
+        }
+      },
+      "additionalProperties": false
+    },
+    "teacher_use": {
+      "type": "string"
+    },
+    "student_constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

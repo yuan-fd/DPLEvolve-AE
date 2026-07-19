@@ -1,0 +1,7 @@
+{
+  "apply_base": "framework_dpl_evolve",
+  "patch_path": "<ORIGINAL_WORKSPACE>/dpl_evolve_agent/patches/evolved_legalizers/openroad_dpl_evolve_legalm_iter30_framework_delta.patch",
+  "patch_sha256": "489eb05baadf99a48bc35f474d6d7e9f1965bba7f75f8607538a37f85072985f",
+  "seed_name": "evolved_legalm_dpl_evolve",
+  "status": "materialized"
+}

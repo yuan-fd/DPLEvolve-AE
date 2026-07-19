@@ -1,0 +1,10 @@
+# enabled	case	core_utilization	flow_variant	round_id	start_kind	notes
+1	jpeg_nangate45	40	full_matrix_jpeg_util40_place	full_matrix_jpeg_util40	framework	nangate45 jpeg low utilization
+1	jpeg_nangate45	60	full_matrix_jpeg_util60_place	full_matrix_jpeg_util60	framework	nangate45 jpeg medium utilization
+1	jpeg_nangate45	80	full_matrix_jpeg_util80_place	full_matrix_jpeg_util80	framework	nangate45 jpeg high utilization
+1	ibex_nangate45	default	full_matrix_ibex_place	full_matrix_ibex	framework	nangate45 ibex transfer probe
+1	aes_nangate45	default	full_matrix_aes_place	full_matrix_aes	framework	nangate45 aes transfer probe
+1	ariane133_nangate45	default	full_matrix_ariane133_place	full_matrix_ariane133	framework	nangate45 ariane133 transfer probe
+1	jpeg_asap7	default	full_matrix_jpeg_asap7_place	full_matrix_jpeg_asap7	framework	asap7 jpeg platform transfer probe
+1	ethmac_asap7	default	full_matrix_ethmac_asap7_place	full_matrix_ethmac_asap7	framework	asap7 ethmac platform transfer probe
+1	swerv_wrapper_asap7	default	full_matrix_swerv_wrapper_asap7_place	full_matrix_swerv_wrapper_asap7	framework	asap7 swerv_wrapper large-case transfer probe

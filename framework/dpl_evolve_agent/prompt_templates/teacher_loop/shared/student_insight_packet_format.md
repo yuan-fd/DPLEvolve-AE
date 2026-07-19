@@ -1,0 +1,24 @@
+### student_XX
+- route: <short mechanism label>
+- route type: <legalizer-emphasis | DPO-emphasis | co-optimization-emphasis>
+- route action: <elite-expand | continue | switch | hybridize | mechanism-redesign | repair>
+- start/parent: <prepared branch or donor/workbench>
+- donor scope: <general donor | feature-matched donor | new mechanism | fallback-preserved donor>
+- knowledge/stack: <exact stack/card query, selected mechanism_stack id, and compatibility/failure-bucket basis; or `none`>
+- blueprint audit: <Blueprint stack/roadmap query, start basin, live/missing links, implemented link; otherwise `none`>
+- expected HPWL source: <producer, handoff, DPO consumer, post-consumer polish, or composition being attacked>
+- failure bucket to test: <one known bucket or `none yet`>
+- mechanism strength: <why this mechanism can materially move final HPWL, not only preserve or retune a donor>
+- stage-wise proof target: <expected HPWLlg/HPWLimprove/HPWLfinal movement and liveness counters>
+- why this can beat a small donor: <larger HPWL source, mechanism novelty, and expected stage movement>
+- pipeline coverage: <producer/legalizer; handoff/frontier; consumer/DPO; mark active links>
+- source-understanding gate: <branch/ref, entry point, call path, state/payload lifetime, acceptance path, proof counter/log>
+- first patch handles: <1-3 primary functions/state/files for the first patch>
+- support handles: <0-2 extra functions/state/files only if the first patch cannot stand alone>
+- mechanism plan: <dominant mechanism plus adjacent-stage compatibility proof; name legalizer recoverability, DPO consumption, or handoff only where it matters>
+- skills/cards: <only selected stack/skill/support/algorithm ids or none>
+- expected proof: <stage metrics, counters/logs, legality/runtime evidence>
+- self-diagnosis trigger: <which metric/log/source signal forces repair, pivot, or stronger chain reconstruction after first evaluation>
+- runtime/complexity: <fast|explore|aggressive plus caps/cache/parallelism>
+- stop/pivot: <low-ROI, failure, or repair condition>
+- record: <diff/metrics/knowledge evidence; require `## Next Teacher Handoff` if self-repair is insufficient>

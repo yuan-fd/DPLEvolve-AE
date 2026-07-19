@@ -1,0 +1,10 @@
+case	pattern	candidate_archive	status	runtime_seconds	hpwl_before	hpwl_after	delta_percent	check_result
+Ariane133 N45	center-8um	evolved_negotiation_selected	pass	42.219	6629804.5	7076871.0	6.743283304960198	clean
+Ariane133 N45	center-9um	evolved_negotiation_default_fail_probe8	pass	51.623	6629804.5	7231416.8	9.074359583302943	clean
+Ariane133 N45	center-10um	evolved_negotiation_default_fail_probe8	pass	59.642	6629804.5	7421933.2	11.947994846605209	clean
+SWERV dense N45	center-5.25um	evolved_negotiation_selected	pass	48.584	2772449.6	3852279.8	38.9485962161404	clean
+SWERV dense N45	center-5.5um	evolved_negotiation_default_fail_probe8	pass	50.752	2772449.6	3938483.3	42.05788628222492	clean
+SWERV dense N45	center-6um	evolved_negotiation_default_fail_probe8	pass	51.696	2772449.6	4112017.3	48.31711638689482	clean
+BPQUAD	center-5um	evolved_negotiation_bpquad_center_probe	pass	563.620	48139842.5	52871460.5	9.828902119902033	clean
+BPQUAD	center-6um	evolved_negotiation_bpquad_center_probe	pass	799.377	48139842.5	55941114.4	16.205437107526883	clean
+BPQUAD	center-8um	evolved_negotiation_bpquad_center_probe	pass	1085.005	48139842.5	60183709.8	25.018501670419873	clean

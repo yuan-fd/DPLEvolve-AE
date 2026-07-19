@@ -10,11 +10,11 @@ AE_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 export AE_ROOT
 
 # shellcheck source=/dev/null
-source "${AE_ROOT}/scripts/lib/env_vars.sh"
+source "${AE_ROOT}/scripts/shared/env_vars.sh"
 dpl_ae_resolve_env
 
 # shellcheck source=/dev/null
-source "${AE_ROOT}/scripts/lib/utils.sh"
+source "${AE_ROOT}/scripts/shared/utils.sh"
 
 JOBS="${JOBS:-8}"
 SKIP_YOSYS="${SKIP_YOSYS:-0}"
@@ -22,12 +22,26 @@ SKIP_OPENROAD="${SKIP_OPENROAD:-0}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --jobs) JOBS="$2"; shift 2 ;;
+    --jobs)
+      if [[ $# -lt 2 ]]; then
+        dpl_ae_error "--jobs requires a positive integer"
+        exit 2
+      fi
+      JOBS="$2"
+      shift 2
+      ;;
     --skip-yosys) SKIP_YOSYS=1; shift ;;
     --skip-openroad) SKIP_OPENROAD=1; shift ;;
-    *) shift ;;
+    *)
+      dpl_ae_error "Unknown argument: $1"
+      exit 2
+      ;;
   esac
 done
+if ! [[ "${JOBS}" =~ ^[1-9][0-9]*$ ]]; then
+  dpl_ae_error "--jobs must be a positive integer"
+  exit 2
+fi
 
 echo "=============================================="
 echo " DPLEvolve AE — Environment Setup"
@@ -61,18 +75,36 @@ fi
 
 AGENT_COMMIT="$(dpl_ae_json_get "${LOCK}" "repositories.dpl_evolve_agent.base_commit")"
 ORFS_COMMIT="$(dpl_ae_json_get "${LOCK}" "repositories.openroad_flow_scripts.prepared_commit")"
+ORFS_TREE="$(dpl_ae_json_get "${LOCK}" "repositories.openroad_flow_scripts.prepared_tree")"
 OR_COMMIT="$(dpl_ae_json_get "${LOCK}" "repositories.openroad.prepared_commit")"
+OR_TREE="$(dpl_ae_json_get "${LOCK}" "repositories.openroad.prepared_tree")"
 YOSYS_COMMIT="$(dpl_ae_json_get "${LOCK}" "submodules.yosys.commit")"
 
 dpl_ae_info "Verifying repository versions..."
 dpl_ae_check_git_commit "${DPL_EVOLVE_AGENT_ROOT}" "${AGENT_COMMIT}" "dpl_evolve_agent" || {
   dpl_ae_warn "Agent repo commit mismatch. Continuing anyway..."
 }
-dpl_ae_check_git_commit "${ORFS_ROOT}" "${ORFS_COMMIT}" "ORFS" || {
-  dpl_ae_error "ORFS commit mismatch. Setup cannot continue."
-  dpl_ae_error "Expected: ${ORFS_COMMIT}"
+ORFS_ACTUAL_COMMIT="$(git -C "${ORFS_ROOT}" rev-parse HEAD)"
+ORFS_ACTUAL_TREE="$(git -C "${ORFS_ROOT}" rev-parse 'HEAD^{tree}')"
+if [[ "${ORFS_ACTUAL_COMMIT}" == "${ORFS_COMMIT}" || "${ORFS_ACTUAL_TREE}" == "${ORFS_TREE}" ]]; then
+  dpl_ae_ok "ORFS source tree matches the prepared AE revision"
+else
+  dpl_ae_error "ORFS source mismatch. Run 'make bootstrap' on a clean path."
+  dpl_ae_error "Expected commit/tree: ${ORFS_COMMIT} / ${ORFS_TREE}"
+  dpl_ae_error "Actual commit/tree:   ${ORFS_ACTUAL_COMMIT} / ${ORFS_ACTUAL_TREE}"
   exit 1
-}
+fi
+
+OR_ACTUAL_COMMIT="$(git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse HEAD)"
+OR_ACTUAL_TREE="$(git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse 'HEAD^{tree}')"
+if [[ "${OR_ACTUAL_COMMIT}" == "${OR_COMMIT}" || "${OR_ACTUAL_TREE}" == "${OR_TREE}" ]]; then
+  dpl_ae_ok "OpenROAD source tree matches the prepared AE revision"
+else
+  dpl_ae_error "OpenROAD source mismatch. Run 'make bootstrap' on a clean path."
+  dpl_ae_error "Expected commit/tree: ${OR_COMMIT} / ${OR_TREE}"
+  dpl_ae_error "Actual commit/tree:   ${OR_ACTUAL_COMMIT} / ${OR_ACTUAL_TREE}"
+  exit 1
+fi
 echo ""
 
 # --- Initialize ORFS submodules (specifically Yosys) ---

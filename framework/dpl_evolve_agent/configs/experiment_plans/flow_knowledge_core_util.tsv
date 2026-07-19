@@ -1,0 +1,6 @@
+# enabled	case	core_utilization	flow_variant	round_id	start_kind	notes
+1	ariane133_nangate45	default	flow_knowledge_ariane133_place	flow_knowledge_ariane133	framework	default density cross-case probe
+1	jpeg_nangate45	40	flow_knowledge_jpeg_util40_place	flow_knowledge_jpeg_util40	framework	jpeg low utilization sensitivity
+1	jpeg_nangate45	60	flow_knowledge_jpeg_util60_place	flow_knowledge_jpeg_util60	framework	jpeg medium utilization sensitivity
+1	jpeg_nangate45	80	flow_knowledge_jpeg_util80_place	flow_knowledge_jpeg_util80	framework	jpeg high utilization sensitivity
+1	ibex_nangate45	default	flow_knowledge_ibex_place	flow_knowledge_ibex	framework	default density cross-case probe

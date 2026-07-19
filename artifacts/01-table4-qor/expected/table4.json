@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "source": "paper/OpenROAD_Evolve.pdf, Table 4 and Section 4.1",
+  "paper_sha256": "e5b08018cb4ef7cf634e2ba9ad048e42b5aad0686dea3f88ef5664b1ac49e2c5",
+  "protocol": {
+    "teacher": "GPT-5.5 xhigh",
+    "students": "4 x GPT-5.4 xhigh",
+    "iterations": 10,
+    "bo_trials_per_case": 400,
+    "bo_parallelism": 4,
+    "runtime_gate": 2.0,
+    "primary_metric": "final post-DPL HPWL H_f"
+  },
+  "cases": {
+    "aes_asap7": {"bo_delta": -0.98, "bo_runtime": 1.47, "hpwl_delta": -1.91, "hpwl_runtime": 1.91, "hpwl_iteration": 10, "ghr_delta": -1.40, "ghr_runtime": 1.38, "ghr_iteration": 10, "tokens_logged": 1.62, "tokens_active": 0.08},
+    "aes_nangate45": {"bo_delta": -1.20, "bo_runtime": 1.38, "hpwl_delta": -3.67, "hpwl_runtime": 1.86, "hpwl_iteration": 10, "ghr_delta": -3.67, "ghr_runtime": 1.86, "ghr_iteration": 10, "tokens_logged": 1.81, "tokens_active": 0.09},
+    "ariane133_nangate45": {"bo_delta": -0.06, "bo_runtime": 0.92, "hpwl_delta": -5.50, "hpwl_runtime": 0.56, "hpwl_iteration": 10, "ghr_delta": -5.50, "ghr_runtime": 0.56, "ghr_iteration": 10, "tokens_logged": 3.66, "tokens_active": 0.11},
+    "ibex_asap7": {"bo_delta": -0.10, "bo_runtime": 1.10, "hpwl_delta": -0.60, "hpwl_runtime": 1.17, "hpwl_iteration": 10, "ghr_delta": -0.60, "ghr_runtime": 1.17, "ghr_iteration": 10, "tokens_logged": 1.68, "tokens_active": 0.10},
+    "ibex_nangate45": {"bo_delta": -0.09, "bo_runtime": 1.00, "hpwl_delta": -0.99, "hpwl_runtime": 2.00, "hpwl_iteration": 10, "ghr_delta": -0.56, "ghr_runtime": 1.08, "ghr_iteration": 6, "tokens_logged": 1.52, "tokens_active": 0.12},
+    "jpeg_asap7": {"bo_delta": -0.63, "bo_runtime": 1.39, "hpwl_delta": -0.94, "hpwl_runtime": 1.00, "hpwl_iteration": 5, "ghr_delta": -0.94, "ghr_runtime": 1.02, "ghr_iteration": 3, "tokens_logged": 1.87, "tokens_active": 0.10},
+    "jpeg_nangate45": {"bo_delta": -0.23, "bo_runtime": 1.13, "hpwl_delta": -1.63, "hpwl_runtime": 0.56, "hpwl_iteration": 9, "ghr_delta": -1.63, "ghr_runtime": 0.77, "ghr_iteration": 10, "tokens_logged": 1.93, "tokens_active": 0.09},
+    "swerv_wrapper_asap7": {"bo_delta": -0.04, "bo_runtime": 1.08, "hpwl_delta": -0.33, "hpwl_runtime": 1.90, "hpwl_iteration": 8, "ghr_delta": -0.30, "ghr_runtime": 1.09, "ghr_iteration": 4, "tokens_logged": 3.06, "tokens_active": 0.09},
+    "swerv_wrapper_nangate45": {"bo_delta": -0.09, "bo_runtime": 1.08, "hpwl_delta": -0.49, "hpwl_runtime": 1.07, "hpwl_iteration": 9, "ghr_delta": -0.49, "ghr_runtime": 1.07, "ghr_iteration": 9, "tokens_logged": 2.14, "tokens_active": 0.14}
+  },
+  "mean": {
+    "bo_delta": -0.38,
+    "bo_runtime": 1.17,
+    "hpwl_delta": -1.78,
+    "hpwl_runtime": 1.34,
+    "ghr_delta": -1.68,
+    "ghr_runtime": 1.11,
+    "tokens_logged": 2.15,
+    "tokens_active": 0.10
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "fingerprint": "ad500c71157f",
+  "hpwl_delta_percent": -0.044709496599090306,
+  "legalize_exit_status": 0,
+  "metrics": {
+    "gain_hr": 0.044709496599090306,
+    "hpwl_final": 913491.2,
+    "hpwl_gain_percent": 0.044709496599090306,
+    "hpwl_global": 937717.9,
+    "hpwl_ref": 913899.8,
+    "runtime": 61.87,
+    "runtime_deadband_ratio": 1.1,
+    "runtime_penalty_at_2x": 1.0,
+    "runtime_penalty_pp": 0.0,
+    "runtime_ref": 57.366,
+    "score_objective": "min_hpwl_final",
+    "status": "ok"
+  },
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/swerv_wrapper/place_batch_20260421_220319/dpl_evolve_baseline/openroad_dpl_hpwl_only_9case_bo_place_batch_20260421_220319_swerv_wrapper_asap7_trial_cb03af04_ad500c71157f/metrics.json",
+  "params": {
+    "global_swap_area_weight": 0.4548431285118816,
+    "global_swap_budget_multipliers": "1.25 1.10 1.04",
+    "global_swap_congestion_user_weight": 143.43928859400395,
+    "global_swap_normalization_interval": 3726,
+    "global_swap_pin_weight": 0.22115425363646038,
+    "global_swap_profiling_excess": 1.0283521503962332,
+    "global_swap_sampling_moves": 80,
+    "global_swap_tradeoff": 0.9473266195993545,
+    "improve_enable_extra_dpl": 0,
+    "improve_max_displacement": 1024,
+    "improve_random_seed": 56
+  },
+  "run_tag": "openroad_dpl_hpwl_only_9case_bo_place_batch_20260421_220319_swerv_wrapper_asap7_trial_cb03af04_ad500c71157f",
+  "runtime_ratio": 1.078513405152878,
+  "score": 913491.2,
+  "stage_args": {
+    "OPENROAD_DPL_DETAIL_ARGS": "",
+    "OPENROAD_DPL_IMPROVE_ARGS": "-random_seed 56 -max_displacement 1024 -enable_extra_dpl 0 -global_swap_args {-tradeoff 0.9473266195993545 -area_weight 0.4548431285118816 -pin_weight 0.22115425363646038 -congestion_user_weight 143.43928859400395 -sampling_moves 80 -normalization_interval 3726 -profiling_excess 1.0283521503962332 -budget_multipliers {1.25 1.10 1.04}}",
+    "OPENROAD_DPL_OPTIMIZE_ARGS": ""
+  },
+  "status": "ok",
+  "trial": "cb03af04"
+}

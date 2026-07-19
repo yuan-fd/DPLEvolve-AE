@@ -1,0 +1,43 @@
+{
+  "fingerprint": "8e37bbaec301",
+  "hpwl_delta_percent": -0.23296593132759333,
+  "legalize_exit_status": 0,
+  "metrics": {
+    "gain_hr": 0.19142173281969344,
+    "hpwl_final": 466147.2,
+    "hpwl_gain_percent": 0.23296593132759333,
+    "hpwl_global": 439332.7,
+    "hpwl_ref": 467235.7,
+    "runtime": 37.912,
+    "runtime_deadband_ratio": 1.1,
+    "runtime_penalty_at_2x": 1.0,
+    "runtime_penalty_pp": 0.04154419850789989,
+    "runtime_ref": 33.489,
+    "score_objective": "min_hpwl_final",
+    "status": "ok"
+  },
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/openroad_dpl_hpwl_only_9case_bo_place_batch_20260421_220319_jpeg_nangate45_trial_c22626da_8e37bbaec301/metrics.json",
+  "params": {
+    "global_swap_area_weight": 0.6761238661422312,
+    "global_swap_budget_multipliers": "omit",
+    "global_swap_congestion_user_weight": 62.93533117555492,
+    "global_swap_normalization_interval": 3191,
+    "global_swap_pin_weight": 0.22623656400331982,
+    "global_swap_profiling_excess": 1.229619500730066,
+    "global_swap_sampling_moves": 439,
+    "global_swap_tradeoff": 0.0002882565869197669,
+    "improve_enable_extra_dpl": 1,
+    "improve_max_displacement": "64 8",
+    "improve_random_seed": 5
+  },
+  "run_tag": "openroad_dpl_hpwl_only_9case_bo_place_batch_20260421_220319_jpeg_nangate45_trial_c22626da_8e37bbaec301",
+  "runtime_ratio": 1.1320732180716058,
+  "score": 466147.2,
+  "stage_args": {
+    "OPENROAD_DPL_DETAIL_ARGS": "",
+    "OPENROAD_DPL_IMPROVE_ARGS": "-random_seed 5 -max_displacement {64 8} -enable_extra_dpl 1 -global_swap_args {-tradeoff 0.0002882565869197669 -area_weight 0.6761238661422312 -pin_weight 0.22623656400331982 -congestion_user_weight 62.93533117555492 -sampling_moves 439 -normalization_interval 3191 -profiling_excess 1.229619500730066}",
+    "OPENROAD_DPL_OPTIMIZE_ARGS": ""
+  },
+  "status": "ok",
+  "trial": "c22626da"
+}

@@ -1,0 +1,22 @@
+SEED: 42
+TARGET_PLANE_ROOT: tools/OpenROAD/src/dpl_evolve
+ARTIFACT_ROOT: flow
+EVALUATION_MODE: strict_legalizer
+PATCH_SURFACE_FILE: adapters/science_codeevolve/patch_surface.yaml
+BUDGET_CONFIG:
+  max_patch_attempts: 10
+  build_mode: openroad_only
+  eval_timeout_sec: 7200
+  build_timeout_sec: 3600
+  eval_mem_limit_mb:
+  build_mem_limit_mb:
+  monitor_interval_sec: 0.5
+SEARCH_POLICY:
+  mode: codex_iterative
+  require_packet: true
+  require_patch_note: true
+ARCHIVE:
+  save_patch: true
+  save_packet: true
+  save_metrics: true
+  save_logs: true

@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+AGENT_ROOT="${DPL_EVOLVE_AGENT_ROOT:-$(cd "${SCRIPT_DIR}/../.." && pwd)}"
+AGENT_ROOT="$(realpath -m "${AGENT_ROOT}")"
+ORFS_ROOT="${ORFS_ROOT:-$(realpath -m "${AGENT_ROOT}/../OpenROAD-flow-scripts")}"
+STATE_ROOT="${DPL_EVOLVE_STATE_ROOT:-$(realpath -m "${AGENT_ROOT}/../dpl_evolve_state")}"
+VENV_ROOT="${DPL_EVOLVE_VENV_ROOT:-$(realpath -m "${AGENT_ROOT}/../.venvs/dplevolve")}"
+JOBS="8"
+SKIP_YOSYS=0
+SKIP_OPENROAD=0
+
+usage() {
+  cat <<'EOF'
+Usage: setup_user_environment.sh [options]
+
+Options:
+  --orfs-root PATH       Existing prepared ORFS workspace.
+  --state-root PATH      User-writable build/output state directory.
+  --venv-root PATH       Project Python virtual environment.
+  --jobs N               Parallel build jobs. Default: 8.
+  --skip-yosys-build     Validate but do not build a missing Yosys binary.
+  --skip-openroad-build  Validate but do not build a missing OpenROAD binary.
+  --help                 Show this message.
+
+The script is idempotent, installs only under user-writable project paths, and
+never invokes sudo. It expects the ORFS and OpenROAD prepared revisions in
+metadata/ae_reproduction_lock.json; workspace patching remains an explicit
+scripts/workspace/prepare_workspace.sh operation.
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --orfs-root) ORFS_ROOT="$2"; shift 2 ;;
+    --state-root) STATE_ROOT="$2"; shift 2 ;;
+    --venv-root) VENV_ROOT="$2"; shift 2 ;;
+    --jobs) JOBS="$2"; shift 2 ;;
+    --skip-yosys-build) SKIP_YOSYS=1; shift ;;
+    --skip-openroad-build) SKIP_OPENROAD=1; shift ;;
+    --help|-h) usage; exit 0 ;;
+    *) echo "[ERROR] Unknown argument: $1" >&2; usage >&2; exit 2 ;;
+  esac
+done
+
+if ! [[ "${JOBS}" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[ERROR] --jobs must be a positive integer" >&2
+  exit 2
+fi
+ORFS_ROOT="$(realpath -m "${ORFS_ROOT}")"
+STATE_ROOT="$(realpath -m "${STATE_ROOT}")"
+VENV_ROOT="$(realpath -m "${VENV_ROOT}")"
+LOCK="${AGENT_ROOT}/metadata/ae_reproduction_lock.json"
+
+if type module >/dev/null 2>&1; then
+  module load gcc/default
+  module load openroad
+else
+  echo "[WARN] Environment Modules is unavailable; using commands already on PATH." >&2
+fi
+
+for command in git make python3; do
+  if ! command -v "${command}" >/dev/null 2>&1; then
+    echo "[ERROR] Missing required command: ${command}" >&2
+    exit 1
+  fi
+done
+if [[ ! -d "${ORFS_ROOT}/flow" || ! -d "${ORFS_ROOT}/tools/OpenROAD" ]]; then
+  echo "[ERROR] Not an ORFS workspace: ${ORFS_ROOT}" >&2
+  exit 1
+fi
+
+read_lock() {
+  python3 -c 'import json,sys; data=json.load(open(sys.argv[1], encoding="utf-8")); value=data; [value := value[key] for key in sys.argv[2].split(".")]; print(value)' "${LOCK}" "$1"
+}
+
+orfs_commit="$(read_lock repositories.orfs.prepared_commit)"
+openroad_commit="$(read_lock repositories.openroad.prepared_commit)"
+yosys_commit="$(read_lock submodules.yosys)"
+yaml_version="$(read_lock python.packages.PyYAML)"
+
+if [[ "$(git -C "${ORFS_ROOT}" rev-parse HEAD)" != "${orfs_commit}" ]]; then
+  echo "[ERROR] ORFS HEAD is not the prepared AE revision ${orfs_commit}" >&2
+  exit 1
+fi
+if [[ "$(git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse HEAD)" != "${openroad_commit}" ]]; then
+  echo "[ERROR] OpenROAD HEAD is not the prepared AE revision ${openroad_commit}" >&2
+  exit 1
+fi
+
+echo "[INFO] Initializing exact Yosys source and nested submodules."
+git -C "${ORFS_ROOT}" submodule update --init --recursive tools/yosys
+if [[ "$(git -C "${ORFS_ROOT}/tools/yosys" rev-parse HEAD)" != "${yosys_commit}" ]]; then
+  echo "[ERROR] Yosys submodule does not match ${yosys_commit}" >&2
+  exit 1
+fi
+
+if [[ ! -x "${VENV_ROOT}/bin/python" ]]; then
+  echo "[INFO] Creating Python environment: ${VENV_ROOT}"
+  python3 -m venv "${VENV_ROOT}"
+fi
+if ! "${VENV_ROOT}/bin/python" -c \
+  'import importlib.metadata,sys; sys.exit(importlib.metadata.version("PyYAML") != sys.argv[1])' \
+  "${yaml_version}"; then
+  echo "[INFO] Installing PyYAML ${yaml_version} into the project environment."
+  "${VENV_ROOT}/bin/python" -m pip install "PyYAML==${yaml_version}"
+fi
+
+yosys_short="${yosys_commit:0:9}"
+yosys_prefix="${STATE_ROOT}/yosys/${yosys_short}"
+yosys_binary="${yosys_prefix}/bin/yosys"
+if [[ ! -x "${yosys_binary}" ]]; then
+  if [[ "${SKIP_YOSYS}" -eq 1 ]]; then
+    echo "[ERROR] Yosys binary is missing and --skip-yosys-build was requested: ${yosys_binary}" >&2
+    exit 1
+  fi
+  echo "[INFO] Building pinned Yosys into ${yosys_prefix}"
+  make -C "${ORFS_ROOT}/tools/yosys" -j"${JOBS}" PREFIX="${yosys_prefix}"
+  make -C "${ORFS_ROOT}/tools/yosys" install PREFIX="${yosys_prefix}"
+else
+  echo "[INFO] Reusing Yosys: ${yosys_binary}"
+fi
+
+openroad_short="${openroad_commit:0:7}"
+openroad_binary="${STATE_ROOT}/openroad_core/${openroad_short}/install/OpenROAD/bin/openroad"
+mkdir -p "${STATE_ROOT}/ae"
+
+write_environment() {
+  local output="${STATE_ROOT}/ae/environment.sh"
+  {
+    echo '#!/usr/bin/env bash'
+    echo '# Generated by scripts/ae/setup_user_environment.sh'
+    echo 'if type module >/dev/null 2>&1; then'
+    echo '  module load gcc/default'
+    echo '  module load openroad'
+    echo 'fi'
+    printf 'export DPL_EVOLVE_AGENT_ROOT=%q\n' "${AGENT_ROOT}"
+    printf 'export ORFS_ROOT=%q\n' "${ORFS_ROOT}"
+    printf 'export DPL_EVOLVE_STATE_ROOT=%q\n' "${STATE_ROOT}"
+    printf 'export DPL_EVOLVE_PYTHON=%q\n' "${VENV_ROOT}/bin/python"
+    printf 'export YOSYS_EXE=%q\n' "${yosys_binary}"
+    printf 'export OPENROAD_EXE=%q\n' "${openroad_binary}"
+  } > "${output}"
+  chmod +x "${output}"
+  echo "[INFO] Wrote machine-local environment: ${output}"
+}
+
+# The existing build wrapper resolves Python and server dependencies from this file.
+write_environment
+if [[ ! -x "${openroad_binary}" ]]; then
+  if [[ "${SKIP_OPENROAD}" -eq 1 ]]; then
+    echo "[ERROR] OpenROAD binary is missing and --skip-openroad-build was requested: ${openroad_binary}" >&2
+    exit 1
+  fi
+  echo "[INFO] Building pinned OpenROAD common core."
+  # shellcheck source=/dev/null
+  source "${STATE_ROOT}/ae/environment.sh"
+  "${AGENT_ROOT}/scripts/workspace/build_openroad_core.sh" --threads "${JOBS}"
+else
+  echo "[INFO] Reusing OpenROAD: ${openroad_binary}"
+fi
+
+write_environment
+echo "[INFO] Setup complete. Running the read-only environment check."
+"${SCRIPT_DIR}/check_environment.sh"

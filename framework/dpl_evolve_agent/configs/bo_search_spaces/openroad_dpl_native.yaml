@@ -1,0 +1,147 @@
+# Ray Tune black-box search space for OpenROAD native DPL.
+#
+# This space tunes only public Tcl parameters consumed by:
+#   detailed_placement
+#   improve_placement
+#   optimize_mirroring
+#
+# It does not tune dpl_evolve commands or source-level knobs.  BO values are
+# injected only through OPENROAD_DPL_* environment variables.
+#
+# Source defaults checked in OpenROAD src/dpl:
+#   detailed_placement: omitted -max_displacement -> 500 sites x 100 rows
+#   improve_placement: random_seed=1, omitted -max_displacement -> 0/0 manager limit
+#   GlobalSwapParams: passes=2, tolerance=0.01, tradeoff=0.4,
+#     profiling_excess=1.10, budget_multipliers={1.50 1.25 1.10 1.04},
+#     area_weight=0.4, pin_weight=0.6, congestion_user_weight=35.0,
+#     sampling_moves=150, normalization_interval=1000
+#
+# Note: native Opendp::improvePlacement currently hardcodes the internal DPO
+# script as `mis -p 10 -t 0.005; gs -p 10 -t 0.005; vs -p 10 -t 0.005; ...`.
+# Therefore `global_swap_passes` and `global_swap_tolerance` are included only
+# for command-surface documentation; their gs values are overridden by that
+# internal script.  Use openroad_dpl_native_dpo_frontier.yaml for the cleaner
+# DPO-boundary search.
+#
+# The public -abacus flag is intentionally excluded from this formal BO space:
+# it triggered OpenROAD native `bad optional access` failures in ASAP7 smoke
+# runs and wastes search budget as a known-invalid region.
+
+line: openroad_dpl_flow
+env_prefix: OPENROAD_DPL
+objective:
+  reference_line: openroad_dpl_flow
+  hpwl_weight: 1.0
+  runtime_deadband_ratio: 1.10
+  runtime_penalty_at_2x: 1.0
+  fail_score: 1000000000.0
+parameters:
+  - name: detail_max_displacement
+    stage: detail
+    flag: -max_displacement
+    type: categorical
+    choices: [omit, 64, 128, 256, 512, 1024]
+    default: omit
+  - name: detail_incremental
+    stage: detail
+    flag: -incremental
+    type: flag
+    default: 0
+  - name: detail_use_negotiation
+    stage: detail
+    flag: -use_negotiation
+    type: flag
+    default: 0
+  - name: improve_max_displacement
+    stage: improve
+    flag: -max_displacement
+    type: categorical
+    choices: [omit, 64, 128, 256, 512, 1024]
+    default: omit
+  - name: improve_random_seed
+    stage: improve
+    flag: -random_seed
+    type: int
+    min: 1
+    max: 64
+    default: 1
+  - name: improve_enable_extra_dpl
+    stage: improve
+    flag: -enable_extra_dpl
+    type: categorical
+    choices: [0, 1]
+    default: 0
+  - name: global_swap_passes
+    stage: improve_global_swap
+    flag: -passes
+    type: int
+    min: 1
+    max: 4
+    default: 2
+  - name: global_swap_tolerance
+    stage: improve_global_swap
+    flag: -tolerance
+    type: float
+    min: 0.005
+    max: 0.05
+    default: 0.01
+  - name: global_swap_tradeoff
+    stage: improve_global_swap
+    flag: -tradeoff
+    type: float
+    min: 0.0
+    max: 1.0
+    default: 0.4
+  - name: global_swap_area_weight
+    stage: improve_global_swap
+    flag: -area_weight
+    type: float
+    min: 0.1
+    max: 1.2
+    default: 0.4
+  - name: global_swap_pin_weight
+    stage: improve_global_swap
+    flag: -pin_weight
+    type: float
+    min: 0.1
+    max: 1.2
+    default: 0.6
+  - name: global_swap_congestion_user_weight
+    stage: improve_global_swap
+    flag: -congestion_user_weight
+    type: float
+    min: 5.0
+    max: 80.0
+    default: 35.0
+  - name: global_swap_sampling_moves
+    stage: improve_global_swap
+    flag: -sampling_moves
+    type: int
+    min: 50
+    max: 400
+    default: 150
+  - name: global_swap_normalization_interval
+    stage: improve_global_swap
+    flag: -normalization_interval
+    type: int
+    min: 200
+    max: 2000
+    default: 1000
+  - name: global_swap_profiling_excess
+    stage: improve_global_swap
+    flag: -profiling_excess
+    type: float
+    min: 1.0
+    max: 1.5
+    default: 1.10
+  - name: global_swap_budget_multipliers
+    stage: improve_global_swap
+    flag: -budget_multipliers
+    type: categorical
+    choices:
+      - omit
+      - "1.50 1.25 1.10 1.04"
+      - "1.75 1.35 1.15 1.05"
+      - "1.25 1.10 1.04"
+      - "1.10 1.04"
+    default: omit

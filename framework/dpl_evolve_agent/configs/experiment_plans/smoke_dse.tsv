@@ -1,0 +1,2 @@
+# enabled	case	core_utilization	flow_variant	round_id	start_kind	notes
+1	aes_nangate45	default	smoke_dse_aes_place	smoke_dse_aes	framework	one-row DSE smoke plan; creates snapshot, runs canonical baselines, then replays a fixed candidate

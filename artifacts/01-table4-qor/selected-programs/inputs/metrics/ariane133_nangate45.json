@@ -1,0 +1,63 @@
+{
+  "canonical": {
+    "avg_displacement_micron": 11.165169702529994,
+    "final_hpwl_micron": 5466760.0,
+    "hpwl_before_micron": 6629804.5,
+    "hpwl_delta_micron": -1163044.5,
+    "hpwl_delta_percent": -17.542666605025833,
+    "legality": "clean",
+    "max_displacement_micron": 1129.8785635422287,
+    "runtime_seconds": 86.809
+  },
+  "case_report_dir": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ariane133/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ariane133_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ariane133_nangate45",
+  "commands": {
+    "improve_command": "improve_placement_evolve",
+    "optimize_command": "optimize_mirroring_evolve",
+    "place_command": "detailed_placement_evolve -report_file_name <ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ariane133/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ariane133_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ariane133_nangate45/detailed_placement_report.json",
+    "stage_sequence": "detailed_placement_evolve,improve_placement_evolve,optimize_mirroring_evolve"
+  },
+  "engine": "evolve_default",
+  "legalize_exit_status": 0,
+  "legalize_summary_status": "ok",
+  "legalize_timeout_seconds": 310,
+  "legalizer_mode": "evolve_default",
+  "line": "evolve_default",
+  "log_counter_lines": [
+    "[INFO DPL-0926] Profiling source-topk stats: candidates=1475712, exact_scored=361419, replays=38550, replay_failures=0, rollbacks=322869, accepts=38550, accepted_delta=1560183790.00",
+    "[INFO DPL-0927] Profiling critical-frontier stats: nodes=256, hot_segments=402",
+    "[INFO DPL-0926] Profiling source-topk stats: candidates=1393476, exact_scored=313888, replays=15912, replay_failures=0, rollbacks=297976, accepts=15912, accepted_delta=297117785.00",
+    "[INFO DPL-0927] Profiling critical-frontier stats: nodes=256, hot_segments=446",
+    "[INFO DPL-0926] Congestion optimization source-topk stats: candidates=1968609, exact_scored=473957, replays=42568, replay_failures=0, rollbacks=431389, accepts=42568, accepted_delta=1666655495.00",
+    "[INFO DPL-0927] Congestion optimization critical-frontier stats: nodes=256, hot_segments=398",
+    "[INFO DPL-0926] Congestion optimization source-topk stats: candidates=1856056, exact_scored=415438, replays=18136, replay_failures=0, rollbacks=397302, accepts=18136, accepted_delta=283542365.00",
+    "[INFO DPL-0927] Congestion optimization critical-frontier stats: nodes=256, hot_segments=442",
+    "[INFO DPL-0926] Congestion optimization source-topk stats: candidates=1822692, exact_scored=395685, replays=9691, replay_failures=0, rollbacks=385994, accepts=9691, accepted_delta=152425485.00",
+    "[INFO DPL-0927] Congestion optimization critical-frontier stats: nodes=256, hot_segments=443",
+    "[INFO DPL-0926] Congestion optimization source-topk stats: candidates=1808415, exact_scored=386842, replays=5890, replay_failures=0, rollbacks=380952, accepts=5890, accepted_delta=86209185.00",
+    "[INFO DPL-0927] Congestion optimization critical-frontier stats: nodes=256, hot_segments=430",
+    "[INFO DPL-0326] Selected-segment reorder frontier: 430 segments"
+  ],
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ariane133/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ariane133_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ariane133_nangate45/metrics.json",
+  "paths": {
+    "check_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ariane133/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ariane133_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ariane133_nangate45/check_placement_report.json",
+    "legalize_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ariane133/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ariane133_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ariane133_nangate45/legalize_summary.json",
+    "log": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/logs/nangate45/ariane133/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ariane133_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ariane133_nangate45/dpl_evolve_rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ariane133_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ariane133_nangate45_legalize.log",
+    "metrics_json": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ariane133/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ariane133_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ariane133_nangate45/metrics.json",
+    "metrics_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ariane133/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ariane133_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ariane133_nangate45/3_detailed_place.rpt",
+    "post_metrics_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ariane133/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ariane133_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ariane133_nangate45/post_metrics_summary.json"
+  },
+  "run_tag": "rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ariane133_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ariane133_nangate45",
+  "stages": {
+    "after_improve_micron": 5468338.7,
+    "delta_final_micron": -1163044.5,
+    "delta_final_percent": -17.542666605025833,
+    "delta_improve_micron": -1062465.2999999998,
+    "delta_improve_percent": -16.025590196513335,
+    "delta_legalization_micron": -99000.5,
+    "delta_legalization_percent": -1.493264243312152,
+    "final_micron": 5466760.0,
+    "global_micron": 6629804.5,
+    "legalized_micron": 6530804.0
+  },
+  "status": "ok"
+}

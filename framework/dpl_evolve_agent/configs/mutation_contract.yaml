@@ -1,0 +1,222 @@
+version: 1
+name: dpl_evolve_mutation_contract_v1
+scope:
+  target_plane_root: tools/OpenROAD/src/dpl_evolve
+  control_plane_root: dpl_evolve_agent
+  artifact_plane_root: flow
+allowed_patch_surfaces:
+  - file: tools/OpenROAD/src/dpl_evolve/CMakeLists.txt
+    rationale: "dpl_evolve build surface; update when a coherent mechanism needs new source files."
+    allowed_modes:
+      - source_list_update
+      - helper_extraction
+      - framework_scaffold
+  - file: tools/OpenROAD/src/dpl_evolve/src/StudentAlgorithm.cpp
+    rationale: "Student-owned top-level source flow for legalization/improve co-optimization."
+    allowed_modes:
+      - top_level_flow
+      - stage_ordering
+      - stage_guarding
+      - cross_stage_cooptimization
+      - shared_objective_handoff
+      - legalize_improve_coordination
+      - aggressive_case_mechanism
+      - telemetry_only
+  - file: tools/OpenROAD/src/dpl_evolve/src/LegalmGuidance.cpp
+    rationale: "Current LEGALM-style relaxed guidance and ALM/BGD implementation."
+    allowed_modes:
+      - relaxed_guidance_stage
+      - alm_bgd_stage
+      - objective_design
+      - net_or_size_aware_scoring
+      - legalize_improve_handoff
+      - shared_touched_net_cache
+      - partitioning
+      - local_optimum_escape
+      - high_performance_data_structure
+      - openmp_parallelism
+      - telemetry_only
+  - file: tools/OpenROAD/src/dpl_evolve/src/LegalmFullLegalization.cpp
+    rationale: "LEGALM-style self-legal closure and lambda-infinity/no-overflow refinement."
+    allowed_modes:
+      - stage3_no_overflow_refinement
+      - lambda_infinity_bgd
+      - row_assignment
+      - local_polish
+      - high_performance_data_structure
+      - telemetry_only
+  - file: tools/OpenROAD/src/dpl_evolve/src/LegalmRowAssignment.cpp
+    rationale: "Row/segment assignment and interval probing for legalizer quality."
+    allowed_modes:
+      - row_candidate_generation
+      - interval_probe
+      - cluster_or_abacus_like_assignment
+      - improve_seed_generation
+      - hpwl_aware_row_choice
+      - high_performance_data_structure
+  - file: tools/OpenROAD/src/dpl_evolve/src/LegalmCommon.h
+    rationale: "Shared LEGALM parameters, stencil driver, and candidate cost plumbing."
+    allowed_modes:
+      - parameter_separation
+      - candidate_driver
+      - shared_data_structure
+      - cross_stage_cache
+      - shared_objective_terms
+      - telemetry_support
+  - file: tools/OpenROAD/src/dpl_evolve/src/LegalmTechPenalty.cpp
+    rationale: "Candidate-local technology/routability penalty for LEGALM Eq. 35-style scoring."
+    allowed_modes:
+      - paper_eq35_cost
+      - candidate_local_drc_cache
+      - routing_or_pin_access_proxy
+      - telemetry_only
+  - file: tools/OpenROAD/src/dpl_evolve/src/LegalmTechPenalty.h
+    rationale: "LEGALM technology penalty declarations."
+    allowed_modes:
+      - paper_eq35_cost
+      - api_extension
+      - telemetry_support
+  - file: tools/OpenROAD/src/dpl_evolve/src/EvolveNegotiationRepair.cpp
+    rationale: "Negotiation/NBLG-style repair donor and legalizer-to-improve handoff support."
+    allowed_modes:
+      - repair_handoff
+      - failure_clear_policy
+      - negotiation_or_nblg_donor
+      - improve_seed_handoff
+      - telemetry_only
+  - file: tools/OpenROAD/src/dpl_evolve/src/DifferentialGuidance.cpp
+    rationale: "Legacy/generic target-storage helpers; not the primary LEGALM implementation."
+    allowed_modes:
+      - target_storage
+      - stage_handoff
+      - runtime_pruning
+      - telemetry_only
+      - helper_extraction
+  - file: tools/OpenROAD/src/dpl_evolve/src/EvolveLegalizer.cpp
+    rationale: "Top-level detailed_placement_evolve framework orchestration and stage handoff."
+    allowed_modes:
+      - stage_ordering
+      - stage_guarding
+      - diamond_compatible_stage
+      - negotiation_repair_stage
+      - helper_extraction
+  - file: tools/OpenROAD/src/dpl_evolve/src/EvolveLegalizer.h
+    rationale: "Top-level framework declarations."
+    allowed_modes:
+      - stage_declaration
+      - framework_state_addition
+  - file: tools/OpenROAD/src/dpl_evolve/src/EvolveContext.h
+    rationale: "Shared context facts passed into the evolved framework."
+    allowed_modes:
+      - case_feature_addition
+      - runtime_budget_addition
+      - stage_policy_input
+  - file: tools/OpenROAD/src/dpl_evolve/src/EvolveTelemetry.h
+    rationale: "Stage telemetry schema for explaining success and failure."
+    allowed_modes:
+      - metric_addition
+      - stage_trace_addition
+  - file: tools/OpenROAD/src/dpl_evolve/src/Optdp.cpp
+    rationale: "Evolved improve_placement implementation and detailed HPWL recovery flow."
+    allowed_modes:
+      - detailed_improvement_flow
+      - touched_net_objective
+      - candidate_generation
+      - commit_policy
+      - legalize_output_consumption
+      - cross_stage_handoff
+  - file: tools/OpenROAD/src/dpl_evolve/src/optimization/detailed.cxx
+    rationale: "Detailed-improvement optimizer internals."
+    allowed_modes:
+      - candidate_generation
+      - touched_metric_cache
+      - bounded_polish_mechanism
+      - high_performance_data_structure
+  - file: tools/OpenROAD/src/dpl_evolve/src/optimization/detailed*.{h,cxx}
+    rationale: "Detailed-improvement kernels such as GS/VS/MIS/reorder/random and candidate managers."
+    allowed_modes:
+      - detailed_improvement_flow
+      - bounded_candidate_generation
+      - hpwl_polish_mechanism
+      - high_performance_data_structure
+      - legalize_output_consumption
+      - improve_seed_preparation
+      - commit_logic
+      - touched_net_cache_handoff
+  - file: tools/OpenROAD/src/dpl_evolve/src/objective/detailed*.{h,cxx}
+    rationale: "Detailed-placement objective functions and local HPWL/displacement/ABU scoring."
+    allowed_modes:
+      - local_hpwl_delta
+      - objective_design
+      - touched_metric_cache
+      - high_performance_data_structure
+  - file: tools/OpenROAD/src/dpl_evolve/src/PlacementDRC*.{h,cpp}
+    rationale: "Candidate-local legality/DRC helpers used by evolved legalization and improve-placement scoring."
+    allowed_modes:
+      - candidate_local_drc_cache
+      - legality_screen
+      - telemetry_support
+forbidden_paths:
+  - baseline
+  - scripts
+  - adapters/science_codeevolve/evaluator.py
+  - flow/scripts
+  - tools/OpenROAD/src/dpl
+  - tools/OpenROAD/src/dpl_evolve/test
+  - tools/OpenROAD/src/rsz
+  - tools/OpenROAD/src/gpl
+  - third_party
+  - vendor
+forbidden_actions:
+  - "Do not rewrite ORFS baseline flow as part of algorithm mutation."
+  - "Do not change output metrics schema without updating contract docs and evaluator together."
+  - "Do not edit evaluator, baseline flow, benchmark selection, or unrelated OpenROAD tools for an algorithm win."
+  - "Do not bypass baseline harness with ad hoc commands for acceptance decisions."
+scope_policy:
+  static_file_or_line_budget: none
+  guidance: "Patch size is determined by the mechanism Teacher assigns and the code surfaces required to implement it correctly."
+  required_discipline:
+    - "Prefer coherent algorithmic changes over isolated constant tuning."
+    - "Inside tools/OpenROAD/src/dpl_evolve, add or refactor files and interfaces when the mechanism needs it."
+    - "Keep edits outside dpl_evolve out of scope unless Teacher explicitly asks for a broader experiment."
+    - "If the mechanism needs a large refactor, do it and document why the interfaces, data structures, and complexity are controlled."
+    - "Record touched stages, shared state, complexity, and validation evidence in the knowledge card."
+gates:
+  build:
+    required: true
+    command_skill: build_openroad
+  test:
+    required: true
+    minimum: "Run at least the target-plane smoke/regression relevant to touched code."
+  legality:
+    required: true
+    field: legality
+    pass_value: true
+  metrics_contract:
+    required: true
+    required_top_level_keys:
+      - manifest
+      - legalization
+      - hpwl
+      - displacement
+      - legality
+  runtime_guard:
+    required: true
+    threshold_source: "current experiment student_runtime_multiplier / configured full-flow evaluator timeout"
+    policy: "Runtime growth is acceptable when it buys bounded, instrumented HPWL-source search; over-budget candidates are non-promotable unless kept only as donor evidence."
+  displacement_guard:
+    required: true
+    soft_regression_threshold_pct: 10
+  hpwl_guard:
+    required: false
+    goal: "Primary objective for current track; strict acceptance policy comes from problem.yaml."
+edit_policy:
+  tier_0:
+    description: "Support edits such as logs, counters, narrow failure handling, or stage budget plumbing. Not promotable as the HPWL source mechanism by itself."
+  tier_1:
+    description: "Candidate generation, assignment cost, stage scheduling, no-overflow refinement, and repair trigger logic."
+  tier_2:
+    description: "Add helpers or broader stage infrastructure only when the task explicitly needs a new interface."
+notes:
+  - "Codex must prefer bounded algorithmic mechanisms with explicit rationale tied to the legalize/improve flow."
+  - "Every accepted patch should map to one packet, one case objective, and one teacher/student review record."

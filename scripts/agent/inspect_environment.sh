@@ -10,18 +10,18 @@ AE_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 export AE_ROOT
 
 # shellcheck source=/dev/null
-source "${AE_ROOT}/scripts/lib/env_vars.sh"
+source "${AE_ROOT}/scripts/shared/env_vars.sh"
 dpl_ae_resolve_env
 
 # shellcheck source=/dev/null
-source "${AE_ROOT}/scripts/lib/utils.sh"
+source "${AE_ROOT}/scripts/shared/utils.sh"
 
 OUTPUT="${1:-${AE_ROOT}/provenance/current-machine.json}"
 
 dpl_ae_info "Capturing environment state..."
 
 # Generate provenance
-bash "${AE_ROOT}/scripts/internal/record_provenance.sh"
+bash "${AE_ROOT}/scripts/maintenance/record_provenance.sh" "${OUTPUT}"
 
 # Additional agent-specific checks
 echo "--- Agent Environment Report ---"
@@ -66,7 +66,7 @@ echo ""
 
 # Check that generated dirs are writable
 echo "Write permission checks:"
-for dir in "${AE_ROOT}/results/reproduced" "${AE_ROOT}/results/tables" "${DPL_EVOLVE_STATE_ROOT}"; do
+for dir in "${AE_ROOT}"/artifacts/*/output "${DPL_EVOLVE_STATE_ROOT}"; do
   if [[ -w "${dir}" ]]; then
     echo "  ${dir}: writable"
   else

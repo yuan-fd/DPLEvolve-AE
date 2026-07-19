@@ -1,0 +1,326 @@
+diff --git a/src/dpl_evolve/src/NegotiationLegalizer.h b/src/dpl_evolve/src/NegotiationLegalizer.h
+--- a/src/dpl_evolve/src/NegotiationLegalizer.h	2026-04-25 11:33:58.752442897 +0800
++++ b/src/dpl_evolve/src/NegotiationLegalizer.h	2026-04-25 11:35:18.993444810 +0800
+@@ -279,6 +279,10 @@
+   mutable double prof_drc_s_{0};
+   mutable int prof_candidates_evaluated_{0};
+   mutable int prof_candidates_filtered_{0};
++  mutable int prof_frontier_candidates_collected_{0};
++  mutable int prof_frontier_candidates_scored_{0};
++  mutable int prof_frontier_candidates_trimmed_{0};
++  mutable int prof_frontier_drc_filtered_{0};
+ };
+
+ }  // namespace dpl_evolve
+diff --git a/src/dpl_evolve/src/NegotiationLegalizerPass.cpp b/src/dpl_evolve/src/NegotiationLegalizerPass.cpp
+--- a/src/dpl_evolve/src/NegotiationLegalizerPass.cpp	2026-04-25 11:33:58.753442897 +0800
++++ b/src/dpl_evolve/src/NegotiationLegalizerPass.cpp	2026-04-25 11:35:18.993444810 +0800
+@@ -190,6 +190,10 @@
+   prof_drc_s_ = 0;
+   prof_candidates_evaluated_ = 0;
+   prof_candidates_filtered_ = 0;
++  prof_frontier_candidates_collected_ = 0;
++  prof_frontier_candidates_scored_ = 0;
++  prof_frontier_candidates_trimmed_ = 0;
++  prof_frontier_drc_filtered_ = 0;
+
+   double sort_s{0}, rip_up_s{0}, find_best_s{0}, place_s{0};
+   double sync_s{0}, overflow_s{0}, bystander_s{0}, history_s{0};
+@@ -365,6 +369,13 @@
+         pct(drcMs),
+         overhead,
+         pct(overhead));
++    logger_->report(
++        "    findBest frontier: collected {}, scored {}, trimmed {}, "
++        "drcFiltered {}",
++        prof_frontier_candidates_collected_,
++        prof_frontier_candidates_scored_,
++        prof_frontier_candidates_trimmed_,
++        prof_frontier_drc_filtered_);
+   }
+
+   logger_->report(
+@@ -422,14 +433,22 @@
+ // ===========================================================================
+
+ std::pair<int, int> NegotiationLegalizer::findBestLocation(int cell_idx,
+-                                                           int iter) const
++                                                           int iter)
+ {
+   const NegCell& cell = cells_[cell_idx];
+
+   auto best_cost = static_cast<double>(kInfCost);
++  auto best_cheap_cost = static_cast<double>(kInfCost);
+   int best_x = cell.x;
+   int best_y = cell.y;
+
++  struct FindBestStats
++  {
++    int cheap_candidates = 0;
++    int frontier_scored = 0;
++    int drc_rejected = 0;
++  } find_best_stats;
++
+   // Look up the DPL Node once for DRC checks (may be null if no
+   // Opendp integration is available).
+   Node* node = (opendp_ && opendp_->drc_engine_ && network_)
+@@ -440,9 +459,118 @@
+   // lenient (cells can tolerate DRC violations to resolve overlaps first),
+   // later iterations strongly penalise DRC violations to force resolution.
+   const double kDrcPenalty = 1e3 * (1.0 + iter);
++  constexpr int kQualityFrontierTopK = 24;
++  constexpr double kQualityFrontierAbsMargin = 2.0;
++  constexpr double kQualityFrontierRelMargin = 0.03;
++  const bool large_design = static_cast<int>(cells_.size()) > 200000;
++  const int candidate_stride = large_design ? std::max(1, site_width_) : 1;
++  const int candidate_budget
++      = large_design ? std::max(kQualityFrontierTopK * 16, 384) : kInfCost;
++  int candidate_budget_seen = 0;
++
++  double net_anchor_x = 0.0;
++  double net_anchor_y = 0.0;
++  int net_anchor_samples = 0;
++  if (node != nullptr && site_width_ > 0 && row_height_ > 0) {
++    constexpr int kHpwlGuardMaxPinsPerNet = 64;
++    constexpr int kHpwlGuardMaxSamples = 96;
++    std::unordered_set<const Edge*> visited_edges;
++    for (const Pin* pin : node->getPins()) {
++      const Edge* edge = pin->getEdge();
++      if (edge == nullptr || edge->getNumPins() <= 1
++          || edge->getNumPins() > kHpwlGuardMaxPinsPerNet
++          || !visited_edges.insert(edge).second) {
++        continue;
++      }
++      odb::Rect peer_box;
++      peer_box.mergeInit();
++      bool has_peer = false;
++      for (const Pin* edge_pin : edge->getPins()) {
++        const Node* pin_node = edge_pin->getNode();
++        if (pin_node == nullptr || pin_node == node) {
++          continue;
++        }
++        const int peer_x = pin_node->getCenterX().v + edge_pin->getOffsetX().v;
++        const int peer_y = pin_node->getCenterY().v + edge_pin->getOffsetY().v;
++        peer_box.merge(odb::Point(peer_x, peer_y));
++        has_peer = true;
++      }
++      if (!has_peer) {
++        continue;
++      }
++      net_anchor_x
++          += static_cast<double>(peer_box.xMin() + peer_box.xMax())
++             / (2.0 * static_cast<double>(site_width_));
++      net_anchor_y
++          += static_cast<double>(peer_box.yMin() + peer_box.yMax())
++             / (2.0 * static_cast<double>(row_height_));
++      if (++net_anchor_samples >= kHpwlGuardMaxSamples) {
++        break;
++      }
++    }
++    if (net_anchor_samples > 0) {
++      net_anchor_x /= static_cast<double>(net_anchor_samples);
++      net_anchor_y /= static_cast<double>(net_anchor_samples);
++    }
++  }
+
+-  // Helper: evaluate one candidate position.
+-  auto tryLocation = [&](int tx, int ty) {
++  auto netAnchorDelta = [&](int tx, int ty) -> double {
++    if (net_anchor_samples == 0) {
++      return 0.0;
++    }
++    const double current_x = static_cast<double>(cell.x) + 0.5 * cell.width;
++    const double current_y = static_cast<double>(cell.y) + 0.5 * cell.height;
++    const double target_x = static_cast<double>(tx) + 0.5 * cell.width;
++    const double target_y = static_cast<double>(ty) + 0.5 * cell.height;
++    const double current_dist
++        = std::abs(current_x - net_anchor_x) + std::abs(current_y - net_anchor_y);
++    const double target_dist
++        = std::abs(target_x - net_anchor_x) + std::abs(target_y - net_anchor_y);
++    return target_dist - current_dist;
++  };
++
++  struct FrontierCandidate
++  {
++    int x = 0;
++    int y = 0;
++    double cheap_cost = 0.0;
++    int drc_count = 0;
++  };
++  std::vector<FrontierCandidate> frontier;
++  frontier.reserve(kQualityFrontierTopK + 1);
++
++  auto trimFrontier = [&]() {
++    std::ranges::sort(frontier, [](const FrontierCandidate& lhs,
++                                   const FrontierCandidate& rhs) {
++      if (lhs.cheap_cost != rhs.cheap_cost) {
++        return lhs.cheap_cost < rhs.cheap_cost;
++      }
++      if (lhs.drc_count != rhs.drc_count) {
++        return lhs.drc_count < rhs.drc_count;
++      }
++      if (lhs.y != rhs.y) {
++        return lhs.y < rhs.y;
++      }
++      return lhs.x < rhs.x;
++    });
++    while (static_cast<int>(frontier.size()) > kQualityFrontierTopK) {
++      frontier.pop_back();
++      ++prof_frontier_candidates_trimmed_;
++    }
++  };
++
++  // Pass 1: collect a bounded top-K frontier using only cheap local legality,
++  // negotiation, displacement, and DRC costs. Net-anchor quality is deferred
++  // so it cannot distort frontier admission order.
++  auto collectCandidate = [&](int tx, int ty) {
++    if (large_design && (++candidate_budget_seen > candidate_budget)) {
++      return;
++    }
++    if (large_design && candidate_stride > 1
++        && std::abs(tx - cell.init_x) % candidate_stride != 0
++        && std::abs(tx - cell.x) % candidate_stride != 0) {
++      return;
++    }
+     {
+       utl::DebugScopedTimer t(prof_filter_s_);
+       if (!inDie(tx, ty, cell.width, cell.height) || !isValidRow(ty, cell, tx)
+@@ -452,15 +580,19 @@
+       }
+     }
+
+-    double cost;
++    double cheap_cost;
+     {
+       utl::DebugScopedTimer t(prof_neg_cost_s_);
+-      cost = negotiationCost(cell_idx, tx, ty);
++      cheap_cost = negotiationCost(cell_idx, tx, ty);
+     }
+-
+-    // Add a DRC penalty so clean positions are strongly preferred,
+-    // but a DRC-violating position can still be chosen if nothing
+-    // better is available (avoids infinite non-convergence).
++    const int candidate_disp = std::abs(tx - cell.init_x) + std::abs(ty - cell.init_y);
++    const int outlier_excess
++        = std::max(0,
++                   candidate_disp
++                       - std::max(max_disp_threshold_,
++                                  2 * horiz_window_ + adj_window_));
++    cheap_cost += 0.05 * static_cast<double>(outlier_excess * outlier_excess);
++    int drc_count = 0;
+     if (node != nullptr) {
+       utl::DebugScopedTimer t(prof_drc_s_);
+       odb::dbOrientType targetOrient = node->getOrient();
+@@ -472,15 +604,48 @@
+           targetOrient = orient.value();
+         }
+       }
+-      const int drcCount = opendp_->drc_engine_->countDRCViolations(
++      drc_count = opendp_->drc_engine_->countDRCViolations(
+           node, GridX{tx}, GridY{ty}, targetOrient);
+-      cost += kDrcPenalty * drcCount;
++      cheap_cost += kDrcPenalty * drc_count;
+     }
+     ++prof_candidates_evaluated_;
+-    if (cost < best_cost) {
+-      best_cost = cost;
+-      best_x = tx;
+-      best_y = ty;
++    ++find_best_stats.cheap_candidates;
++    if (drc_count > 0) {
++      ++find_best_stats.drc_rejected;
++    }
++
++    const double frontier_margin
++        = std::max(kQualityFrontierAbsMargin,
++                   kQualityFrontierRelMargin
++                       * std::max(1.0, best_cheap_cost));
++    if (frontier.empty() || static_cast<int>(frontier.size()) < kQualityFrontierTopK
++        || cheap_cost <= best_cheap_cost + frontier_margin) {
++      frontier.push_back({tx, ty, cheap_cost, drc_count});
++      ++prof_frontier_candidates_collected_;
++      trimFrontier();
++    }
++    if (cheap_cost < best_cheap_cost) {
++      best_cheap_cost = cheap_cost;
++    }
++  };
++
++  auto scoreFrontier = [&]() {
++    trimFrontier();
++    for (const FrontierCandidate& candidate : frontier) {
++      double cost = candidate.cheap_cost;
++      const double net_anchor_delta = netAnchorDelta(candidate.x, candidate.y);
++      if (net_anchor_delta > 0.0) {
++        cost += 0.18 * net_anchor_delta;
++      } else {
++        cost += 0.035 * net_anchor_delta;
++      }
++      ++find_best_stats.frontier_scored;
++      ++prof_frontier_candidates_scored_;
++      if (cost < best_cost) {
++        best_cost = cost;
++        best_x = candidate.x;
++        best_y = candidate.y;
++      }
+     }
+   };
+
+@@ -489,23 +654,26 @@
+     utl::DebugScopedTimer t(prof_init_search_s_);
+     for (int dy = -adj_window_; dy <= adj_window_; ++dy) {
+       for (int dx = -horiz_window_; dx <= horiz_window_; ++dx) {
+-        tryLocation(cell.init_x + dx, cell.init_y + dy);
++        collectCandidate(cell.init_x + dx, cell.init_y + dy);
+       }
+     }
+   }
+
+-  // Also search around the current position — critical when the cell has
++  // Also search around the current position -- critical when the cell has
+   // already been displaced far from init_x and needs to explore its local
+   // neighbourhood to resolve DRC violations (e.g. one-site gaps).
+   if (cell.x != cell.init_x || cell.y != cell.init_y) {
+     utl::DebugScopedTimer t(prof_curr_search_s_);
+     for (int dy = -adj_window_; dy <= adj_window_; ++dy) {
+       for (int dx = -horiz_window_; dx <= horiz_window_; ++dx) {
+-        tryLocation(cell.x + dx, cell.y + dy);
++        collectCandidate(cell.x + dx, cell.y + dy);
+       }
+     }
+   }
+
++  scoreFrontier();
++  prof_frontier_drc_filtered_ += find_best_stats.drc_rejected;
++
+   if (debug_observer_) {
+     const odb::Rect core = opendp_->grid_->getCore();
+     const DbuX sw = opendp_->grid_->getSiteWidth();
+@@ -562,17 +730,25 @@
+   if (best_cost == static_cast<double>(kInfCost)) {
+     // Every candidate in the search window was filtered out (out-of-die,
+     // invalid row, or fence violation).  The cell falls back to its current
+-    // position, which may already be illegal — a likely stuck-cell scenario.
++    // position, which may already be illegal -- a likely stuck-cell scenario.
+     debugPrint(logger_,
+                utl::DPL,
+                "negotiation",
+                1,
+                "findBestLocation: no valid candidate found for cell '{}' "
+-               "(iter {}) — all {} candidates filtered, cell may be stuck.",
++               "(iter {}) -- all {} candidates filtered, cell may be stuck.",
+                cell.db_inst->getName(),
+                iter,
+                prof_candidates_filtered_);
+   }
++  debugPrint(logger_,
++             utl::DPL,
++             "negotiation_runtime",
++             2,
++             "findBestStats cheap {} frontier {} drcRejected {}",
++             find_best_stats.cheap_candidates,
++             find_best_stats.frontier_scored,
++             find_best_stats.drc_rejected);
+
+   return {best_x, best_y};
+ }

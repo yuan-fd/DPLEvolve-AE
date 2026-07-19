@@ -1,0 +1,29 @@
+canonical_lines:
+  - id: openroad_dpl_flow
+    kind: baseline
+    start_point: 3_4_place_resized.odb
+    entry_script: $DPL_EVOLVE_AGENT_ROOT/baseline/run_openroad_dpl_flow.sh
+    notes:
+      - "OpenROAD detailed_placement"
+      - "OpenROAD improve_placement"
+      - "OpenROAD optimize_mirroring"
+      - "canonical OpenROAD DPL flow baseline for evolve comparisons"
+
+  - id: openroad_dpl_negotiation
+    kind: baseline
+    start_point: 3_4_place_resized.odb
+    entry_script: $DPL_EVOLVE_AGENT_ROOT/baseline/run_openroad_dpl_negotiation.sh
+    notes:
+      - "OpenROAD detailed_placement -use_negotiation"
+      - "OpenROAD improve_placement"
+      - "OpenROAD optimize_mirroring"
+      - "canonical negotiation baseline and donor/start-point evidence"
+
+  - id: evolve_default
+    kind: evolve
+    start_point: 3_4_place_resized.odb
+    entry_script: $DPL_EVOLVE_AGENT_ROOT/baseline/run_evolve_default.sh
+    notes:
+      - "clean detailed_placement_evolve default command"
+      - "clean improve_placement_evolve and optimize_mirroring_evolve follow-up commands"
+      - "agent variants modify dpl_evolve source and keep this command contract"

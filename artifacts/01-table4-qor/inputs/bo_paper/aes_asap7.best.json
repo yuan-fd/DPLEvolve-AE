@@ -1,0 +1,43 @@
+{
+  "fingerprint": "f9ab9ded13df",
+  "hpwl_delta_percent": -0.9806244343462617,
+  "legalize_exit_status": 0,
+  "metrics": {
+    "gain_hr": 0.531367869130112,
+    "hpwl_final": 41793.9,
+    "hpwl_gain_percent": 0.9806244343462617,
+    "hpwl_global": 41809.8,
+    "hpwl_ref": 42207.8,
+    "runtime": 7.842,
+    "runtime_deadband_ratio": 1.1,
+    "runtime_penalty_at_2x": 1.0,
+    "runtime_penalty_pp": 0.4492565652161497,
+    "runtime_ref": 5.33,
+    "score_objective": "min_hpwl_final",
+    "status": "ok"
+  },
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/aes/place_batch_20260421_220319/dpl_evolve_baseline/openroad_dpl_hpwl_only_9case_bo_place_batch_20260421_220319_aes_asap7_trial_2ab0d525_f9ab9ded13df/metrics.json",
+  "params": {
+    "global_swap_area_weight": 1.5288313736452899,
+    "global_swap_budget_multipliers": "1.50 1.25 1.10 1.04",
+    "global_swap_congestion_user_weight": 140.96481717088588,
+    "global_swap_normalization_interval": 1817,
+    "global_swap_pin_weight": 1.6206913539178656,
+    "global_swap_profiling_excess": 1.2646371064510928,
+    "global_swap_sampling_moves": 675,
+    "global_swap_tradeoff": 0.6442591947952155,
+    "improve_enable_extra_dpl": 0,
+    "improve_max_displacement": "64 8",
+    "improve_random_seed": 7
+  },
+  "run_tag": "openroad_dpl_hpwl_only_9case_bo_place_batch_20260421_220319_aes_asap7_trial_2ab0d525_f9ab9ded13df",
+  "runtime_ratio": 1.471294559099437,
+  "score": 41793.9,
+  "stage_args": {
+    "OPENROAD_DPL_DETAIL_ARGS": "",
+    "OPENROAD_DPL_IMPROVE_ARGS": "-random_seed 7 -max_displacement {64 8} -enable_extra_dpl 0 -global_swap_args {-tradeoff 0.6442591947952155 -area_weight 1.5288313736452899 -pin_weight 1.6206913539178656 -congestion_user_weight 140.96481717088588 -sampling_moves 675 -normalization_interval 1817 -profiling_excess 1.2646371064510928 -budget_multipliers {1.50 1.25 1.10 1.04}}",
+    "OPENROAD_DPL_OPTIMIZE_ARGS": ""
+  },
+  "status": "ok",
+  "trial": "2ab0d525"
+}

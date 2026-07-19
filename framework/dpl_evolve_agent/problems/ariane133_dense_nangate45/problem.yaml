@@ -1,0 +1,61 @@
+name: ariane133_dense_nangate45_legalizer_wl
+design: ariane133
+platform: nangate45
+task_type: design_specific_legalizer_evolution
+design_config: ./designs/nangate45/ariane133/config.mk
+recommended_flow_variant: full_matrix_ariane133_place
+input_stage: 3_4_place_resized.odb
+evaluation_track: strict_legalizer
+objective:
+  primary: legalization_hpwl
+  secondary:
+    - avg_displacement
+    - max_displacement
+  guardrails:
+    - legality
+    - runtime
+patch_surface:
+  - tools/OpenROAD/src/dpl_evolve/CMakeLists.txt
+  - tools/OpenROAD/src/dpl_evolve/include/dpl_evolve/Opendp.h
+  - tools/OpenROAD/src/dpl_evolve/src/DifferentialGuidance.cpp
+  - tools/OpenROAD/src/dpl_evolve/src/EvolveContext.h
+  - tools/OpenROAD/src/dpl_evolve/src/EvolveLegalizer.cpp
+  - tools/OpenROAD/src/dpl_evolve/src/EvolveLegalizer.h
+  - tools/OpenROAD/src/dpl_evolve/src/EvolveNegotiationRepair.cpp
+  - tools/OpenROAD/src/dpl_evolve/src/LegalmCommon.h
+  - tools/OpenROAD/src/dpl_evolve/src/LegalmFullLegalization.cpp
+  - tools/OpenROAD/src/dpl_evolve/src/LegalmGuidance.cpp
+  - tools/OpenROAD/src/dpl_evolve/src/LegalmRowAssignment.cpp
+  - tools/OpenROAD/src/dpl_evolve/src/LegalmTechPenalty.cpp
+  - tools/OpenROAD/src/dpl_evolve/src/LegalmTechPenalty.h
+  - tools/OpenROAD/src/dpl_evolve/src/Opendp.cpp
+  - tools/OpenROAD/src/dpl_evolve/src/Opendp.i
+  - tools/OpenROAD/src/dpl_evolve/src/Opendp.tcl
+  - tools/OpenROAD/src/dpl_evolve/src/Optdp.cpp
+  - tools/OpenROAD/src/dpl_evolve/src/PlacementDRC.cpp
+  - tools/OpenROAD/src/dpl_evolve/src/PlacementDRC.h
+  - tools/OpenROAD/src/dpl_evolve/src/StudentAlgorithm.cpp
+  - tools/OpenROAD/src/dpl_evolve/src/objective/detailed_abu.cxx
+  - tools/OpenROAD/src/dpl_evolve/src/objective/detailed_abu.h
+  - tools/OpenROAD/src/dpl_evolve/src/objective/detailed_displacement.cxx
+  - tools/OpenROAD/src/dpl_evolve/src/objective/detailed_displacement.h
+  - tools/OpenROAD/src/dpl_evolve/src/objective/detailed_hpwl.cxx
+  - tools/OpenROAD/src/dpl_evolve/src/objective/detailed_hpwl.h
+  - tools/OpenROAD/src/dpl_evolve/src/objective/detailed_objective.h
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed.cxx
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed.h
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_generator.h
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_global.cxx
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_global.h
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_manager.cxx
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_manager.h
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_mis.cxx
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_mis.h
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_orient.cxx
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_orient.h
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_random.cxx
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_random.h
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_reorder.cxx
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_reorder.h
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_vertical.cxx
+  - tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_vertical.h

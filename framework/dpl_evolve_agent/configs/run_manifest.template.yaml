@@ -1,0 +1,47 @@
+manifest_version: 1
+run_id: "<fill>"
+status: "PENDING"
+timestamps:
+  start_time_utc: "<fill>"
+  end_time_utc: "<fill>"
+scheduler:
+  kind: "codex+dpl_evolve_agent"
+  adapter: "science_codeevolve_thin_adapter"
+problem:
+  id: "<problem_id>"
+  design: "<design>"
+  platform: "<platform>"
+  mode: "strict_legalizer"
+  objective: "<primary objective>"
+packet:
+  path: "<packet path>"
+  sha256: "<fill>"
+contract:
+  mutation_contract_path: "configs/mutation_contract.yaml"
+  mutation_contract_sha256: "<fill>"
+patch:
+  summary: "<short summary>"
+  surface_files: []
+  diff_sha256: "<fill>"
+  target_plane_dirty_patch_hash: "<fill>"
+repos:
+  openroad_submodule_commit: "<fill>"
+  orfs_commit: "<fill>"
+  openroad_commit: "<fill>"
+  dpl_evolve_commit: "<fill if separate>"
+commands:
+  build: "<exact build command>"
+  run: "<exact baseline/evolve command>"
+artifacts:
+  results_dir: "<fill>"
+  reports_dir: "<fill>"
+  logs_dir: "<fill>"
+  objects_dir: "<fill>"
+  metrics_json: "<fill>"
+decision:
+  build_passed: false
+  legality_passed: false
+  metrics_contract_passed: false
+  engine_path_confirmed: "<fill>"
+  accepted: false
+  reason: "<fill>"

@@ -1,0 +1,56 @@
+{
+  "canonical": {
+    "avg_displacement_micron": 1.268172014739995,
+    "final_hpwl_micron": 198153.7,
+    "hpwl_before_micron": 197778.3,
+    "hpwl_delta_micron": 375.4000000000233,
+    "hpwl_delta_percent": 0.18980848758434232,
+    "legality": "clean",
+    "max_displacement_micron": 42.133267512145316,
+    "runtime_seconds": 8.924
+  },
+  "case_report_dir": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_nangate45",
+  "commands": {
+    "improve_command": "improve_placement_evolve",
+    "optimize_command": "optimize_mirroring_evolve",
+    "place_command": "detailed_placement_evolve -report_file_name <ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_nangate45/detailed_placement_report.json",
+    "stage_sequence": "detailed_placement_evolve,improve_placement_evolve,optimize_mirroring_evolve"
+  },
+  "engine": "evolve_default",
+  "legalize_exit_status": 0,
+  "legalize_summary_status": "ok",
+  "legalize_timeout_seconds": 9,
+  "legalizer_mode": "evolve_default",
+  "line": "evolve_default",
+  "log_counter_lines": [
+    "[INFO DPL-1220] Running DPL-Evolve pipeline: diamond legalization with post-placement frontier handoff.",
+    "[INFO DPL-1211] DPL-Evolve stage diamond_frontier DP metrics: moved 14594/14594, avg disp 0.836 u, max disp 3.264 u.",
+    "[INFO DPL-0349] Legacy gs residual frontier size 12224, active 12224, prioritized 12224, attempts 12224, generated 12224, accepted 1274.",
+    "[INFO DPL-0350] Residual reorder frontier size 12224, active 12224, prioritized 12224, targeted segments 36976, candidates 94409, intervals 94409, exact probes 1028879, perm candidates 299323, chain candidates 395464, accepted 4927, packed windows 80491, packed orders 271487, packed probes 642847, packed accepts 4375, assignment windows 37754, assignment orders 776736, assignment probes 313155, assignment accepts 1191, assignment fallback 36459, assignment high-score windows 8361, assignment high-score accepts 76, packed memo hit/miss/invalidate 14465/713248/4375, exact HPWL gain 4903830.00, packed HPWL gain 4526615.00, assignment HPWL gain 1082420.00, assignment high-score HPWL gain 55305.00, fallback sweep 0.",
+    "[INFO DPL-0350] Residual reorder frontier size 12224, active 12224, prioritized 12224, targeted segments 36976, candidates 94401, intervals 94401, exact probes 1005803, perm candidates 301723, chain candidates 388672, accepted 1569, packed windows 80486, packed orders 273893, packed probes 627627, packed accepts 1378, assignment windows 37429, assignment orders 769830, assignment probes 306394, assignment accepts 305, assignment fallback 37098, assignment high-score windows 8238, assignment high-score accepts 21, packed memo hit/miss/invalidate 14009/695482/1378, exact HPWL gain 1043455.00, packed HPWL gain 925270.00, assignment HPWL gain 224230.00, assignment high-score HPWL gain 13905.00, fallback sweep 0.",
+    "[INFO DPL-0339] Default residual frontier size 12224, active 12224, prioritized 256, attempt budget 4096, attempts 4096, generated 4096, accepted 130."
+  ],
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_nangate45/metrics.json",
+  "paths": {
+    "check_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_nangate45/check_placement_report.json",
+    "legalize_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_nangate45/legalize_summary.json",
+    "log": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/logs/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_nangate45/dpl_evolve_rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_nangate45_legalize.log",
+    "metrics_json": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_nangate45/metrics.json",
+    "metrics_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_nangate45/3_detailed_place.rpt",
+    "post_metrics_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_nangate45/post_metrics_summary.json"
+  },
+  "run_tag": "rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_nangate45",
+  "stages": {
+    "after_improve_micron": 198239.8,
+    "delta_final_micron": 375.4000000000233,
+    "delta_final_percent": 0.18980848758434232,
+    "delta_improve_micron": -9404.300000000017,
+    "delta_improve_percent": -4.754970590808,
+    "delta_legalization_micron": 9865.800000000017,
+    "delta_legalization_percent": 4.988312671309248,
+    "final_micron": 198153.7,
+    "global_micron": 197778.3,
+    "legalized_micron": 207644.1
+  },
+  "status": "ok"
+}

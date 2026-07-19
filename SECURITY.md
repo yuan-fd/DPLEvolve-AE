@@ -7,24 +7,20 @@ a security vulnerability, please report it responsibly.
 
 **Do not report security vulnerabilities through public GitHub issues.**
 
-Contact the paper authors directly (see paper for contact information).
+Use GitHub's private vulnerability-reporting feature for the public repository.
+The included reviewed PDF is anonymous and does not provide a safe contact
+address. Maintainers must add the artifact contact before public release.
 
 ## API Key Safety
 
-This repository NEVER stores API keys, tokens, or credentials.
+This repository never stores API keys, tokens, or credentials.
 
 ### For Artifact Evaluators
 
-- Set API keys via environment variables: `export ANTHROPIC_API_KEY=...`
+- The supported reviewer path does not need an API key.
 - Never commit API keys to this repository
 - Never include API keys in experiment logs or provenance records
 - The `.gitignore` excludes `.env`, `*.key`, `*.token`, and `credentials/`
-
-### For Agent Automation
-
-- Agents MUST NOT write API keys to any tracked file
-- Agents MUST NOT include credentials in log output
-- Agents MUST read API keys from environment variables only
 
 ## Input Validation
 

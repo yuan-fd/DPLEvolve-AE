@@ -1,0 +1,55 @@
+# DPLEvolve Paper Experiment: Baseline Comparison
+# Reproduces the three canonical baseline lines on all 9 paper cases.
+# No LLM API required.
+
+experiment: baseline
+description: >
+  Three canonical baseline lines (openroad_dpl_flow, openroad_dpl_negotiation,
+  evolve_default) on all paper benchmark cases.
+
+cases:
+  nangate45:
+    - aes
+    - ibex
+    - jpeg
+    - ariane133
+    - swerv_wrapper
+  asap7:
+    - aes
+    - ibex
+    - jpeg
+    - swerv_wrapper
+
+baseline_lines:
+  - id: openroad_dpl_flow
+    kind: baseline
+    description: Native OpenROAD detailed placement flow
+    start_point: 3_4_place_resized.odb
+  - id: openroad_dpl_negotiation
+    kind: baseline
+    description: OpenROAD negotiation-based detailed placement
+    start_point: 3_4_place_resized.odb
+  - id: evolve_default
+    kind: evolve
+    description: DPLEvolve framework default command
+    start_point: 3_4_place_resized.odb
+
+input_stage: 3_4_place_resized
+threads: 8
+
+# Reference values for the AES smoke gate
+reference_gates:
+  aes_nangate45:
+    openroad_dpl_flow:
+      instance_count: 14676
+      instance_area_micron2: 18648.2
+      global_hpwl_micron: 188569.2
+      final_hpwl_micron: 176845.1
+    openroad_dpl_negotiation:
+      final_hpwl_micron: 177589.1  # Current-build value
+    evolve_default:
+      final_hpwl_micron: 176886.8   # Current-build value
+
+absolute_tolerances:
+  instance_area_micron2: 0.05
+  hpwl_micron: 0.05

@@ -12,12 +12,14 @@
       "url": "https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts",
       "base_commit": "dcded6834fa6aa5b20f45d66eb3fb0dd7c0c6483",
       "prepared_commit": "9e2467a6a1bf1c5786c3bbed5bc44ee14230d7e8",
+      "prepared_tree": "cdd793d0b6e5a847f8a51516feece6f748f92435",
       "role": "synthesis and physical design flow infrastructure"
     },
     "openroad": {
       "url": "https://github.com/The-OpenROAD-Project/OpenROAD",
       "base_commit": "d14d526a6f8ce5388e2a8dc30da88a0189df2f46",
       "prepared_commit": "d5ff63abe1a1470581feef22063362641b32e41b",
+      "prepared_tree": "5e03b3afb8677a511fc738056d49e826250d2050",
       "role": "detailed placement engine — DPL-Evolve overlay target"
     }
   },

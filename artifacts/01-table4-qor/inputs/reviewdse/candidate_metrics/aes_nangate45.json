@@ -1,0 +1,70 @@
+{
+  "canonical": {
+    "avg_displacement_micron": 3.4254298758777058,
+    "final_hpwl_micron": 170356.8,
+    "hpwl_before_micron": 188569.2,
+    "hpwl_delta_micron": -18212.400000000023,
+    "hpwl_delta_percent": -9.658205051514257,
+    "legality": "clean",
+    "max_displacement_micron": 129.8579256899632,
+    "runtime_seconds": 11.214
+  },
+  "case_report_dir": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_03_aes_nangate45",
+  "commands": {
+    "improve_command": "improve_placement_evolve",
+    "optimize_command": "optimize_mirroring_evolve",
+    "place_command": "detailed_placement_evolve -report_file_name <ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_03_aes_nangate45/detailed_placement_report.json",
+    "stage_sequence": "detailed_placement_evolve,improve_placement_evolve,optimize_mirroring_evolve"
+  },
+  "engine": "evolve_default",
+  "headline_vs_openroad_default": {
+    "delta_hpwl_micron": -6488.3000000000175,
+    "delta_hpwl_percent": -3.668917035303787,
+    "hpwl_reduction_percent": 3.668917035303787,
+    "reference_final_hpwl_micron": 176845.1,
+    "reference_line": "openroad_dpl_flow",
+    "reference_metrics_json": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/aes/place_batch_20260421_220319/dpl_evolve_baseline/adhoc_legalm_framework_3case_20260522_121500_aes_nangate45_baseline_probe_openroad_dpl_flow/metrics.json",
+    "reference_runtime_seconds": 6.041,
+    "runtime_ratio": 1.8563151796060255,
+    "status": "ok"
+  },
+  "legalize_exit_status": 0,
+  "legalize_summary_status": "ok",
+  "legalize_timeout_seconds": 13,
+  "legalizer_mode": "evolve_default",
+  "line": "evolve_default",
+  "log_counter_lines": [
+    "[INFO DPL-0938] Endpoint target-source repair: handoff=off, frontier_segments=0, frontier_source_cells=0, top_nets=0, prioritized_cells=0, endpoint_cells=0, endpoint_hints=0, endpoint_targets=0, endpoint_accepts=0, endpoint_gain=0",
+    "[INFO DPL-0932] Hot-only reorder pass 1: segments=247, replay_frontier=242, window=4, hpwl_delta=646860, exact_windows_scored=12747, exact_edges_scored=1179457, accepted_windows=2014, accepted_segments=224, rollback_failures=0.",
+    "[INFO DPL-0932] Hot-only reorder pass 2: segments=242, replay_frontier=229, window=4, hpwl_delta=888395, exact_windows_scored=12571, exact_edges_scored=1152023, accepted_windows=951, accepted_segments=200, rollback_failures=0.",
+    "[INFO DPL-0932] Hot-only reorder pass 3: segments=229, replay_frontier=201, window=4, hpwl_delta=531575, exact_windows_scored=12141, exact_edges_scored=1109964, accepted_windows=449, accepted_segments=163, rollback_failures=0.",
+    "[INFO DPL-0934] Hot micro-pack pass 1: segments=96, replay_frontier=58, window=5, hpwl_delta=85255, exact_windows_scored=192, endpoint_windows=36, boundary_source_edge_windows=179, source_edge_windows=192, exact_probes=113517, exact_edges_scored=1738143, accepted_segments=36, rollback_failures=0, accepted_delta=72985.",
+    "[INFO DPL-0934] Hot micro-pack pass 2: segments=58, replay_frontier=28, window=5, hpwl_delta=59020, exact_windows_scored=114, endpoint_windows=27, boundary_source_edge_windows=108, source_edge_windows=114, exact_probes=63444, exact_edges_scored=962420, accepted_segments=18, rollback_failures=0, accepted_delta=49555.",
+    "[INFO DPL-0937] Accepted-window residual replay: seeds=32, hot_seeds=26, micro_pack_seeds=6, replay_windows=37, exact_probes=5739, accepts=8, pass1_probes=4030, pass1_accepts=5, cascade_seeds=5, expanded_cascade_seeds=5, pass2_probes=1709, pass2_accepts=3, rollback_rejects=5725, low_conversion_rejects=35, seed_failures=0, exact_edges_scored=113256, accepted_delta=41055.",
+    "[INFO DPL-0931] Hot-segment reorder handoff: prioritized_segments=246, visited_hot_segments=246, base_window=3, hot_window=4, hot_seed_segments=246, hot_expanded_segments=247, hot_passes=3, hot_replay_frontier=201, hot_exact_windows_scored=37459, hot_exact_edges_scored=3441444, hot_windows_attempted=39420, hot_windows_accepted=3414, hot_windows_rejected=36006, hot_rollback_failures=0, hot_accepted_delta=3932530, micro_pack_frontier=28, micro_pack_passes=2, micro_pack_windows=306, micro_pack_endpoint_windows=63, micro_pack_boundary_source_edge_windows=287, micro_pack_source_edge_windows=306, micro_pack_probes=176961, micro_pack_accepts=54, micro_pack_rollback_failures=0, micro_pack_edges_scored=2700563, micro_pack_accepted_delta=122540.",
+    "[INFO DPL-0938] Endpoint target-source repair: handoff=on, frontier_segments=246, frontier_source_cells=1185, top_nets=64, prioritized_cells=347, endpoint_cells=19497, endpoint_hints=50569, endpoint_targets=119345, endpoint_accepts=2867, endpoint_gain=5825660"
+  ],
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_03_aes_nangate45/metrics.json",
+  "paths": {
+    "check_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_03_aes_nangate45/check_placement_report.json",
+    "legalize_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_03_aes_nangate45/legalize_summary.json",
+    "log": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/logs/nangate45/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_03_aes_nangate45/dpl_evolve_evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_03_aes_nangate45_legalize.log",
+    "metrics_json": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_03_aes_nangate45/metrics.json",
+    "metrics_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_03_aes_nangate45/3_detailed_place.rpt",
+    "post_metrics_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_03_aes_nangate45/post_metrics_summary.json"
+  },
+  "run_tag": "evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_nangate45_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_03_aes_nangate45",
+  "stages": {
+    "after_improve_micron": 170424.8,
+    "delta_final_micron": -18212.400000000023,
+    "delta_final_percent": -9.658205051514257,
+    "delta_improve_micron": -27689.300000000017,
+    "delta_improve_percent": -14.68389323388974,
+    "delta_legalization_micron": 9544.899999999994,
+    "delta_legalization_percent": 5.061749214611927,
+    "final_micron": 170356.8,
+    "global_micron": 188569.2,
+    "legalized_micron": 198114.1
+  },
+  "status": "ok"
+}

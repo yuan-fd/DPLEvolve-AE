@@ -1,0 +1,43 @@
+{
+  "fingerprint": "6ea3acdbc41d",
+  "hpwl_delta_percent": -0.06493096447962644,
+  "legalize_exit_status": 0,
+  "metrics": {
+    "gain_hr": 0.06493096447962646,
+    "hpwl_final": 5781157.1,
+    "hpwl_gain_percent": 0.06493096447962646,
+    "hpwl_global": 6629804.5,
+    "hpwl_ref": 5784913.3,
+    "runtime": 139.322,
+    "runtime_deadband_ratio": 1.1,
+    "runtime_penalty_at_2x": 1.0,
+    "runtime_penalty_pp": 0.0,
+    "runtime_ref": 151.252,
+    "score_objective": "min_hpwl_final",
+    "status": "ok"
+  },
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/ariane133/place_batch_20260421_220319/dpl_evolve_baseline/openroad_dpl_hpwl_only_9case_bo_place_batch_20260421_220319_ariane133_nangate45_trial_c2e9bb84_6ea3acdbc41d/metrics.json",
+  "params": {
+    "global_swap_area_weight": 0.9524805384473203,
+    "global_swap_budget_multipliers": "1.50 1.25 1.10 1.04",
+    "global_swap_congestion_user_weight": 67.40785217294967,
+    "global_swap_normalization_interval": 2832,
+    "global_swap_pin_weight": 1.8309768220249654,
+    "global_swap_profiling_excess": 1.3530527779722623,
+    "global_swap_sampling_moves": 950,
+    "global_swap_tradeoff": 0.6353795123934654,
+    "improve_enable_extra_dpl": 0,
+    "improve_max_displacement": 1024,
+    "improve_random_seed": 88
+  },
+  "run_tag": "openroad_dpl_hpwl_only_9case_bo_place_batch_20260421_220319_ariane133_nangate45_trial_c2e9bb84_6ea3acdbc41d",
+  "runtime_ratio": 0.9211250099172242,
+  "score": 5781157.1,
+  "stage_args": {
+    "OPENROAD_DPL_DETAIL_ARGS": "",
+    "OPENROAD_DPL_IMPROVE_ARGS": "-random_seed 88 -max_displacement 1024 -enable_extra_dpl 0 -global_swap_args {-tradeoff 0.6353795123934654 -area_weight 0.9524805384473203 -pin_weight 1.8309768220249654 -congestion_user_weight 67.40785217294967 -sampling_moves 950 -normalization_interval 2832 -profiling_excess 1.3530527779722623 -budget_multipliers {1.50 1.25 1.10 1.04}}",
+    "OPENROAD_DPL_OPTIMIZE_ARGS": ""
+  },
+  "status": "ok",
+  "trial": "c2e9bb84"
+}

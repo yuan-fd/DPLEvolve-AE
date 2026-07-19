@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "source": "paper/OpenROAD_Evolve.pdf, Table 5",
+  "evidence_kind": "paper_transcription_only",
+  "title": "Stage-local legalization counterexamples",
+  "rows": [
+    {
+      "case": "AES dense N45",
+      "selected_legalizer": "LEGALM",
+      "full_flow_reference": "Diamond",
+      "legalization_hpwl": "137.8k / 138.8k",
+      "legalization_delta_percent": -0.76,
+      "final_hpwl": "130.8k / 128.9k",
+      "final_delta_percent": 1.48
+    },
+    {
+      "case": "JPEG dense N45",
+      "selected_legalizer": "Negotiation",
+      "full_flow_reference": "Negotiation",
+      "legalization_hpwl": "1.26M / 1.48M",
+      "legalization_delta_percent": -14.96,
+      "final_hpwl": "711.7k / 588.3k",
+      "final_delta_percent": 20.96
+    },
+    {
+      "case": "SWERV dense N45",
+      "selected_legalizer": "Diamond",
+      "full_flow_reference": "Negotiation",
+      "legalization_hpwl": "2.81M / 2.81M",
+      "legalization_delta_percent": -0.12,
+      "final_hpwl": "2.71M / 2.71M",
+      "final_delta_percent": 0.02
+    }
+  ],
+  "raw_evidence_in_artifact": true,
+  "evidence_artifact": "artifacts/02-table5-composability"
+}

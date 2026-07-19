@@ -1,0 +1,4 @@
+case	stage_better_pick	final_flow_reference	pick_source_tsv	ref_source_tsv	Hlg_pick	Hlg_ref	delta_Hlg_pct	Hip_pick	Hip_ref	Hf_pick	Hf_ref	delta_Hf_pct	runtime_pick_s	runtime_ref_s
+AES dense N45	LEGALM i18	Diamond i12	default_global_legalizer_legalm_20260511_iter_18_fullflow.tsv	diamond_iter12_aes_probe_minimal.tsv	137783.5	138832.9	-0.756	130882.5	128978.3	130810.8	128907.3	1.477	5.695	20.710
+JPEG dense N45	Negotiation i8	Negotiation i32	default_global_legalizer_negotiation_20260511_iter_08_fullflow.tsv	default_global_legalizer_negotiation_20260511_iter_32_fullflow.tsv	1255123.8	1475933.0	-14.961	712074.0	588799.7	711688.8	588348.9	20.964	183.532	105.807
+SWERV dense N45	Diamond i2	Negotiation i3	default_global_legalizer_diamond_20260511_iter_02_fullflow.tsv	default_global_legalizer_negotiation_20260511_iter_03_fullflow.tsv	2810287.3	2813549.6	-0.116	2706266.3	2705830.2	2705871.2	2705427.2	0.016	37.467	39.995

@@ -1,0 +1,72 @@
+{
+  "schema_version": 2,
+  "release_normalization": "Developer workspace prefixes in non-functional messages.txt path annotations were replaced with <ORIGINAL_WORKSPACE>; source code was not changed.",
+  "flow_variant": "place_batch_20260421_220319",
+  "input_stage": "3_4_place_resized.odb",
+  "default_objective": "hpwl",
+  "programs": [
+    {
+      "case": "aes_asap7", "program": "P_aes_asap7", "platform": "asap7", "design": "aes", "reference_hpwl": 42207.8,
+      "tracks": {
+        "hpwl": {"tree_sha256": "069544da01c8aa51cee3cb60ece987ed648cb9d0ddf518fabe952ef8093975a6", "expected_hpwl": 41399.7},
+        "ghr": {"tree_sha256": "3f2f9094c3d59f13cd637f0d89268adfa02ca3eb60067e03ff94570a2179b2dd", "expected_hpwl": 41615.0}
+      }
+    },
+    {
+      "case": "aes_nangate45", "program": "P_aes_nangate45", "platform": "nangate45", "design": "aes", "reference_hpwl": 176845.1, "input_odb_sha256": "d8e58c2422cf54894ca7debc67c9aed2d877d8c2d0288db89303411dc1240adc",
+      "tracks": {
+        "hpwl": {"tree_sha256": "6f1751f55b7280ac9c20517be8879d8a3aff70432e3ff5dc91f16836004286af", "expected_hpwl": 170356.8},
+        "ghr": {"tree_sha256": "6f1751f55b7280ac9c20517be8879d8a3aff70432e3ff5dc91f16836004286af", "expected_hpwl": 170356.8}
+      }
+    },
+    {
+      "case": "ariane133_nangate45", "program": "P_ariane133_nangate45", "platform": "nangate45", "design": "ariane133", "reference_hpwl": 5784913.3,
+      "tracks": {
+        "hpwl": {"tree_sha256": "89902a3b2e45a5940b9d570f00188fa9718b81af4cf83856ef0929d5aeb5bafd", "expected_hpwl": 5466760.0},
+        "ghr": {"tree_sha256": "89902a3b2e45a5940b9d570f00188fa9718b81af4cf83856ef0929d5aeb5bafd", "expected_hpwl": 5466760.0}
+      }
+    },
+    {
+      "case": "ibex_asap7", "program": "P_ibex_asap7", "platform": "asap7", "design": "ibex", "reference_hpwl": 63342.0,
+      "tracks": {
+        "hpwl": {"tree_sha256": "bdea4bcf3ad544479d96b2631d83fa77293157573665e07d3d7e5448f789c43f", "expected_hpwl": 62962.4},
+        "ghr": {"tree_sha256": "bdea4bcf3ad544479d96b2631d83fa77293157573665e07d3d7e5448f789c43f", "expected_hpwl": 62962.4}
+      }
+    },
+    {
+      "case": "ibex_nangate45", "program": "P_ibex_nangate45", "platform": "nangate45", "design": "ibex", "reference_hpwl": 200130.4,
+      "tracks": {
+        "hpwl": {"tree_sha256": "198ba7eaba4ce676c451e65409356355585b95502b12e5b8f541e095836de00a", "expected_hpwl": 198153.7},
+        "ghr": {"tree_sha256": "440c19440ba83e6d30938b8754b25390e586075de9cbf1145085966e627fb496", "expected_hpwl": 199016.1}
+      }
+    },
+    {
+      "case": "jpeg_asap7", "program": "P_jpeg_asap7", "platform": "asap7", "design": "jpeg", "reference_hpwl": 134573.0,
+      "tracks": {
+        "hpwl": {"tree_sha256": "1d00f91650f871d4c86e0eaa4081ee74109965bf4b4ad65f4f1aad39310bb756", "expected_hpwl": 133313.0},
+        "ghr": {"tree_sha256": "f37a2825de6e1c6cb25b33c87ef93187dc2c6d7461fa34446435b2ec428c2d49", "expected_hpwl": 133313.0}
+      }
+    },
+    {
+      "case": "jpeg_nangate45", "program": "P_jpeg_nangate45", "platform": "nangate45", "design": "jpeg", "reference_hpwl": 467235.7,
+      "tracks": {
+        "hpwl": {"tree_sha256": "ea86f9358ffee4ebf18a291d42596f28d035d2476b6bdad193a17a01b6b44306", "expected_hpwl": 459636.5},
+        "ghr": {"tree_sha256": "7767cf8e7d00f639a3a790c7001fa58258337096c1698e596f47c4839352f32d", "expected_hpwl": 459636.5}
+      }
+    },
+    {
+      "case": "swerv_wrapper_asap7", "program": "P_swerv_wrapper_asap7", "platform": "asap7", "design": "swerv_wrapper", "reference_hpwl": 913899.8,
+      "tracks": {
+        "hpwl": {"tree_sha256": "c535ec4dfb050a71e38903ed4076663186233624aac3070ff3f151dd49a28881", "expected_hpwl": 910876.8},
+        "ghr": {"tree_sha256": "d08f736b85a35bb57e9af18654d1a16ec7ea2440d78c5f660085d2613fc28ec8", "expected_hpwl": 911152.2}
+      }
+    },
+    {
+      "case": "swerv_wrapper_nangate45", "program": "P_swerv_wrapper_nangate45", "platform": "nangate45", "design": "swerv_wrapper", "reference_hpwl": 3267840.1,
+      "tracks": {
+        "hpwl": {"tree_sha256": "4d621a64b9f084863e9489a73857fe61ffa84220462a332bd2ee0c69d7cb1082", "expected_hpwl": 3251741.6},
+        "ghr": {"tree_sha256": "4d621a64b9f084863e9489a73857fe61ffa84220462a332bd2ee0c69d7cb1082", "expected_hpwl": 3251741.6}
+      }
+    }
+  ]
+}

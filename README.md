@@ -1,209 +1,128 @@
-# DPLEvolve — Artifact Evaluation
+# DPLEvolve Artifact Evaluation
 
 [![MLCAD 2026](https://img.shields.io/badge/MLCAD-2026-blue)](https://mlcad.org/)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE)
-[![Artifact Evaluation](https://img.shields.io/badge/AE-Available-brightgreen)](docs/artifact-overview.md)
 
-Artifact Evaluation repository for the MLCAD 2026 short paper:
+This repository accompanies our MLCAD 2026 paper on using LLM agents to
+explore OpenROAD detailed-placement source mechanisms. It is organized around
+four independent artifact bundles, so a reviewer can inspect or run one paper
+result without first learning the complete ReviewDSE framework.
 
-> **From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA**
+If you are reviewing the artifact, start with `make evidence`. It checks the
+reported tables and the integrity of the selected programs without rebuilding
+OpenROAD or invoking an LLM. The reviewed paper is included at
+[`paper/OpenROAD_Evolve.pdf`](paper/OpenROAD_Evolve.pdf).
 
-This repository provides scripts, configurations, and documentation to
-reproduce the key experimental results in the paper. It validates the
-ReviewDSE framework for LLM-agent-driven, source-code-level design space
-exploration of OpenROAD's detailed placement.
+## Quick start
 
----
-
-## Quick Start (For Reviewers)
+From the repository root, run:
 
 ```bash
-# 1. Check your environment
-make check
+make evidence
+```
 
-# 2. Build dependencies (Yosys + OpenROAD, ~30 min)
+The command takes seconds and performs these checks:
+
+- Table 4 BO: selects the minimum-score valid trial for each case from 3,600
+  normalized trial records, recomputes nine HPWL deltas, and aggregates them.
+- Table 4 ReviewDSE: recomputes the two reported columns from the archived
+  selected-candidate manifests and metric records.
+- Table 5: recomputes six percentages from the three compact archived HPWL
+  rows and compares them with the paper transcription.
+- Table 6: compares nine compact archived status/runtime rows with the paper
+  transcription, including each archived legality result.
+- Selected programs: hashes all files in the nine HPWL and nine GHR source
+  trees and compares the digests with the release manifest.
+
+A successful run includes `Paper claim check: PASS`, `9/9 archived cut-row
+rows`, `3/3 stage-local counterexamples`, and `18 HPWL/GHR frozen source
+programs`. Generated reports stay inside each bundle's ignored `output/`
+directory; packaged inputs are not modified.
+
+The [claims-to-artifacts map](docs/claims-to-artifacts.md) traces each check to
+its inputs and explains where the evidence chain stops.
+
+## Optional OpenROAD smoke test
+
+To exercise a real pinned EDA flow on AES Nangate45:
+
+```bash
+make bootstrap
 make setup
-
-# 3. Validate everything works (AES smoke test, ~5 min, no API calls)
 make smoke
 ```
 
-**That's it.** If `make smoke` passes with `[OK]`, your environment is correctly
-set up and can reproduce the paper's baseline results.
+`make bootstrap` creates a sibling `OpenROAD-flow-scripts` checkout at the
+recorded source trees and requires network access. Omit it only when that
+sibling workspace is already prepared at the required revisions. `make setup`
+builds the pinned Yosys and OpenROAD binaries; `make smoke` creates a new
+timestamped ORFS result directory, regenerates the AES input, and runs the
+native OpenROAD detailed-placement baseline.
 
----
+Success is reported as `[OK] AES smoke test PASSED`. This fresh execution
+checks the input hash, instance count, HPWL, and placement legality. It does
+not run a selected ReviewDSE program or reproduce all nine Table 4 cases.
 
-## What This Artifact Validates
+## Artifact bundles
 
-| Claim | Validation Method | API Required | Time |
-|---|---|---|---|
-| Environment is correctly configured | `make check` | No | < 1 min |
-| Input synthesis is reproducible | `make smoke` (checksum) | No | ~5 min |
-| OpenROAD default baseline matches paper | `make smoke` (HPWL check) | No | ~5 min |
-| 9-case baseline results | `make reproduce-baseline` | No | ~30 min |
-| Main ReviewDSE results | `make reproduce-main` | Yes (LLM) | Hours–days |
-| Ablation studies | `make reproduce-ablation` | Yes (LLM) | Hours |
+| Bundle | Reviewer command | Evidence type |
+|---|---|---|
+| [Table 4 QoR](artifacts/01-table4-qor/) | `make table4` | Recomputed archived records and selected-source integrity |
+| [Table 5 composability](artifacts/02-table5-composability/) | `make table5` | Compact archived-summary verification |
+| [Table 6 cut-row repair](artifacts/03-table6-cutrow/) | `make table6` | Compact archived-summary verification |
+| [AES smoke flow](artifacts/04-aes-smoke/) | `make smoke` | Fresh pinned one-case EDA execution |
 
-For a detailed claim-to-artifact mapping, see [docs/claims-to-artifacts.md](docs/claims-to-artifacts.md).
+Every bundle contains its own README, entry script, inputs or input-generation
+instructions, expected values, and output location.
 
----
+## Reproduction scope
 
-## Directory Layout
+| Paper-facing item | Available check | Limitation |
+|---|---|---|
+| Table 4 BO column | Regenerated from 3,600 normalized trial records | The EDA trials are not rerun |
+| Table 4 ReviewDSE columns | Regenerated from 18 selected-candidate records | The full candidate populations are not re-evaluated |
+| Table 5 counterexamples | Percentages regenerated from a compact original summary | Per-run EDA logs are not packaged |
+| Table 6 cut-row results | Statuses and runtimes checked against compact original summaries | No fresh OpenROAD or legality-checker replay |
+| 18 selected source programs | Source-tree integrity check | No compilation or numerical replay without the original ODB inputs |
+| AES Nangate45 default flow | Fresh pinned Yosys/OpenROAD execution | One default-baseline case only |
 
-```
-DPLEvolve-AE/
-├── README.md              ← You are here
-├── Makefile               ← All entry points
-├── docs/                  ← Human-readable documentation
-├── agent/                 ← Agent/machine-facing documentation & constraints
-├── scripts/
-│   ├── human/             ← Reviewer-facing scripts (thin wrappers)
-│   ├── agent/             ← Agent-facing scripts (thin wrappers)
-│   └── internal/          ← Shared implementation (both call this)
-├── configs/               ← Experiment configuration (YAML)
-├── provenance/            ← Version locks and checksums
-├── results/               ← Reference results + reproduced output
-├── benchmarks/            ← Benchmark design manifests
-├── env/                   ← Python requirements, module setup, version locks
-└── third_party/           ← External dependency documentation
-```
+The original nine paper-time `place_batch_20260421_220319` ODB inputs were not
+retained. Exact selected-program replay is therefore unavailable. Repeating
+the Teacher/Student discovery search would also require authenticated model
+access and the original search budget; it is outside the artifact review path.
 
-**Key design principle**: `scripts/human/` and `scripts/agent/` are thin
-wrappers. The actual implementation lives in `scripts/internal/`. One source
-of truth, two interfaces.
+## Requirements
 
----
+The evidence-only path requires Linux x86-64, Bash, GNU Make, Python 3.11 or
+newer, and write access to the artifact `output/` directories. Its Python
+scripts use only the standard library. It requires no network connection, EDA
+installation, GPU, API key, or sibling repository.
 
-## Resource Requirements
+The OpenROAD path additionally needs Git, GCC 9+, CMake 3.20+, about 10 GB of
+disk space, and 16 GB of RAM; four or more CPU cores are recommended. Network
+access may be needed by bootstrap and setup. See the
+[environment guide](docs/environment.md) for pinned versions and build details.
 
-### Minimal Validation (no API)
-- **OS**: Linux x86-64 (tested on RHEL 8 / Rocky 8)
-- **CPU**: 4+ cores recommended
-- **RAM**: 16 GB
-- **Disk**: ~10 GB (source trees + binaries)
-- **Time**: ~30 min for setup, ~5 min for smoke test
-- **Network**: Required for initial Git submodule fetch only
-- **No GPU required**
-- **No LLM API key required**
+## Documentation
 
-### Full Reproduction (with LLM)
-Additional requirements:
-- **Claude API access** (or compatible LLM endpoint)
-- **Token budget**: ~2.15B tokens per design (refer to Section 5 of the paper)
-- **Time**: Hours to days depending on search breadth and concurrency
-- **Cost**: Significant — see paper for detailed cost analysis
+- To trace a paper number to its input records and checker, use the
+  [claims-to-artifacts map](docs/claims-to-artifacts.md).
+- To follow clean-machine setup step by step, use the
+  [quick-start guide](docs/quickstart.md).
+- To compare concrete values and tolerances, see
+  [expected results](docs/expected-results.md).
+- To inspect tool revisions and checksums, see
+  [source revisions](provenance/source-commits.json).
+- To diagnose a failed setup or smoke run, see
+  [troubleshooting](docs/troubleshooting.md).
+- Human-facing guides live in [`docs/`](docs/). Machine-facing instructions
+  and schemas live separately in [`agent/`](agent/); automation enters through
+  [`scripts/agent/run_artifact.sh`](scripts/agent/run_artifact.sh).
 
----
+Run `make help` for the remaining reviewer and maintenance commands.
 
-## Available Make Targets
+## Citation and license
 
-| Command | Description | API | Time |
-|---|---|---|---|
-| `make check` | Validate environment | No | < 1 min |
-| `make setup` | Build all dependencies | No | ~30 min |
-| `make smoke` | AES smoke test (verify pipeline) | No | ~5 min |
-| `make reproduce-baseline` | All 9-case baselines | No | ~30 min |
-| `make reproduce-main` | Main paper results | Yes | Hours |
-| `make table-1` | Generate Table 1 (baseline comparison) | No | < 1 min |
-| `make table-2` | Generate Table 2 (main HPWL results) | Yes | < 1 min |
-| `make table-3` | Generate Table 3 (constraint repair) | Yes | < 1 min |
-| `make provenance` | Record machine provenance | No | < 1 min |
-| `make clean` | Remove reproduced results | No | < 1 min |
-| `make distclean` | Remove all build artifacts | No | < 1 min |
-
----
-
-## Interpreting Results
-
-### Smoke Test Success
-
-```
-[OK] AES smoke test PASSED
-```
-
-All validation checks pass:
-- Input ODB checksum matches reference
-- Instance count: 14,676
-- Instance area: 18,648.2 µm²
-- Global HPWL: 188,569.2 µm
-- Final HPWL: 176,845.1 µm
-- No placement violations
-
-### Smoke Test Failure
-
-If the smoke test fails, check:
-1. **Wrong Yosys version**: The most common failure. Run `make setup` to build
-   the pinned Yosys 0.64 (commit `8449dd470`). The system Yosys may produce
-   a different netlist.
-2. **Missing modules**: Some servers require `module load gcc/default openroad`.
-   The setup script attempts this automatically.
-3. **Build errors**: See [docs/troubleshooting.md](docs/troubleshooting.md).
-
----
-
-## Key Design Decisions
-
-### Why pin the exact Yosys commit?
-The Phase 2 audit revealed that using a different Yosys version (0.63 vs 0.64)
-changed the synthesized netlist by 7.4% in instance count, causing an 8.88%
-HPWL deviation. Synthesis must use the exact Yosys commit recorded in
-`provenance/source-commits.json`.
-
-### Why separate human/agent entry points?
-Human reviewers want simple, well-documented commands. Agents need machine-
-readable constraints, invariants, and schemas. Both call the same
-`scripts/internal/` implementation, so there is one source of truth.
-
-### Why timestamped run directories?
-Every experiment run creates a new timestamped directory. Existing results
-are never overwritten. This preserves provenance and allows side-by-side
-comparison of multiple runs.
-
----
-
-## Provenance
-
-All source revisions are pinned in [`provenance/source-commits.json`](provenance/source-commits.json).
-
-Key commits:
-- DPLEvolve agent: `96d8c613`
-- ORFS: `9e2467a6`
-- OpenROAD: `d5ff63ab`
-- Yosys: `8449dd470` (0.64)
-
-Reference binary checksums are recorded in
-[`provenance/original-artifact-checksums.txt`](provenance/original-artifact-checksums.txt).
-
-Generate a machine-specific provenance record:
-```bash
-make provenance
-```
-
----
-
-## Contact
-
-- **Paper authors**: See paper for contact information
-- **Artifact issues**: Open an issue on the [GitHub repository](https://github.com/CODA-Team/DPLEvolve)
-- **Build/run questions**: See [docs/troubleshooting.md](docs/troubleshooting.md)
-
----
-
-## License
-
-BSD 3-Clause License. See [LICENSE](LICENSE).
-
-## Citation
-
-See [CITATION.cff](CITATION.cff) or cite as:
-
-```bibtex
-@inproceedings{dplevolve2026,
-  title     = {From Tool Invocation to Source-Mechanism Exploration:
-               Protected White-Box DSE for Open-Source EDA},
-  author    = {See paper for author list},
-  booktitle = {Proceedings of the 2026 ACM/IEEE Workshop on Machine
-               Learning for CAD (MLCAD '26)},
-  year      = {2026},
-}
-```
+Machine-readable citation metadata is provided in
+[`CITATION.cff`](CITATION.cff). The artifact is released under the BSD
+3-Clause License; see [`LICENSE`](LICENSE).

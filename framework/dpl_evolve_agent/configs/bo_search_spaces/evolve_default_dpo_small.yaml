@@ -1,0 +1,91 @@
+# Black-box parameter search space for strict detailed-placement flow tuning.
+#
+# Parameters are injected into baseline/detail_place_*.tcl through:
+#   DPL_EVOLVE_DETAIL_ARGS
+#   DPL_EVOLVE_IMPROVE_ARGS
+#   DPL_EVOLVE_OPTIMIZE_ARGS
+#
+# The values below are intentionally conservative and should run on both small
+# smoke cases and dense Nangate45 cases. Extend this file for case-specific
+# studies rather than hardcoding knobs in scripts.
+#
+# Displacement values are Tcl microns.  `omit` preserves the source default; do
+# not use tiny 1/2/4um windows here because they over-constrain DPO relative to
+# OpenROAD's default large displacement limits.
+
+line: evolve_default
+objective:
+  reference_line: openroad_dpl_flow
+  hpwl_weight: 1.0
+  runtime_deadband_ratio: 1.10
+  runtime_penalty_at_2x: 1.0
+  fail_score: 1000000000.0
+parameters:
+  - name: legalm_iterations
+    stage: detail
+    flag: -legalm_iterations
+    type: int
+    min: 400
+    max: 1000
+    default: 800
+  - name: legalm_candidate_vertical_radius
+    stage: detail
+    flag: -legalm_candidate_vertical_radius
+    type: int
+    min: 1
+    max: 5
+    default: 3
+  - name: legalm_candidate_horizontal_steps
+    stage: detail
+    flag: -legalm_candidate_horizontal_steps
+    type: int
+    min: 9
+    max: 25
+    default: 17
+  - name: legalm_stage3_partition_schemes
+    stage: detail
+    flag: -legalm_stage3_partition_schemes
+    type: int
+    min: 1
+    max: 5
+    default: 3
+  - name: legalm_stage3_rounds_per_scheme
+    stage: detail
+    flag: -legalm_stage3_rounds_per_scheme
+    type: int
+    min: 4
+    max: 16
+    default: 10
+  - name: improve_max_displacement
+    stage: improve
+    flag: -max_displacement
+    type: categorical
+    choices: [omit, 64, 128, 256, 512]
+    default: omit
+  - name: enable_extra_dpl
+    stage: improve
+    flag: -enable_extra_dpl
+    type: categorical
+    choices: [0, 1]
+    default: 0
+  - name: global_swap_passes
+    stage: improve_global_swap
+    flag: -passes
+    type: int
+    min: 1
+    max: 4
+    default: 1
+  - name: global_swap_tolerance
+    stage: improve_global_swap
+    flag: -tolerance
+    type: float
+    min: 0.01
+    max: 0.20
+    default: 0.05
+  - name: global_swap_sampling_moves
+    stage: improve_global_swap
+    flag: -sampling_moves
+    type: int
+    min: 50
+    max: 500
+    default: 100

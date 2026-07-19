@@ -1,107 +1,99 @@
-# Token Cost Analysis — Responding to Reviewer Concerns
+# Token cost and artifact-evaluation scope
 
-## The Number: 2.15B Tokens Per Design
+## What the archived logs support
 
-Reviewer 2 flagged this as a critical concern: "搜索资源开销极大，单设计探索 token 消耗高达 21.5亿 token，成本极高、实用性受限。"
+The paper reports 2.15B logged and 0.10B active tokens per design. The copied
+server backup contains `codex_usage_summary.json` files, but those files are
+**cumulative snapshots of persistent Codex sessions**. Iteration 10 repeats the
+tokens already recorded at iterations 1-9. Summing every file therefore
+double-counts usage and must not be presented as an API total.
 
-This document clarifies what this number means.
+For the archived 9-case, 4-student, 15-iteration alternate campaign, the two
+possible readings differ substantially:
 
----
+| Accounting view | Mean logged/design | Mean active/design | Meaning |
+|---|---:|---:|---|
+| Sum every operation snapshot | 3.296B | 0.157B | Repeated cumulative snapshots; not a true total |
+| Keep final snapshot per session | 0.432B | 0.019B | Removes repetition, but may omit restarted/failed sessions |
 
-## Logged vs Active: The 20× Difference
+Neither view reproduces 2.15B/0.10B, and this is not the paper's 10-iteration
+campaign. We also inspected the two 10-iteration campaign families that supply
+the Table 4 HPWL selections. Their per-case values do not consistently match
+the paper token column under either accounting view. Token cost therefore
+remains a reported paper claim, not an independently verified artifact claim.
 
-Paper Table 4 reports two token columns:
+The AE archive needs the exact author-side aggregation script or a flat
+operation-local ledger for the paper campaign. A valid ledger should state
+whether retries are included and must not add cumulative session snapshots.
 
-| Metric | Value | Meaning |
-|---|---|---|
-| **Logged tokens** | 2.15B avg/design | Total tokens across ALL API calls, INCLUDING cached system prompts |
-| **Active tokens** | 0.10B avg/design | Actual input+output tokens, EXCLUDING cached content |
+The aggregation can be repeated on the copied backup with:
 
-### What is "logged but cached"?
-
-Each Student API call sends a large system prompt (domain knowledge, skill cards,
-invariants, prior evidence). These are **identical across iterations** for the
-same Student, so the API provider caches them:
-
-```
-Call 1: System prompt (30M tokens) + New question (1M tokens) = 31M logged
-Call 2: System prompt (30M tokens CACHED) + New question (1M tokens) = 31M logged, 1M active
-Call 3: System prompt (30M tokens CACHED) + New question (1M tokens) = 31M logged, 1M active
-...
-```
-
-After 10 iterations × 4 Students = 40+ calls: ~1.2B logged from cached content alone.
-
-### What Actually Costs Money
-
-| Expense Category | Amount | Billed? |
-|---|---|---|
-| System prompts (cached) | ~1.8B logged tokens | No (cache discount or free with prompt caching) |
-| Input tokens (new each turn) | ~0.07B active tokens | Yes |
-| Output tokens | ~0.03B active tokens | Yes |
-| **Total billed** | **~0.10B active tokens** | **~$1-3/design (GPT-5 pricing)** |
-
----
-
-## Where Tokens Go (Per Design, 10 Iterations)
-
-```
-Component                    Logged Tokens    Active Tokens
-─────────────────────────────────────────────────────────
-Teacher system prompt          ~200M/iter       ~2M/iter (new evidence)
-Teacher review (4 students)   ~600M/iter       ~50M/iter
-Student system prompt          ~200M/call       ~2M/call (new route)
-Student code reading           ~800M/call       ~40M/call
-Student code writing           ~300M/call       ~15M/call
-Student result analysis        ~400M/call       ~20M/call
-─────────────────────────────────────────────────────────
-Total (10 iters × 5 agents)    ~2.15B           ~0.10B
+```bash
+python3 scripts/maintenance/summarize_token_usage.py /path/to/dpl_evolve_state_backup \
+  --output token_usage_by_design.csv
 ```
 
----
+The output deliberately includes both `snapshot_*` and `session_*` columns so
+the ambiguity is visible rather than hidden in one total.
 
-## Is This Actually Expensive?
+## Cost must not be inferred from token count alone
 
-**For production chip design: No.**
-- A single mask set at advanced nodes costs $10M+
-- Saving 1-5% HPWL could reduce die area → thousands of extra chips per wafer
-- Even at $100K token cost for 100 designs, ROI is positive
+The previous version of this document claimed that 0.10B active tokens cost
+`$1-3/design`. That estimate was not backed by an invoice, model price, or raw
+usage manifest and has been removed. A reproducible cost statement needs:
 
-**For academic research: It costs money.**
-- With prompt caching enabled: ~$1-3 per design at GPT-5 pricing
-- 9-case experiment: ~$10-30 total (active tokens only)
-- Without prompt caching: significantly more
+1. the exact model used by each Teacher and Student operation;
+2. input, cached-input, and output token counts from the same paper run;
+3. the provider price and date, including the cached-input rate; and
+4. the formula and any subscription credits or negotiated discounts.
 
-**For artifact evaluation: Reviewers can skip this.**
-- The paper provides pre-computed results
-- Baseline + BO-DSE can run without API
-- The full DSE pipeline is documented but not required for AE validation
+Without those fields, the artifact should report tokens and wall time only.
 
----
+## What the token requirement blocks
 
-## Why This Is Not Wasteful
+The cost is not merely an inconvenience for reviewers. It blocks independent
+validation of several scientific claims:
 
-1. **Caching matters**. 80-95% of tokens are cached system prompts. The effective
-   cost is much lower than the "2.15B" headline suggests.
+- **Main effect size:** a reviewer cannot cheaply test whether the reported
+  1.78% mean improvement is typical or a selected run.
+- **Variance:** multi-seed confidence intervals multiply an already large
+  experiment budget; the current launcher has no deterministic seed input.
+- **Ablations:** Level-1 and Teacher/Student necessity require several full
+  counterfactual searches, but those launchers are not implemented.
+- **Model drift:** the launcher depends on a remotely served model name. A later
+  reviewer may receive a different model or lose access to the recorded one.
+- **Failure recovery:** the archived rerun contains failed operations; retries
+  and partial runs affect both cost and selection bias.
+- **Reusable badge:** users cannot evaluate or extend the method with ordinary
+  academic compute and a bounded API budget.
 
-2. **EDA context is inherently large**. Explaining OpenROAD's legalizer code
-   structure to an LLM requires showing the code. There's no way around this
-   for source-level exploration.
+## Recommended tiered evaluation
 
-3. **The alternative is manual effort**. An experienced engineer might spend
-   weeks analyzing the same code and trying the same modifications. 2.15B
-   tokens ($10-30) vs. weeks of engineer time ($10K+).
+The artifact should separate four levels instead of treating a full search as
+the only validation path:
 
-4. **The paper DOES NOT claim this is cheap**. Section 5 explicitly states:
-   "ReviewDSE is most appropriate for high-value designs, hard failures, or
-   cases where public knobs have limited remaining headroom."
+| Tier | Purpose | LLM calls |
+|---|---|---:|
+| T0 | Replay archived metrics, patches, prompts, and usage summaries | 0 |
+| T1 | Rebuild and evaluate the paper's selected source patches on 9 cases | 0 |
+| T2 | One-design, 1-iteration, 1-student end-to-end agent smoke | Small |
+| T3 | Full paper search: 9 cases, 4 Students, 10 review iterations | Very large |
 
----
+T1 is the most important missing tier: it validates that the discovered source
+mechanisms really produce the reported placement results without paying the
+search cost again. T2 validates orchestration. T3 should remain optional and
+must have a preflight that prints the maximum operation/token budget and asks
+for explicit confirmation.
 
-## Recommendations for Camera-Ready
+## Camera-ready requirements
 
-1. **Add a cost breakdown paragraph** in Section 4.2 explaining logged vs active
-2. **Report active token cost in dollars** (using public API pricing at time of experiments)
-3. **Note that prompt caching reduces cost by 10-20×**
-4. **Add a sentence**: "Per-design active-token cost is approximately $X at
-   current API pricing, comparable to a few hours of EDA engineer time."
+Before using cost or caching as a rebuttal, export the exact paper-run evidence:
+
+- per-operation model, elapsed time, return code, and token fields;
+- per-design totals and mean/standard deviation;
+- a documented cost formula using dated provider prices;
+- counts of failed/retried operations; and
+- results for a reduced-budget search to show the quality/cost frontier.
+
+Until then, describe 2.15B/0.10B as a reported search budget, not as a verified
+usage total, billable total, or inexpensive cost.

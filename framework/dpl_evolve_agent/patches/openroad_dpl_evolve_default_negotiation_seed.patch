@@ -1,0 +1,83 @@
+diff --git a/src/StudentAlgorithm.cpp b/src/StudentAlgorithm.cpp
+index 78cd8c1..8251f5e 100644
+--- a/src/StudentAlgorithm.cpp
++++ b/src/StudentAlgorithm.cpp
+@@ -11,12 +11,13 @@ namespace dpl_evolve {
+ bool Opendp::runStudentAlgorithm(const EvolveContext& context)
+ {
+   clearGuidedInitialLocations();
+   clearLegalmFrontier();
+-  logger_->metric("dpl_evolve__student_algorithm__pipeline_version", 1);
++  (void) context;
++  logger_->metric("dpl_evolve__student_algorithm__pipeline_version", 100);
+   logger_->info(DPL,
+                 1220,
+-                "Running DPL-Evolve pipeline: LEGALM guidance, complete target "
+-                "handoff, LEGALM legalization.");
++                "Running DPL-Evolve default-negotiation seed: negotiation "
++                "primary closure.");
+ 
+   using Clock = std::chrono::steady_clock;
+   auto elapsed_ms
+@@ -24,45 +25,6 @@ bool Opendp::runStudentAlgorithm(const EvolveContext& context)
+           return std::chrono::duration<double, std::milli>(end - begin).count();
+         };
+ 
+-  const auto guidance_begin = Clock::now();
+-  runDifferentialGuidance(context);
+-  const auto guidance_end = Clock::now();
+-  const double guidance_ms = elapsed_ms(guidance_begin, guidance_end);
+-  logger_->metric("dpl_evolve__pipeline__legalm_guidance_ms", guidance_ms);
+-  reportEvolvePlacementMetrics("legalm_guidance");
+-
+-  const auto legalm_begin = Clock::now();
+-  const bool legalm_ok = runLegalmFullLegalization(context);
+-  const auto legalm_end = Clock::now();
+-  const double legalm_ms = elapsed_ms(legalm_begin, legalm_end);
+-  logger_->metric("dpl_evolve__pipeline__legalm_full_ms", legalm_ms);
+-  logger_->metric("dpl_evolve__pipeline__legalm_status", legalm_ok ? 1 : 0);
+-
+-  if (legalm_ok) {
+-    logger_->metric("dpl_evolve__pipeline__policy_repair_used", 0);
+-    logger_->info(DPL,
+-                  1221,
+-                  "DPL-Evolve LEGALM-only pipeline timing: guidance {:.2f} ms, "
+-                  "full legalization {:.2f} ms.",
+-                  guidance_ms,
+-                  legalm_ms);
+-    reportEvolvePlacementMetrics("legalm_only");
+-    return true;
+-  }
+-
+-  if (!use_negotiation_) {
+-    logger_->metric("dpl_evolve__pipeline__policy_repair_used", 0);
+-    logger_->warn(DPL,
+-                  1222,
+-                  "LEGALM full legalization did not close legality; no "
+-                  "policy-assisted repair was requested.");
+-    return false;
+-  }
+-
+-  logger_->warn(DPL,
+-                1223,
+-                "LEGALM full legalization did not close legality; running "
+-                "explicit policy-assisted negotiation repair.");
+   const auto repair_begin = Clock::now();
+   const bool negotiation_ok = runEvolveNegotiationRepair(run_abacus_);
+   const auto repair_end = Clock::now();
+@@ -71,12 +33,9 @@ bool Opendp::runStudentAlgorithm(const EvolveContext& context)
+   logger_->metric("dpl_evolve__pipeline__negotiation_status",
+                   negotiation_ok ? 1 : 0);
+   logger_->info(DPL,
+-                1224,
+-                "DPL-Evolve policy-assisted pipeline timing: guidance {:.2f} "
+-                "ms, full legalization {:.2f} ms, negotiation repair {:.2f} "
+-                "ms.",
+-                guidance_ms,
+-                legalm_ms,
++                1221,
++                "DPL-Evolve default-negotiation seed timing: negotiation "
++                "closure {:.2f} ms.",
+                 repair_ms);
+   return negotiation_ok;
+ }

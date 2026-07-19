@@ -1,0 +1,423 @@
+surfaces:
+  - file: "tools/OpenROAD/src/dpl_evolve/CMakeLists.txt"
+    symbol: "dpl_evolve build surface"
+    signature: "dpl_evolve CMake source list"
+    allowed_patch_modes:
+      - source_list_update
+      - framework_scaffold
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/StudentAlgorithm.cpp"
+    symbol: "dpl_evolve::Opendp::runStudentAlgorithm"
+    signature: "void Opendp::runStudentAlgorithm(const EvolveContext& context)"
+    allowed_patch_modes:
+      - top_level_flow
+      - stage_ordering
+      - stage_guarding
+      - cross_stage_cooptimization
+      - shared_objective_handoff
+      - legalize_improve_coordination
+      - aggressive_case_mechanism
+      - telemetry_only
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/LegalmGuidance.cpp"
+    symbol: "dpl_evolve::Opendp::runDifferentialGuidance"
+    signature: "void Opendp::runDifferentialGuidance(const EvolveContext& context)"
+    allowed_patch_modes:
+      - stage1_projection
+      - alm_bgd_guidance
+      - objective_design
+      - net_or_size_aware_scoring
+      - legalize_improve_handoff
+      - shared_touched_net_cache
+      - partitioning
+      - local_optimum_escape
+      - high_performance_data_structure
+      - openmp_parallelism
+      - telemetry_only
+    risk: "high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/LegalmFullLegalization.cpp"
+    symbol: "dpl_evolve::Opendp::runLegalmFullLegalization"
+    signature: "void Opendp::runLegalmFullLegalization(const EvolveContext& context)"
+    allowed_patch_modes:
+      - stage3_no_overflow_refinement
+      - lambda_infinity_bgd
+      - row_assignment
+      - local_polish
+      - high_performance_data_structure
+      - telemetry_only
+    risk: "high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/LegalmRowAssignment.cpp"
+    symbol: "dpl_evolve row assignment helpers"
+    signature: "stage support implementation"
+    allowed_patch_modes:
+      - row_candidate_generation
+      - interval_probe
+      - cluster_or_abacus_like_assignment
+      - improve_seed_generation
+      - hpwl_aware_row_choice
+      - high_performance_data_structure
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/LegalmCommon.h"
+    symbol: "LEGALM shared paper parameters and BGD driver"
+    signature: "shared structs and inline candidate driver"
+    allowed_patch_modes:
+      - parameter_separation
+      - candidate_driver
+      - shared_data_structure
+      - cross_stage_cache
+      - shared_objective_terms
+      - telemetry_support
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/LegalmTechPenalty.cpp"
+    symbol: "dpl_evolve::computeLegalmTechPenalty"
+    signature: "LegalmTechPenaltyResult computeLegalmTechPenalty(...)"
+    allowed_patch_modes:
+      - paper_eq35_cost
+      - candidate_local_drc_cache
+      - routing_or_pin_access_proxy
+      - telemetry_only
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/LegalmTechPenalty.h"
+    symbol: "LEGALM technology penalty API"
+    signature: "struct LegalmTechPenaltyResult and helper declarations"
+    allowed_patch_modes:
+      - paper_eq35_cost
+      - api_extension
+      - telemetry_support
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/EvolveNegotiationRepair.cpp"
+    symbol: "dpl_evolve negotiation repair handoff"
+    signature: "repair support implementation"
+    allowed_patch_modes:
+      - repair_handoff
+      - failure_clear_policy
+      - negotiation_or_nblg_donor
+      - improve_seed_handoff
+      - telemetry_only
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/EvolveLegalizer.cpp"
+    symbol: "dpl_evolve::EvolveLegalizer::run"
+    signature: "void EvolveLegalizer::run(const EvolveContext& context)"
+    allowed_patch_modes:
+      - framework_scaffold
+      - stage_callback_extraction
+      - telemetry_only
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/EvolveLegalizer.h"
+    symbol: "dpl_evolve::EvolveLegalizer"
+    signature: "class EvolveLegalizer"
+    allowed_patch_modes:
+      - framework_state_addition
+      - stage_declaration
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/EvolveContext.h"
+    symbol: "dpl_evolve::EvolveContext"
+    signature: "struct EvolveContext"
+    allowed_patch_modes:
+      - case_feature_addition
+      - runtime_budget_addition
+      - stage_policy_input
+      - cross_stage_signal_addition
+      - shared_objective_input
+    risk: "low-medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/DifferentialGuidance.cpp"
+    symbol: "guided initial-location storage"
+    signature: "helper storage methods"
+    allowed_patch_modes:
+      - target_storage
+      - stage_handoff
+      - telemetry_support
+    risk: "low-medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/Opendp.cpp"
+    symbol: "dpl_evolve::Opendp::detailedPlacement"
+    signature: "void Opendp::detailedPlacement(...)"
+    allowed_patch_modes:
+      - hook_wiring
+      - context_population
+      - stage_callback_extraction
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/Opendp.tcl"
+    symbol: "detailed_placement_evolve Tcl interface"
+    signature: "Tcl command definitions"
+    allowed_patch_modes:
+      - command_option
+      - flow_knob
+      - telemetry_surface
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/Optdp.cpp"
+    symbol: "dpl_evolve::Opendp::improvePlacement"
+    signature: "void Opendp::improvePlacement(...)"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - improve_runtime_control
+      - hpwl_polish_mechanism
+      - legalize_output_consumption
+      - improve_seed_preparation
+      - cross_stage_cooptimization
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed.cxx"
+    symbol: "dpl_evolve detailed optimizer base"
+    signature: "core detailed optimizer implementation"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - hpwl_polish_mechanism
+      - high_performance_data_structure
+      - legalize_output_consumption
+      - improve_seed_preparation
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed.h"
+    symbol: "dpl_evolve detailed optimizer base"
+    signature: "core detailed optimizer declarations"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - api_extension
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_generator.h"
+    symbol: "dpl_evolve detailed candidate generator"
+    signature: "candidate generator declarations"
+    allowed_patch_modes:
+      - bounded_candidate_generation
+      - hpwl_polish_mechanism
+      - high_performance_data_structure
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_manager.cxx"
+    symbol: "dpl_evolve detailed placement manager"
+    signature: "candidate legality and commit manager implementation"
+    allowed_patch_modes:
+      - candidate_local_drc_cache
+      - commit_logic
+      - sparse_checkpoint
+      - cross_stage_checkpoint
+      - touched_net_cache_handoff
+      - high_performance_data_structure
+    risk: "high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_manager.h"
+    symbol: "dpl_evolve detailed placement manager"
+    signature: "candidate legality and commit manager declarations"
+    allowed_patch_modes:
+      - api_extension
+      - commit_logic
+      - sparse_checkpoint
+    risk: "high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_global.cxx"
+    symbol: "dpl_evolve global swap optimizer"
+    signature: "global swap detailed-improve implementation"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - hpwl_polish_mechanism
+      - bounded_candidate_generation
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_global.h"
+    symbol: "dpl_evolve global swap optimizer"
+    signature: "global swap detailed-improve declarations"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - api_extension
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_mis.cxx"
+    symbol: "dpl_evolve independent-set optimizer"
+    signature: "independent-set detailed-improve implementation"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - hpwl_polish_mechanism
+      - bounded_candidate_generation
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_mis.h"
+    symbol: "dpl_evolve independent-set optimizer"
+    signature: "independent-set detailed-improve declarations"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - api_extension
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_random.cxx"
+    symbol: "dpl_evolve random/priority optimizer"
+    signature: "random and priority detailed-improve implementation"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - hpwl_polish_mechanism
+      - bounded_candidate_generation
+      - sparse_checkpoint
+      - high_performance_data_structure
+    risk: "high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_random.h"
+    symbol: "dpl_evolve random/priority optimizer"
+    signature: "random and priority detailed-improve declarations"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - hpwl_polish_mechanism
+      - api_extension
+    risk: "high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_reorder.cxx"
+    symbol: "dpl_evolve reorder optimizer"
+    signature: "reorder detailed-improve implementation"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - hpwl_polish_mechanism
+      - bounded_candidate_generation
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_reorder.h"
+    symbol: "dpl_evolve reorder optimizer"
+    signature: "reorder detailed-improve declarations"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - api_extension
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_vertical.cxx"
+    symbol: "dpl_evolve vertical optimizer"
+    signature: "vertical detailed-improve implementation"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - row_relocation_mechanism
+      - hpwl_polish_mechanism
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/optimization/detailed_vertical.h"
+    symbol: "dpl_evolve vertical optimizer"
+    signature: "vertical detailed-improve declarations"
+    allowed_patch_modes:
+      - detailed_improvement_flow
+      - row_relocation_mechanism
+      - api_extension
+    risk: "medium-high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/objective/detailed_hpwl.cxx"
+    symbol: "dpl_evolve detailed HPWL objective"
+    signature: "HPWL objective implementation"
+    allowed_patch_modes:
+      - objective_design
+      - touched_net_delta
+      - cross_stage_shared_hpwl_delta
+      - high_performance_data_structure
+    risk: "high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/objective/detailed_hpwl.h"
+    symbol: "dpl_evolve detailed HPWL objective"
+    signature: "HPWL objective declarations"
+    allowed_patch_modes:
+      - objective_design
+      - touched_net_delta
+      - api_extension
+    risk: "high"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/objective/detailed_displacement.cxx"
+    symbol: "dpl_evolve displacement objective"
+    signature: "displacement objective implementation"
+    allowed_patch_modes:
+      - objective_design
+      - displacement_tail_control
+      - telemetry_support
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/objective/detailed_displacement.h"
+    symbol: "dpl_evolve displacement objective"
+    signature: "displacement objective declarations"
+    allowed_patch_modes:
+      - objective_design
+      - displacement_tail_control
+      - api_extension
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/objective/detailed_abu.cxx"
+    symbol: "dpl_evolve ABU objective"
+    signature: "ABU objective implementation"
+    allowed_patch_modes:
+      - objective_design
+      - density_or_overflow_control
+      - telemetry_support
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/objective/detailed_abu.h"
+    symbol: "dpl_evolve ABU objective"
+    signature: "ABU objective declarations"
+    allowed_patch_modes:
+      - objective_design
+      - density_or_overflow_control
+      - api_extension
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/objective/detailed_objective.h"
+    symbol: "dpl_evolve detailed objective base"
+    signature: "objective interface declarations"
+    allowed_patch_modes:
+      - objective_design
+      - api_extension
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/PlacementDRC.cpp"
+    symbol: "dpl_evolve::PlacementDRC"
+    signature: "candidate-local DRC helpers"
+    allowed_patch_modes:
+      - candidate_local_drc_cache
+      - paper_eq35_support
+      - legality_check_speedup
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/PlacementDRC.h"
+    symbol: "dpl_evolve::PlacementDRC"
+    signature: "DRC helper declarations"
+    allowed_patch_modes:
+      - api_extension
+      - candidate_local_drc_cache
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/include/dpl_evolve/Opendp.h"
+    symbol: "dpl_evolve::Opendp"
+    signature: "main DPL-Evolve class"
+    allowed_patch_modes:
+      - method_declaration
+      - state_declaration
+      - telemetry_surface
+    risk: "medium"
+
+  - file: "tools/OpenROAD/src/dpl_evolve/src/Opendp.i"
+    symbol: "SWIG surface"
+    signature: "OpenROAD Tcl/Python binding declarations"
+    allowed_patch_modes:
+      - command_binding
+      - api_binding
+    risk: "medium"
+
+policy:
+  deny_by_default: true
+  require_patch_note: true
+  require_task_reference: true
+  keep_entrypoint_stable: "detailed_placement_evolve"
+  allow_aggressive_algorithm_edits: true
+  do_not_patch:
+    - "tools/OpenROAD/src/dpl"
+    - "baseline evaluator/scoring scripts"
+    - "benchmark or snapshot selection"
+
+notes:
+  - "Students are expected to make coherent changes across LEGALM/legalization, detailed-improvement internals, and their shared top-level handoff when Teacher requests a full-flow attempt."
+  - "Do not hide HPWL or flow-level experiments inside a paper-fidelity claim; label them as objective or flow redesign."
+  - "Use private variant source plus lightweight relink for normal student algorithm experiments."

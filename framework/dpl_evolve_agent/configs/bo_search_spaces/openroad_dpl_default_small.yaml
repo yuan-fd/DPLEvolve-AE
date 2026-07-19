@@ -1,0 +1,97 @@
+# Ray Tune black-box search space for OpenROAD default detailed placement.
+#
+# This space tunes only public OpenROAD DPL Tcl parameters exposed by:
+#   detailed_placement
+#   improve_placement
+#   optimize_mirroring
+#
+# It intentionally excludes dpl_evolve-only LEGALM knobs.  Use this space when
+# comparing black-box parameter search against white-box source evolution.
+#
+# Displacement values are Tcl microns.  `omit` preserves OpenROAD's source
+# defaults.  In the checked source, detailed_placement converts omitted
+# displacement to a Diamond window of 500 sites x 100 rows, while
+# improve_placement keeps a chip-scale DetailedMgr limit.  Therefore this space
+# avoids tiny 1/2/4um windows and searches around large, default-comparable
+# windows instead.
+
+line: openroad_dpl_flow
+objective:
+  reference_line: openroad_dpl_flow
+  hpwl_weight: 1.0
+  runtime_deadband_ratio: 1.10
+  runtime_penalty_at_2x: 1.0
+  fail_score: 1000000000.0
+parameters:
+  - name: detail_max_displacement
+    stage: detail
+    flag: -max_displacement
+    type: categorical
+    choices: [omit, 64, 128, 256, 512, 1024]
+    default: omit
+  - name: detail_incremental
+    stage: detail
+    flag: -incremental
+    type: flag
+    default: 0
+  - name: improve_max_displacement
+    stage: improve
+    flag: -max_displacement
+    type: categorical
+    choices: [omit, 64, 128, 256, 512, 1024]
+    default: omit
+  - name: enable_extra_dpl
+    stage: improve
+    flag: -enable_extra_dpl
+    type: categorical
+    choices: [0, 1]
+    default: 0
+  - name: global_swap_passes
+    stage: improve_global_swap
+    flag: -passes
+    type: int
+    min: 1
+    max: 4
+    default: 1
+  - name: global_swap_tolerance
+    stage: improve_global_swap
+    flag: -tolerance
+    type: float
+    min: 0.01
+    max: 0.20
+    default: 0.05
+  - name: global_swap_tradeoff
+    stage: improve_global_swap
+    flag: -tradeoff
+    type: float
+    min: 0.10
+    max: 2.00
+    default: 1.00
+  - name: global_swap_area_weight
+    stage: improve_global_swap
+    flag: -area_weight
+    type: float
+    min: 0.00
+    max: 2.00
+    default: 1.00
+  - name: global_swap_pin_weight
+    stage: improve_global_swap
+    flag: -pin_weight
+    type: float
+    min: 0.00
+    max: 2.00
+    default: 1.00
+  - name: global_swap_sampling_moves
+    stage: improve_global_swap
+    flag: -sampling_moves
+    type: int
+    min: 50
+    max: 500
+    default: 100
+  - name: global_swap_normalization_interval
+    stage: improve_global_swap
+    flag: -normalization_interval
+    type: int
+    min: 10
+    max: 200
+    default: 50

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "source": "paper/OpenROAD_Evolve.pdf, Table 6",
+  "evidence_kind": "paper_transcription_only",
+  "title": "Pattern-level hard cut-row repair evidence",
+  "rows": [
+    {"case": "Ariane133 N45", "pattern": "center-8um", "fixed_diamond": "fail", "fixed_negotiation": "pass", "reviewdse_status": "pass", "reviewdse_runtime_seconds": 42.2, "note": "beats legal N by 1.03%, 18.9x"},
+    {"case": "Ariane133 N45", "pattern": "center-9um", "fixed_diamond": "fail", "fixed_negotiation": "fail", "reviewdse_status": "pass", "reviewdse_runtime_seconds": 51.6, "note": "strict repair; no fixed legal reference"},
+    {"case": "Ariane133 N45", "pattern": "center-10um", "fixed_diamond": "fail", "fixed_negotiation": "timeout", "reviewdse_status": "pass", "reviewdse_runtime_seconds": 59.6, "note": "strict repair; N reaches timeout"},
+    {"case": "SWERV dense N45", "pattern": "center-5.25um", "fixed_diamond": "pass", "fixed_negotiation": "fail", "reviewdse_status": "pass", "reviewdse_runtime_seconds": 48.6, "note": "beats legal fixed reference by 3.69%, 3.4x"},
+    {"case": "SWERV dense N45", "pattern": "center-5.5um", "fixed_diamond": "fail", "fixed_negotiation": "fail", "reviewdse_status": "pass", "reviewdse_runtime_seconds": 50.8, "note": "strict repair; no fixed legal reference"},
+    {"case": "SWERV dense N45", "pattern": "center-6um", "fixed_diamond": "fail", "fixed_negotiation": "fail", "reviewdse_status": "pass", "reviewdse_runtime_seconds": 51.7, "note": "strict repair; no fixed legal reference"},
+    {"case": "BPQUAD", "pattern": "center-5um", "fixed_diamond": "fail", "fixed_negotiation": "timeout", "reviewdse_status": "pass", "reviewdse_runtime_seconds": 563.6, "note": "D fails; N reaches 7200s cap"},
+    {"case": "BPQUAD", "pattern": "center-6um", "fixed_diamond": "fail", "fixed_negotiation": "timeout", "reviewdse_status": "pass", "reviewdse_runtime_seconds": 799.4, "note": "D fails; N reaches 7200s cap"},
+    {"case": "BPQUAD", "pattern": "center-8um", "fixed_diamond": "fail", "fixed_negotiation": "timeout", "reviewdse_status": "pass", "reviewdse_runtime_seconds": 1085.0, "note": "D fails; N reaches 7200s cap"}
+  ],
+  "raw_evidence_in_artifact": true,
+  "evidence_artifact": "artifacts/03-table6-cutrow"
+}

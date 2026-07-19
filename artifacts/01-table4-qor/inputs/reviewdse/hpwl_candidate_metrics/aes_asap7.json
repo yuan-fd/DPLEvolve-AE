@@ -1,0 +1,63 @@
+{
+  "canonical": {
+    "avg_displacement_micron": 0.4251470545190369,
+    "final_hpwl_micron": 41399.7,
+    "hpwl_before_micron": 41809.8,
+    "hpwl_delta_micron": -410.1000000000058,
+    "hpwl_delta_percent": -0.9808705136116551,
+    "legality": "clean",
+    "max_displacement_micron": 14.408074992864245,
+    "runtime_seconds": 10.084
+  },
+  "case_report_dir": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_04_aes_asap7",
+  "commands": {
+    "improve_command": "improve_placement_evolve",
+    "optimize_command": "optimize_mirroring_evolve",
+    "place_command": "detailed_placement_evolve -report_file_name <ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_04_aes_asap7/detailed_placement_report.json",
+    "stage_sequence": "detailed_placement_evolve,improve_placement_evolve,optimize_mirroring_evolve"
+  },
+  "engine": "evolve_default",
+  "headline_vs_openroad_default": {
+    "delta_hpwl_micron": -808.1000000000058,
+    "delta_hpwl_percent": -1.9145750311553924,
+    "hpwl_reduction_percent": 1.9145750311553924,
+    "reference_final_hpwl_micron": 42207.8,
+    "reference_line": "openroad_dpl_flow",
+    "reference_metrics_json": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/aes/place_batch_20260421_220319/dpl_evolve_baseline/exp8_aes_asap7_4x10_g55t_g54s_xhigh_2x_20260508_baseline_probe_openroad_dpl_flow/metrics.json",
+    "reference_runtime_seconds": 5.27,
+    "runtime_ratio": 1.913472485768501,
+    "status": "ok"
+  },
+  "legalize_exit_status": 0,
+  "legalize_summary_status": "ok",
+  "legalize_timeout_seconds": 11,
+  "legalizer_mode": "evolve_default",
+  "line": "evolve_default",
+  "log_counter_lines": [
+    "[INFO DPL-0911] Exact source-edge pass summary: ranked_source_edge_cells=11483, selected_source_edge_cells=4134, focused_node_seeds=0, hot_segment_seeds=0, accepted_hot_seeds=0, cells=4134, proposals=28497, assignment_bundles=26633, assignment_solves=26633, assignment_candidates=13712, assignment_exact_scored=7701, assignment_accepts=867, assignment_delta=171859.00, exact_scored=18466, accepts=1625, accepted_delta=427766.00, accepted_moves=1086, accepted_swaps=539, focus_segments_added=253, replay_failures=0, sticky_nodes=2130, fragile_nodes=922, fragility_rejects=121, supported_row_changes=983, unsupported_row_changes=176, bins sticky/balanced/fragile=875/281/469, fragile_override_accepts=365, extreme_fragile_rejects=99, quota_fragile_rejects=53, fragile_override_quota=172, quality_adjustment=34701.97, runtime_ms=325, hpwl_change=427766.00",
+    "[INFO DPL-0911] Exact source-edge pass summary: ranked_source_edge_cells=11308, selected_source_edge_cells=4134, focused_node_seeds=2431, hot_segment_seeds=4134, accepted_hot_seeds=4134, cells=4134, proposals=28441, assignment_bundles=31799, assignment_solves=31799, assignment_candidates=16252, assignment_exact_scored=8064, assignment_accepts=710, assignment_delta=91586.00, exact_scored=16876, accepts=1213, accepted_delta=213317.00, accepted_moves=871, accepted_swaps=342, focus_segments_added=0, replay_failures=0, sticky_nodes=1899, fragile_nodes=353, fragility_rejects=18, supported_row_changes=785, unsupported_row_changes=0, bins sticky/balanced/fragile=865/221/127, fragile_override_accepts=127, extreme_fragile_rejects=18, quota_fragile_rejects=0, fragile_override_quota=172, quality_adjustment=41666.02, runtime_ms=329, hpwl_change=213317.00"
+  ],
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_04_aes_asap7/metrics.json",
+  "paths": {
+    "check_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_04_aes_asap7/check_placement_report.json",
+    "legalize_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_04_aes_asap7/legalize_summary.json",
+    "log": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/logs/asap7/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_04_aes_asap7/dpl_evolve_evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_04_aes_asap7_legalize.log",
+    "metrics_json": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_04_aes_asap7/metrics.json",
+    "metrics_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_04_aes_asap7/3_detailed_place.rpt",
+    "post_metrics_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/aes/place_batch_20260421_220319/dpl_evolve_baseline/evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_04_aes_asap7/post_metrics_summary.json"
+  },
+  "run_tag": "evolve_4case_aes_swerv_framework_4x10_t55_s54_pair2_restart_20260523_112047_place_batch_20260421_220319_aes_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_04_aes_asap7",
+  "stages": {
+    "after_improve_micron": 42117.1,
+    "delta_final_micron": -410.1000000000058,
+    "delta_final_percent": -0.9808705136116551,
+    "delta_improve_micron": -1406.5999999999985,
+    "delta_improve_percent": -3.364283014986913,
+    "delta_legalization_micron": 1713.8999999999942,
+    "delta_legalization_percent": 4.099278159665901,
+    "final_micron": 41399.7,
+    "global_micron": 41809.8,
+    "legalized_micron": 43523.7
+  },
+  "status": "ok"
+}

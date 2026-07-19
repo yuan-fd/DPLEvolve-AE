@@ -1,0 +1,62 @@
+{
+  "canonical": {
+    "avg_displacement_micron": 0.3538194188398794,
+    "final_hpwl_micron": 133313.0,
+    "hpwl_before_micron": 131966.8,
+    "hpwl_delta_micron": 1346.2000000000116,
+    "hpwl_delta_percent": 1.0201050567263976,
+    "legality": "clean",
+    "max_displacement_micron": 33.32558538120524,
+    "runtime_seconds": 25.557
+  },
+  "case_report_dir": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_03_student_01_jpeg_asap7",
+  "commands": {
+    "improve_command": "improve_placement_evolve",
+    "optimize_command": "optimize_mirroring_evolve",
+    "place_command": "detailed_placement_evolve -report_file_name <ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_03_student_01_jpeg_asap7/detailed_placement_report.json",
+    "stage_sequence": "detailed_placement_evolve,improve_placement_evolve,optimize_mirroring_evolve"
+  },
+  "engine": "evolve_default",
+  "legalize_exit_status": 0,
+  "legalize_summary_status": "ok",
+  "legalize_timeout_seconds": 51,
+  "legalizer_mode": "evolve_default",
+  "line": "evolve_default",
+  "log_counter_lines": [
+    "[INFO DPL-1220] Running DPL-Evolve pipeline: LEGALM guidance, complete target handoff, LEGALM legalization.",
+    "[INFO DPL-1227] LEGALM row escape policy low-residual 1 (residual 0 sites / 0 bins, limits 29 / 22), target radius 1, budget 4994 used 0 (rejects 0, pressure overflows 0), target accepts 59935 + 0, partition escapes 0, HPWL escapes 0, tail rejects 0, threshold rejects 0.",
+    "[INFO DPL-1239] LEGALM assignment HPWL projection enabled 0 (low-residual guided 0), terms 0, sites 0 (shadows 0), accepted 0, exact-target 59543, target deviation avg row/site 0.006/0.026 max row/site 3 / 17.",
+    "[INFO DPL-1230] LEGALM low-residual exact HPWL refinement enabled 0, frontier 0, attempted 0, moved 0 (row moves 0), evals 0, accepted free/swap 0 / 0, swaps eval 0, legal/static/tail rejects 0/0/0, exact HPWL gain 0.00 sites, displacement gain 0 sites.",
+    "[INFO DPL-1231] LEGALM low-residual refinement pruning before-cap 0, final 0, pruned no-bbox/low-density 0 / 0, no-bbox candidate skips 0, fast delta calls 0, exact calls avoided 0, full net scans 0.",
+    "[INFO DPL-1232] LEGALM low-residual chain compaction candidates 0, accepted 0 (cells 0), legal/static/tail/no-bbox rejects 0/0/0/0, HPWL gain 0.00 sites, displacement gain 0 sites, frontier regions skipped 0, fast delta calls 0, exact calls avoided 0, full net scans 0.",
+    "[INFO DPL-1240] LEGALM low-residual current-net anchors raw terms 0, active terms 0, prefilter rejects 0, target rejects 0, safe alternates 0, candidates 0, scored 0, moves 0, HPWL gain 0.00 sites, displacement gain 0 sites.",
+    "[INFO DPL-1241] LEGALM low-residual target correction frontier 0, candidates 0 (nearby 0, self-overlap 0), scored 0, moves 0 (free/swap 0 / 0), potential eval/skip 0 / 0, rejects prefilter/potential/exact-cap/legal/static/disp/hpwl 0/0/0/0/0/0/0, HPWL gain 0.00 sites, displacement gain 0 sites, target gain 0 sites.",
+    "[INFO DPL-1242] LEGALM low-residual target release frontier 0, blockers 0, old-slot/neighbor probes 0 / 0, candidates 0, scored 0, moves 0, rejects multi/exact-cap/legal/static/disp/hpwl 0/0/0/0/0/0, exact avoided/full-net scans 0 / 0, HPWL gain 0.00 sites, displacement gain 0 sites, target gain 0 sites.",
+    "[INFO DPL-1233] LEGALM high-pressure tail refinement enabled 0, frontier 0/0 attempted 0, moved 0 (cells 0, interval/swap/chain 0 / 0 / 0), candidates interval/swap/chain 0 / 0 / 0, rejects legal/static/hpwl/disp/tail 0/0/0/0/0, exact HPWL gain/loss 0.00/0.00 sites, displacement gain 0 sites, no-bbox accepts 0, fast delta calls 0, exact calls avoided 0, full net scans 0.",
+    "[INFO DPL-1214] LEGALM full legalization placed 59935 / 59935 cells self-legally (guided 59935, row escapes 0, failures 0, stage3 moved 397, stage3 row moves 226, stage3 evals 98873012).",
+    "[INFO DPL-0931] Global swap handoff captured 267 touched segments for downstream reorder."
+  ],
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_03_student_01_jpeg_asap7/metrics.json",
+  "paths": {
+    "check_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_03_student_01_jpeg_asap7/check_placement_report.json",
+    "legalize_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_03_student_01_jpeg_asap7/legalize_summary.json",
+    "log": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/logs/asap7/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_03_student_01_jpeg_asap7/dpl_evolve_rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_03_student_01_jpeg_asap7_legalize.log",
+    "metrics_json": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_03_student_01_jpeg_asap7/metrics.json",
+    "metrics_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_03_student_01_jpeg_asap7/3_detailed_place.rpt",
+    "post_metrics_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/jpeg/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_03_student_01_jpeg_asap7/post_metrics_summary.json"
+  },
+  "run_tag": "rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_jpeg_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_03_student_01_jpeg_asap7",
+  "stages": {
+    "after_improve_micron": 133591.6,
+    "delta_final_micron": 1346.2000000000116,
+    "delta_final_percent": 1.0201050567263976,
+    "delta_improve_micron": -8882.199999999983,
+    "delta_improve_percent": -6.730632249929515,
+    "delta_legalization_micron": 10507.0,
+    "delta_legalization_percent": 7.961851011011861,
+    "final_micron": 133313.0,
+    "global_micron": 131966.8,
+    "legalized_micron": 142473.8
+  },
+  "status": "ok"
+}

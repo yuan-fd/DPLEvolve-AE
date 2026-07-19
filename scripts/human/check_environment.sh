@@ -10,11 +10,11 @@ AE_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 export AE_ROOT
 
 # shellcheck source=/dev/null
-source "${AE_ROOT}/scripts/lib/env_vars.sh"
+source "${AE_ROOT}/scripts/shared/env_vars.sh"
 dpl_ae_resolve_env
 
 # shellcheck source=/dev/null
-source "${AE_ROOT}/scripts/lib/utils.sh"
+source "${AE_ROOT}/scripts/shared/utils.sh"
 
 echo "=============================================="
 echo " DPLEvolve Artifact Evaluation — Environment"
@@ -119,7 +119,6 @@ echo ""
 echo "--- Shared Library Resolution ---"
 if [[ -x "${OR_BIN}" ]]; then
   if command -v ldd >/dev/null 2>&1; then
-    local missing
     missing="$(ldd "${OR_BIN}" 2>&1 | grep 'not found' || true)"
     if [[ -n "${missing}" ]]; then
       dpl_ae_warn "Missing shared libraries:"

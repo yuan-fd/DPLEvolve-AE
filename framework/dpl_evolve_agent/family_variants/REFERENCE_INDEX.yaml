@@ -1,0 +1,61 @@
+schema_version: 1
+purpose: >
+  Compact reference index for the constrained detailed_placement_evolve
+  framework. This replaces the previous family-tree routing index.
+
+canonical_references:
+  - id: openroad_diamond
+    role: openroad_dpl_flow_baseline_component_and_local_search_donor
+    path: family_variants/openroad_diamond
+    evidence_level: measured_observation
+    use_for:
+      - diamond_search
+      - placement_drc
+      - baseline_component
+      - local_search_donor
+
+  - id: openroad_negotiation_nblg
+    role: repair_donor
+    path: family_variants/openroad_negotiation_nblg
+    evidence_level: reference_donor
+    use_for:
+      - overflow_repair
+      - history_cost
+      - stuck_cell_recovery
+      - safe_threading_notes
+      - two_pass_frontier_design
+      - candidate_telemetry
+    mechanism_deltas:
+      - path: family_variants/openroad_negotiation_nblg/mechanism_deltas/parallel_frontier.diff
+        status: archived_delta_reference
+        apply_policy: port_mechanism_not_direct_patch
+
+  - id: legalm_guidance
+    role: legalm_style_framework_reference
+    path: family_variants/legalm_guidance
+    artifact_kind: source_snapshot_reference
+    evidence_level: measured_observation
+    apply_policy: reference_only_port_or_replace_bounded_mechanisms_do_not_promote_without_final_strict_win
+    use_for:
+      - staged_cpu_guidance_implementation
+      - alm_bgd_inspired_repair
+      - stage3_no_overflow_refinement
+      - telemetry_reference
+    quality_guard: >
+      Legal, paper-faithful, or fast LEGALM-style runs are donor evidence until
+      the complete strict flow beats the active baseline and best-so-far
+      evolved artifact.
+
+  - id: dreamplace_abacus
+    role: row_assignment_reference
+    path: family_variants/dreamplace_abacus
+    evidence_level: reference_donor
+    use_for:
+      - abacus_cluster_assignment
+      - row_compaction
+      - displacement_objective
+
+default_agent_rule: >
+  Read this index and at most one canonical donor before patching.
+  Treat donor entries as mechanisms to inspect and port, not as proof that the
+  corresponding full algorithm is already optimal for the active case.

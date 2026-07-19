@@ -1,0 +1,16 @@
+diff --git a/flow/Makefile b/flow/Makefile
+index 686901bb3..dbb4692d9 100644
+--- a/flow/Makefile
++++ b/flow/Makefile
+@@ -840,7 +840,9 @@
+ .phony: run
+ run:
+ 	@mkdir -p $(RESULTS_DIR) $(LOG_DIR) $(REPORTS_DIR) $(OBJECTS_DIR)
+-	($(OPENROAD_CMD) -no_splash $(if $(filter %.py,$(RUN_SCRIPT)),-python) $(RUN_SCRIPT) 2>&1 | tee $(abspath $(LOG_DIR)/$(RUN_LOG_NAME_STEM).log))
++	$(RUN_CMD) --log $(abspath $(LOG_DIR)/$(RUN_LOG_NAME_STEM).log) --tee -- \
++		$(OPENROAD_CMD) -no_splash $(if $(filter %.py,$(RUN_SCRIPT)),-python) $(RUN_OPENROAD_ARGS) \
++		$(RUN_SCRIPT) $(RUN_SCRIPT_ARGS)
+ 
+ export RUN_YOSYS_ARGS ?= -c $(SCRIPTS_DIR)/yosys_keep.tcl
+ .phony: run-yosys
+ run-yosys:

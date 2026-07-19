@@ -1,6 +1,6 @@
 {
   "title": "DPLEvolve: Protected White-Box DSE for Open-Source EDA — Artifact Evaluation",
-  "description": "Artifact Evaluation repository for the MLCAD 2026 short paper: 'From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA'. Provides automated environment setup, version-pinned builds, baseline evaluation scripts, and configuration files for reproducing the ReviewDSE framework's key results. The minimal validation path runs in under 40 minutes without LLM API calls; full reproduction requires Claude API access.",
+  "description": "Artifact Evaluation repository for the MLCAD 2026 short paper: 'From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA'. Provides normalized Table 4 BO trial records, selected-candidate records for the two ReviewDSE columns, compact archived summaries for Tables 5 and 6, 18 integrity-checked ReviewDSE source programs, and a pinned one-case OpenROAD smoke flow. The nine paper-time Table 4 ODB inputs are not included.",
   "creators": [
     {
       "name": "DPLEvolve Contributors"
@@ -24,5 +24,5 @@
     }
   ],
   "language": "eng",
-  "notes": "This artifact requires the sibling repositories dpl_evolve_agent/ and OpenROAD-flow-scripts/ at the exact commits recorded in provenance/source-commits.json. The full LLM-powered DSE pipeline consumes ~2.15B tokens per design and requires Claude API credentials."
+  "notes": "A clean OpenROAD-flow-scripts workspace can be prepared with make bootstrap at the revisions recorded in provenance/source-commits.json. The paper run used a Teacher and four Student agents for 10 review iterations. See docs/claims-to-artifacts.md for the exact reproduction limits. Replace the placeholder creator with the paper's ordered author list before deposit."
 }

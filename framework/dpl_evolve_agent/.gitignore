@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+*.pyc
+env.sh
+.dpl_evolve_state/
+.runtime_aliases/
+.venv_raytune/
+local_backups/
+family_ideas/
+variant_ideas/
+# local-only checkpoint store
+checkpoints/
+knowledge/packets/current_run_packet.md
+knowledge/packets/current_run_packet.json
+knowledge/reference/papers/pdf_cache/

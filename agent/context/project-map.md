@@ -1,130 +1,39 @@
-# Project Map
+# Project map
 
-Machine-readable file map and dependency graph for the DPLEvolve AE repository
-and its sibling projects.
-
----
-
-## Repository Topology
-
-```
-projects/                            ← Working root
-├── DPLEvolve-AE/                    ← THIS REPO — artifact evaluation
-│   ├── scripts/                     ← All executable entry points
-│   │   ├── human/                   ← Reviewer-facing (thin wrappers)
-│   │   ├── agent/                   ← Agent-facing (thin wrappers)
-│   │   ├── internal/                ← Shared implementation
-│   │   └── lib/                     ← Utility functions
-│   ├── configs/                     ← Experiment configuration (YAML)
-│   ├── docs/                        ← Human documentation
-│   ├── agent/                       ← Agent documentation & constraints
-│   ├── provenance/                  ← Version locks & checksums
-│   ├── results/                     ← Reference + reproduced results
-│   └── env/                         ← Python reqs, modules, version locks
-│
-├── dpl_evolve_agent/                ← CORE FRAMEWORK — READ-ONLY for AE
-│   ├── baseline/                    ← Baseline runner (used by smoke/main)
-│   ├── scripts/
-│   │   ├── ae/                      ← AE scripts (check env, setup, smoke)
-│   │   ├── workspace/               ← Build scripts (OpenROAD core)
-│   │   └── codex_exec/              ← LLM execution runner
-│   ├── configs/                     ← DSE experiment configs
-│   ├── patches/                     ← OpenROAD source patches
-│   ├── problems/                    ← Benchmark case definitions
-│   ├── experiments/                 ← Experiment launchers
-│   ├── metadata/                    ← Reproduction lock file
-│   └── agent/                       ← Teacher/Student agent definitions
-│
-├── OpenROAD-flow-scripts/           ← ORFS WORKSPACE — BUILD TARGET
-│   ├── flow/                        ← ORFS flow (Makefile-based)
-│   │   ├── designs/                 ← Platform + design configs
-│   │   ├── results/                 ← Synthesis & placement outputs
-│   │   └── reports/                 ← Metric reports
-│   └── tools/
-│       ├── OpenROAD/                ← OpenROAD source (patched by dpl_evolve)
-│       └── yosys/                   ← Yosys submodule (pinned commit)
-│
-└── dpl_evolve_state/                ← BUILD & RUN ARTIFACTS — GENERATED
-    ├── yosys/8449dd470/             ← Pinned Yosys build
-    ├── openroad_core/d5ff63a/       ← Pinned OpenROAD build
-    ├── seed_sources/                ← DPL-Evolve source variants
-    ├── smoke/                       ← Smoke test checkpoints
-    ├── ae/environment.sh            ← Machine-local env (generated)
-    └── packets/                     ← Experiment packet outputs
+```text
+artifacts/
+  01-table4-qor/          Table 4 records and 18 selected source programs
+  02-table5-composability/ Table 5 compact counterexamples
+  03-table6-cutrow/       Table 6 compact cut-row outcomes
+  04-aes-smoke/           Fresh pinned AES EDA flow
+framework/
+  dpl_evolve_agent/       Bundled research implementation
+scripts/
+  human/                  Environment preparation for reviewers
+  agent/                  Stable machine dispatcher and validation
+  shared/                 Cross-path runtime utilities
+  maintenance/            Provenance, token, and release tooling
+docs/                      Human-facing guides
+agent/                     Machine-facing instructions and schemas
+schemas/                   Public experiment-config schema
+provenance/                Source locks and integrity records
+paper/                     Reviewed paper
 ```
 
----
+## Entry points
 
-## File Dependency Graph
-
-```
-provenance/source-commits.json ─────────────────────┐
-provenance/original-artifact-checksums.txt ─────────┤
-env/versions.lock ──────────────────────────────────┤
-                                                     ▼
-scripts/lib/env_vars.sh ──→ scripts/internal/runtime_env.sh
-                                     │
-                                     ▼
-scripts/human/setup.sh ──→ scripts/internal/ (build logic)
-scripts/human/smoke_test.sh ──→ dpl_evolve_agent/baseline/run_baseline.sh
-                              ──→ dpl_evolve_agent/scripts/ae/validate_aes_smoke.py
-scripts/human/reproduce_baseline.sh ──→ dpl_evolve_agent/baseline/run_baseline_suite.sh
-scripts/human/reproduce_main.sh ──→ dpl_evolve_agent/experiments/launchers/
-                                 ──→ dpl_evolve_agent/scripts/codex_exec/
-```
-
----
-
-## Key Files (by function)
-
-### Environment & Setup
-| File | Role |
+| Intent | Entry point |
 |---|---|
-| `scripts/internal/runtime_env.sh` | Bootstrap environment variables |
-| `scripts/lib/env_vars.sh` | Resolve all path variables |
-| `scripts/lib/utils.sh` | Shared bash utility functions |
-| `scripts/human/setup.sh` | Automated environment build |
-| `scripts/human/check_environment.sh` | Read-only environment validation |
+| All packaged evidence | `make evidence` |
+| One supported artifact | `scripts/agent/run_artifact.sh --artifact ID` |
+| Fresh AES EDA run | artifact ID `smoke` plus `--run-smoke` |
+| Environment inspection | `scripts/agent/inspect_environment.sh` |
+| Repository validation | `make test` |
+| Archive audit | `make zenodo-audit` |
 
-### Experiments
-| File | Role |
-|---|---|
-| `configs/smoke/aes_nangate45.yaml` | Smoke test config |
-| `configs/paper/baseline_9case.yaml` | Baseline suite config |
-| `configs/paper/evolve_search.yaml` | ReviewDSE Level 2 config |
-| `dpl_evolve_agent/baseline/run_baseline.sh` | Single baseline line |
-| `dpl_evolve_agent/baseline/run_baseline_suite.sh` | Three-line baseline suite |
-| `dpl_evolve_agent/scripts/codex_exec/runner.py` | LLM DSE runner |
+## Dependency direction
 
-### Validation
-| File | Role |
-|---|---|
-| `dpl_evolve_agent/scripts/ae/validate_aes_smoke.py` | AES smoke validator |
-| `dpl_evolve_agent/scripts/ae/check_environment.py` | Python env checker |
-| `dpl_evolve_agent/baseline/collect_metrics.py` | Metric extraction |
-
-### Reference Data
-| File | Role |
-|---|---|
-| `provenance/source-commits.json` | Pinned source revisions |
-| `provenance/original-artifact-checksums.txt` | Binary and ODB checksums |
-| `dpl_evolve_agent/metadata/ae_reproduction_lock.json` | Complete lock file |
-| `results/reference/` | Paper's published results |
-
----
-
-## Immutable Zones
-
-These directories MUST NOT be modified by agent scripts:
-- `provenance/source-commits.json`
-- `provenance/original-artifact-checksums.txt`
-- `results/reference/`
-- `dpl_evolve_agent/` (except via explicit patch-apply commands)
-- `OpenROAD-flow-scripts/tools/OpenROAD/` (except via workspace prepare)
-- `OpenROAD-flow-scripts/tools/yosys/` (except via setup)
-
-These directories are GENERATED and must not be committed:
-- `results/reproduced/`
-- `results/tables/`
-- `dpl_evolve_state/`
-- `provenance/current-machine.json`
+Artifact evidence scripts may read only their own bundle and Python's standard
+library. The smoke artifact may call `scripts/shared/`, the bundled framework,
+and the sibling ORFS workspace. Human and agent wrappers may call artifact
+entry points; artifact verifiers must not call human or agent wrappers.

@@ -1,0 +1,10 @@
+case	pattern	diamond_status	negotiation_status	diamond_runtime_seconds	negotiation_runtime_seconds	diamond_check	negotiation_check
+Ariane133 N45	center-8um	fail	pass	179.250	797.802	DPL-0033	clean
+Ariane133 N45	center-9um	fail	fail	384.386		DPL-0033	missing
+Ariane133 N45	center-10um	fail	timeout	551.373	600.000	DPL-0033	timeout
+SWERV dense N45	center-5.25um	pass	fail	163.689	2118.000	clean	check_placement_failed
+SWERV dense N45	center-5.5um	fail	fail	187.222	2184.947	DPL-0033	DPL-0033
+SWERV dense N45	center-6um	fail	fail	240.149	2509.000	DPL-0033	check_placement_failed
+BPQUAD	center-5um	fail	timeout	3545.597	7200.000	DPL-0033	timeout
+BPQUAD	center-6um	fail	timeout		7200.000	missing	timeout
+BPQUAD	center-8um	fail	timeout		7200.000	missing	timeout

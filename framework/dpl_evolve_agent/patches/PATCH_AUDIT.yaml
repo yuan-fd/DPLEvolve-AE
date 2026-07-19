@@ -1,0 +1,105 @@
+schema_version: 1
+purpose: >
+  Human and agent-facing inventory of tracked patch artifacts.  Files listed
+  here are the only tracked patch/delta artifacts that should be considered in
+  normal work.  Local runtime archives are not repo dependencies and are not
+  default context.
+
+prepare_patches:
+  - path: patches/openroad_dpl_evolve_base.patch
+    status: active_prepare_patch
+    meaning: >
+      Bootstraps the clean dpl_evolve source and command registration onto the
+      recorded OpenROAD anchor.
+      Target-side README documentation is intentionally excluded from this
+      patch; the control repo README/AGENTS/knowledge files are the canonical
+      human and agent-facing instructions.  prepare_workspace.sh snapshots
+      this state as seed_sources/diamond_dpl_evolve before applying the
+      framework patch.
+    apply_target: clean OpenROAD anchor from metadata/anchors.json
+
+  - path: patches/openroad_dpl_evolve_framework.patch
+    status: active_prepare_patch
+    meaning: >
+      Adds the constrained EvolveLegalizer top-level framework, student-owned
+      algorithm hook, telemetry, LEGALM-style guidance/legalization, and
+      Abacus-enabled negotiation repair on top of the clean dpl_evolve base.
+      The framework also carries compact LEGALM frontier state into bounded
+      DPO handoff consumption so Students can optimize producer/consumer
+      composition from a coherent default source.
+      Baseline collection is handled by the control repo, and child agents
+      modify a private variant implementation after reading source references
+      and measured case evidence.  prepare_workspace.sh snapshots this state
+      as seed_sources/framework_dpl_evolve.
+    apply_target: prepared OpenROAD after openroad_dpl_evolve_base.patch
+    verification: framework_smoke_passed
+
+  - path: patches/openroad_dpl_evolve_default_negotiation_seed.patch
+    status: active_seed_materialization_patch
+    meaning: >
+      Small framework-delta patch used by prepare_workspace.sh to materialize
+      the default_negotiation prepared source-start seed under
+      $DPL_EVOLVE_STATE_ROOT/seed_sources/default_negotiation_dpl_evolve.
+      It converts the framework pipeline into a negotiation-primary closure
+      seed.  This is a source basin for Teacher/Student initialization, not a
+      manual Student patch command or a target-level promotion by itself.
+    apply_target: prepared dpl_evolve framework seed source
+    verification: materialized_by_prepare_workspace
+
+  - path: patches/orfs_make_overlay.patch
+    status: active_prepare_patch
+    meaning: >
+      Small ORFS Makefile runner hook used by strict baseline wrappers.
+    apply_target: recorded ORFS anchor from metadata/anchors.json
+
+reference_deltas:
+  - path: family_variants/openroad_negotiation_nblg/mechanism_deltas/parallel_frontier.diff
+    status: archived_delta_reference
+    meaning: >
+      Compact negotiation donor delta for safe threading, two-pass frontier,
+      and candidate telemetry ideas.
+    apply_policy: >
+      Do not apply directly to the current constrained framework.  Port
+      selected mechanisms into the private variant's EvolveLegalizer/student
+      algorithm implementation.
+
+evolved_legalizer_patches:
+  - path: patches/evolved_legalizers/openroad_dpl_evolve_negotiation_iter30_from_clean.patch
+    status: active_evolved_candidate_patch
+    source_commit: tracked_patch
+    source_tag: negotiation_primary_repaired_patch
+    meaning: >
+      Standalone clean-anchor OpenROAD patch preserving the repaired
+      negotiation-primary NBLG/resource-allocation donor line.  LEGALM-style
+      guidance is allowed only as a seed/frontier; full LEGALM legalization is
+      not the successful primary route.
+    apply_target: clean OpenROAD anchor from metadata/anchors.json
+    verification: git_apply_check_ok; 3case_vs_openroad_negotiation_pass
+
+  - path: patches/evolved_legalizers/openroad_dpl_evolve_diamond_iter30_from_clean.patch
+    status: active_evolved_candidate_patch
+    source_commit: c4d758a
+    source_tag: diamond_20iter_001_iter_30
+    meaning: >
+      Standalone clean-anchor OpenROAD patch preserving the final Diamond /
+      local-greedy legalization-only evolve line.
+    apply_target: clean OpenROAD anchor from metadata/anchors.json
+    verification: git_apply_check_ok
+
+  - path: patches/evolved_legalizers/openroad_dpl_evolve_negotiation_iter30_framework_delta.patch
+    status: active_review_delta
+    source_commit: tracked_patch
+    meaning: >
+      Review-sized delta from the prepared dpl_evolve framework to the repaired
+      negotiation-primary line.
+    apply_target: prepared OpenROAD after base and framework patches
+    verification: git_apply_check_ok; 3case_vs_openroad_negotiation_pass
+
+  - path: patches/evolved_legalizers/openroad_dpl_evolve_diamond_iter30_framework_delta.patch
+    status: active_review_delta
+    source_commit: c4d758a
+    meaning: >
+      Review-sized delta from the prepared dpl_evolve framework to the final
+      Diamond / local-greedy line.
+    apply_target: prepared OpenROAD after base and framework patches
+    verification: git_apply_check_ok

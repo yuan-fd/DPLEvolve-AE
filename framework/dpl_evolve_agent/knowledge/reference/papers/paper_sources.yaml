@@ -1,0 +1,232 @@
+schema_version: 2
+purpose: >
+  Curated paper/source handles for dpl_evolve legalization and DPO research.
+  Optional cached PDFs are source-text verification aids only unless a
+  redistribution policy is explicitly checked.  Algorithm pseudocode derived
+  from these sources lives in
+  knowledge/algorithms/*_paper_pseudocode.md and the split cards under
+  knowledge/algorithms/legalization/ and
+  knowledge/algorithms/dpo_refinement/.
+
+papers:
+  - id: openroad_dpl_docs
+    title: "OpenROAD Detailed Placement Documentation"
+    role: "Command and engine context for Diamond Search, NegotiationLegalizer, detailed_placement, improve_placement, and optimize_mirroring."
+    source_url: "https://openroad.readthedocs.io/en/latest/main/src/dpl/README.html"
+    git_policy: "link_only"
+    fetch_policy: "browse_official_docs"
+    notes:
+      - "Use this for OpenROAD DPL command truth."
+      - "Do not confuse with the OpenDP-named committed fence-region reference."
+
+  - id: fence_region_aware_2019
+    title: "Fence-Region-Aware Mixed-Height Standard Cell Legalization"
+    role: "Fence/fragmented-row/mixed-height legalization donor."
+    doi: "https://doi.org/10.1145/3299874.3318012"
+    committed_reference_note: "OpenDP-named committed reference"
+    git_policy: "committed_existing_reference"
+    fetch_policy: "already_in_repo"
+    notes:
+      - "The committed reference name is misleading; content is this GLSVLSI 2019 paper, not the OpenROAD OpenDP engine paper."
+
+  - id: abacus_2008
+    title: "Abacus: Fast Legalization of Standard Cell Circuits with Minimal Movement"
+    role: "Row/cluster legalization and PlaceRow donor."
+    doi: "https://doi.org/10.1145/1353629.1353640"
+    metadata_url: "https://dblp.org/rec/conf/ispd/SpindlerSJ08"
+    git_policy: "do_not_commit_pdf_until_license_checked"
+    fetch_policy: "link_only"
+
+  - id: tetris_2002
+    title: "Tetris-style ordered greedy legalization"
+    role: "Legacy ordered nearest-site legalization baseline closest to Diamond-family local legalization."
+    canonical_lookup:
+      - "Search Hill patent / legacy Tetris legalizer references."
+    git_policy: "link_only"
+    fetch_policy: "source_handle_only"
+
+  - id: history_flow_2010
+    title: "History-Based VLSI Legalization Using Network Flow"
+    role: "Min-cost flow legalization with history/conflict costs."
+    source_url: "https://research.ibm.com/publications/history-based-vlsi-legalization-using-network-flow"
+    git_policy: "link_only"
+    fetch_policy: "publisher_or_author_lookup"
+
+  - id: bonnplacelegal_2013
+    title: "BonnPlace Legalization: Minimizing Movement by Iterative Augmentation"
+    role: "Zone augmentation and movement-minimization donor."
+    canonical_lookup:
+      - "Search exact title in IEEE Xplore, DBLP, or author pages."
+    git_policy: "link_only"
+    fetch_policy: "publisher_or_author_lookup"
+
+  - id: darav_network_flow_2017
+    title: "A Fast, Robust Network Flow-based Standard-Cell Legalization Method for Minimizing Maximum Movement"
+    role: "Network-flow / max-displacement robust legalization donor."
+    source_url: "https://www.ispd.cc/slides/2017/s7_3.pdf"
+    git_policy: "do_not_commit_pdf_until_license_checked"
+    fetch_policy: "optional_source_text_ok"
+
+  - id: jezz_2015
+    title: "Jezz: An Effective Legalization Algorithm for Minimum Displacement"
+    role: "Incremental legalization oracle and row-node data structure donor."
+    canonical_lookup:
+      - "Search exact title; also see VLSI-SoC 2015 incremental timing-driven placement references."
+    git_policy: "link_only"
+    fetch_policy: "publisher_or_author_lookup"
+
+  - id: nblg
+    title: "NBLG: A Robust Legalizer for Mixed-Cell-Height Modern Design"
+    role: "Negotiation-based legalization mechanism reference."
+    canonical_lookup:
+      - "Search exact title in IEEE Xplore or author pages."
+    git_policy: "do_not_commit_pdf_until_license_checked"
+    fetch_policy: "link_or_publisher_lookup"
+
+  - id: legalm_ispd2025
+    title: "LEGALM: Efficient Legalization for Mixed-Cell-Height Circuits with Linearized Augmented Lagrangian Method"
+    role: "ALM legalization, overflow elimination, and zero-overflow refinement reference."
+    source_url: "https://chunyuanzhao.me/pdf/LEGALM.pdf"
+    doi: "https://doi.org/10.1145/3698364.3705356"
+    optional_cache_note: "author-version PDF is personal-use/not-for-redistribution"
+    git_policy: "do_not_commit_pdf"
+    fetch_policy: "optional_source_text_personal_use_opt_in"
+    notes:
+      - "Use algorithm card and pseudocode unless source-text verification is explicitly needed."
+
+  - id: legalm_2_0
+    title: "LEGALM 2.0: A Versatile Augmented Lagrangian Method-Based Methodology for Mixed-Cell-Height Legalization"
+    role: "Follow-up ALM methodology reference."
+    doi: "https://doi.org/10.1109/TCAD.2025.3597526"
+    git_policy: "do_not_commit_pdf_until_license_checked"
+    fetch_policy: "link_or_publisher_lookup"
+
+  - id: double_row_2021
+    title: "A Fast Optimal Double Row Legalization Algorithm"
+    role: "Exact adjacent-row repair subproblem for mixed-height/fixed-order legalization."
+    source_url: "https://www.or.uni-bonn.de/~hougardy/paper/HougardyNeuwohnerSchorr2021.pdf"
+    arxiv: "https://arxiv.org/abs/2101.08561"
+    git_policy: "do_not_commit_pdf_until_license_checked"
+    fetch_policy: "optional_source_text_ok"
+
+  - id: pin_accessible_ripple
+    title: "Pin-Accessible Legalization for Mixed-Cell-Height Circuits / Ripple"
+    role: "Pin-access-aware mixed-cell-height legalization donor."
+    source_url: "https://github.com/cuhk-eda/ripple"
+    canonical_lookup:
+      - "Search exact title and Ripple implementation notes before cloning objective details."
+    git_policy: "link_only"
+    fetch_policy: "source_handle_only"
+
+  - id: constraint_aware_mch_legalization
+    title: "Mixed-cell-height / hybrid-row-height / NIMH legalization with technology and region constraints"
+    role: "Technology, region, voltage-area, hybrid-row-height, implant, and netlist-aware legalization donor family."
+    canonical_lookup:
+      - "Search Mixed-Cell-Height Legalization Considering Technology and Region Constraints."
+      - "Search VAC, NIMH, hybrid-row-height, 3D-Flow, and netlist-aware MCH legalization papers."
+    git_policy: "link_only"
+    fetch_policy: "source_handle_only"
+
+  - id: domocus_parallel
+    title: "Domocus lock-free parallel legalization / improved parallel legalization"
+    role: "Parallel region legalization and deterministic boundary repair donor."
+    canonical_lookup:
+      - "Search Domocus lock-free parallel legalization and improved parallel legalization."
+    git_policy: "link_only"
+    fetch_policy: "source_handle_only"
+
+  - id: dreamplace_2019
+    title: "DREAMPlace: Deep Learning Toolkit-Enabled GPU Acceleration for Modern VLSI Placement"
+    role: "External placement and GPU/global-placement context."
+    source_url: "https://research.nvidia.com/sites/default/files/pubs/2019-06_DREAMPlace%3A-Deep-Learning/54_1_Lin_DREAMPLACE.pdf"
+    ieee_url: "https://ieeexplore.ieee.org/document/9122053"
+    git_policy: "do_not_commit_pdf_by_default"
+    fetch_policy: "optional_source_text_ok"
+
+  - id: fastdp_2005
+    title: "An Efficient and Effective Detailed Placement Algorithm"
+    role: "FastDP global swap, local reorder, and single-segment clustering donor."
+    source_url: "https://home.engineering.iastate.edu/~cnchu/pubs/c30.pdf"
+    doi: "https://doi.org/10.1109/ICCAD.2005.1560039"
+    metadata_url: "https://dblp.org/rec/conf/iccad/PanVC05"
+    git_policy: "do_not_commit_pdf_until_license_checked"
+    fetch_policy: "optional_source_text_ok"
+
+  - id: gpu_dpo_lsmc_2026
+    title: "LSMC Meets GPU Acceleration: Scalable and High-Quality Multi-Row Detailed Placement"
+    role: "DPO reference for MIS/global-swap/reorder kernels and LSMC large-step escape."
+    source_url: "https://vlsicad.ucsd.edu/Publications/Conferences/425/c425.pdf"
+    optional_cache_note: "source URL is fetchable for verification when needed"
+    git_policy: "do_not_commit_pdf_until_license_checked"
+    fetch_policy: "optional_source_text_ok"
+
+  - id: abcdplace_2020
+    title: "ABCDPlace: Accelerated Batch-Based Concurrent Detailed Placement on Multithreaded CPUs and GPUs"
+    role: "Batch-concurrent DPO and parallel candidate scoring donor."
+    source_url: "https://www.jqgu.net/publications/papers/PD_TCAD2020_Gu.pdf"
+    doi: "https://doi.org/10.1109/TCAD.2020.2971531"
+    git_policy: "do_not_commit_pdf_until_license_checked"
+    fetch_policy: "optional_source_text_ok"
+
+  - id: density_aware_dp_2014
+    title: "Density-Aware Detailed Placement with Instant Legalization"
+    role: "Lazy density profit and instant legalization for DPO swaps under displacement/density constraints."
+    doi: "https://doi.org/10.1145/2593069.2593142"
+    metadata_url: "https://scholar.nycu.edu.tw/en/publications/density-aware-detailed-placement-with-instant-legalization"
+    git_policy: "link_only"
+    fetch_policy: "publisher_or_author_lookup"
+
+  - id: hippocrates_2007
+    title: "Hippocrates: First-Do-No-Harm Detailed Placement"
+    role: "Pin-based timing/electrical no-harm constraints for DPO transforms."
+    source_url: "https://www.cerc.utexas.edu/utda/publications/aspdac07_hipp.pdf"
+    doi: "https://doi.org/10.1109/ASPDAC.2007.357976"
+    git_policy: "do_not_commit_pdf_until_license_checked"
+    fetch_policy: "optional_source_text_ok"
+
+  - id: timing_quadratic_2015
+    title: "An Incremental Timing-Driven Flow Using Quadratic Formulation for Detailed Placement"
+    role: "Quadratic target generation plus incremental legalization for timing-driven DPO."
+    doi: "https://doi.org/10.1109/VLSI-SoC.2015.7314382"
+    git_policy: "link_only"
+    fetch_policy: "publisher_or_author_lookup"
+
+  - id: mrdp_2017
+    title: "MrDP: Multiple-Row Detailed Placement of Heterogeneous-Sized Cells for Advanced Nodes"
+    role: "Multi-row detailed placement and heterogeneous-cell DPO reference."
+    source_url: "https://yibolin.com/publications/papers/PLACE_TCAD2017_Lin.pdf"
+    git_policy: "do_not_commit_pdf_until_license_checked"
+    fetch_policy: "optional_source_text_ok"
+
+  - id: pin_access_refinement_2021
+    title: "In-Route Pin Access-Driven Placement Refinement for Improved Detailed Routing Convergence"
+    role: "Pin-access/routability-driven detailed placement refinement reference."
+    source_url: "https://vlsicad.ucsd.edu/Publications/Journals/j135.pdf"
+    doi: "https://doi.org/10.1109/TCAD.2021.3066528"
+    git_policy: "do_not_commit_pdf_until_license_checked"
+    fetch_policy: "optional_source_text_ok"
+
+  - id: dfm_spacing_implant_dp
+    title: "DFM / spacing / implant-aware detailed placement refinement family"
+    role: "MIA-aware MCH detailed placement, DDA/region constraints, spacing-cost-aware DP, and hybrid-row-height DP donor family."
+    canonical_lookup:
+      - "Search Mixed-Cell-Height Detailed Placement Considering Complex Minimum-Implant-Area Constraints."
+      - "Search DDA region-constraint detailed placement and spacing-cost-aware detailed placement."
+    git_policy: "link_only"
+    fetch_policy: "source_handle_only"
+
+  - id: eco_incremental_dp
+    title: "Hybrid ECO Detailed Placement and incremental placement refinement"
+    role: "Incremental ECO/local region placement improvement donor."
+    canonical_lookup:
+      - "Search Hybrid ECO Detailed Placement and incremental detailed placement refinement."
+    git_policy: "link_only"
+    fetch_policy: "source_handle_only"
+
+  - id: macro_prototype_refinement
+    title: "IncreMacro / macro and placement-prototype refinement"
+    role: "Macro shift, cell migration, and existing-placement prototype refinement donor."
+    canonical_lookup:
+      - "Search IncreMacro: Incremental Macro Placement Refinement."
+    git_policy: "link_only"
+    fetch_policy: "source_handle_only"

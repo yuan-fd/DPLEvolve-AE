@@ -1,0 +1,43 @@
+{
+  "fingerprint": "2da3d19ee1bc",
+  "hpwl_delta_percent": -0.09144266269332414,
+  "legalize_exit_status": 0,
+  "metrics": {
+    "gain_hr": 0.09144266269332414,
+    "hpwl_final": 3264851.9,
+    "hpwl_gain_percent": 0.09144266269332414,
+    "hpwl_global": 3364656.6,
+    "hpwl_ref": 3267840.1,
+    "runtime": 36.748,
+    "runtime_deadband_ratio": 1.1,
+    "runtime_penalty_at_2x": 1.0,
+    "runtime_penalty_pp": 0.0,
+    "runtime_ref": 33.953,
+    "score_objective": "min_hpwl_final",
+    "status": "ok"
+  },
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/nangate45/swerv_wrapper/place_batch_20260421_220319/dpl_evolve_baseline/openroad_dpl_hpwl_only_9case_bo_place_batch_20260421_220319_swerv_wrapper_nangate45_trial_1e1e7af4_2da3d19ee1bc/metrics.json",
+  "params": {
+    "global_swap_area_weight": 0.7488728392406266,
+    "global_swap_budget_multipliers": "2.00 1.50 1.20 1.05",
+    "global_swap_congestion_user_weight": 10.714568390226852,
+    "global_swap_normalization_interval": 2262,
+    "global_swap_pin_weight": 1.178470529917557,
+    "global_swap_profiling_excess": 1.6223208438760817,
+    "global_swap_sampling_moves": 353,
+    "global_swap_tradeoff": 0.7857542816763529,
+    "improve_enable_extra_dpl": 1,
+    "improve_max_displacement": 512,
+    "improve_random_seed": 119
+  },
+  "run_tag": "openroad_dpl_hpwl_only_9case_bo_place_batch_20260421_220319_swerv_wrapper_nangate45_trial_1e1e7af4_2da3d19ee1bc",
+  "runtime_ratio": 1.0823196772008363,
+  "score": 3264851.9,
+  "stage_args": {
+    "OPENROAD_DPL_DETAIL_ARGS": "",
+    "OPENROAD_DPL_IMPROVE_ARGS": "-random_seed 119 -max_displacement 512 -enable_extra_dpl 1 -global_swap_args {-tradeoff 0.7857542816763529 -area_weight 0.7488728392406266 -pin_weight 1.178470529917557 -congestion_user_weight 10.714568390226852 -sampling_moves 353 -normalization_interval 2262 -profiling_excess 1.6223208438760817 -budget_multipliers {2.00 1.50 1.20 1.05}}",
+    "OPENROAD_DPL_OPTIMIZE_ARGS": ""
+  },
+  "status": "ok",
+  "trial": "1e1e7af4"
+}

@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reviewdse.local/schemas/mechanism_evidence.schema.json",
+  "title": "Reviewed Mechanism Evidence",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "evidence_id",
+    "level",
+    "scope",
+    "source_reference",
+    "liveness",
+    "metrics",
+    "review_outcome"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "evidence_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "calibration",
+        "target_local"
+      ]
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "legalization",
+        "dpo",
+        "handoff",
+        "mirroring",
+        "workflow",
+        "other"
+      ]
+    },
+    "mechanism_intent": {
+      "type": "string"
+    },
+    "source_reference": {
+      "type": "object",
+      "required": [
+        "kind",
+        "ref"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "patch",
+            "branch",
+            "commit",
+            "source_start",
+            "donor",
+            "artifact"
+          ]
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "anchors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "controls": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "liveness": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "live",
+            "inactive",
+            "unknown"
+          ]
+        },
+        "counters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "number",
+              "integer",
+              "string",
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "log_signals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "case_id": {
+          "type": "string"
+        },
+        "flow_variant": {
+          "type": "string"
+        },
+        "hpwlg": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "hpwllg": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "hpwlip": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "hpwlf": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "runtime_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "legality": {
+          "type": "string"
+        },
+        "metrics_path": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "review_outcome": {
+      "type": "string",
+      "enum": [
+        "parent_promotion",
+        "mechanism_evidence",
+        "repair_lead",
+        "negative_evidence",
+        "candidate_rejection"
+      ]
+    },
+    "compatibility_observations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_test": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

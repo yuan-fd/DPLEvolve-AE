@@ -1,0 +1,51 @@
+{
+  "canonical": {
+    "avg_displacement_micron": 0.3902644150449434,
+    "final_hpwl_micron": 62962.4,
+    "hpwl_before_micron": 62588.2,
+    "hpwl_delta_micron": 374.20000000000437,
+    "hpwl_delta_percent": 0.5978762769979076,
+    "legality": "clean",
+    "max_displacement_micron": 36.30100309908805,
+    "runtime_seconds": 9.011
+  },
+  "case_report_dir": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_asap7",
+  "commands": {
+    "improve_command": "improve_placement_evolve",
+    "optimize_command": "optimize_mirroring_evolve",
+    "place_command": "detailed_placement_evolve -report_file_name <ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_asap7/detailed_placement_report.json",
+    "stage_sequence": "detailed_placement_evolve,improve_placement_evolve,optimize_mirroring_evolve"
+  },
+  "engine": "evolve_default",
+  "legalize_exit_status": 0,
+  "legalize_summary_status": "ok",
+  "legalize_timeout_seconds": 16,
+  "legalizer_mode": "evolve_default",
+  "line": "evolve_default",
+  "log_counter_lines": [
+    "[INFO DPL-1120] Source-edge producer shaping: hot_cells=306 guided_cells=306 guided_candidates=8261 reranked=176 est_bonus=29.79"
+  ],
+  "metrics_path": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_asap7/metrics.json",
+  "paths": {
+    "check_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_asap7/check_placement_report.json",
+    "legalize_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_asap7/legalize_summary.json",
+    "log": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/logs/asap7/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_asap7/dpl_evolve_rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_asap7_legalize.log",
+    "metrics_json": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_asap7/metrics.json",
+    "metrics_report": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_asap7/3_detailed_place.rpt",
+    "post_metrics_summary": "<ORIGINAL_WORKSPACE>/OpenROAD-flow-scripts/flow/reports/asap7/ibex/place_batch_20260421_220319/dpl_evolve_baseline/rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_asap7/post_metrics_summary.json"
+  },
+  "run_tag": "rerun_9case_width4x10_parallel3_20260520_061153_place_batch_20260421_220319_ibex_asap7_4x10_tgpt55_xhigh_sgpt54_xhigh_iter_10_student_02_ibex_asap7",
+  "stages": {
+    "after_improve_micron": 63098.3,
+    "delta_final_micron": 374.20000000000437,
+    "delta_final_percent": 0.5978762769979076,
+    "delta_improve_micron": -2800.300000000003,
+    "delta_improve_percent": -4.474166056860563,
+    "delta_legalization_micron": 3310.4000000000087,
+    "delta_legalization_percent": 5.289175914948839,
+    "final_micron": 62962.4,
+    "global_micron": 62588.2,
+    "legalized_micron": 65898.6
+  },
+  "status": "ok"
+}

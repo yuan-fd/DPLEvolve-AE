@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "source_root": "<ORIGINAL_WORKSPACE>/cut_rows/experiments/article_cutrow_fail_search_20260509",
+  "files": [
+    {"path": "summaries/search_summary.tsv", "sha256": "e3f7b10656a86d2f56c934813363e090ab445cf2349dc8f0ef70e3c04ebef6a5"},
+    {"path": "summaries/separator_cases.tsv", "sha256": "bb2fb0afc5a3a75cdcaac0f596875302a46859b569543e58a32bad6d468c939c"},
+    {"path": "candidate_runs/evolved_negotiation_selected/results.tsv", "sha256": "87d1c5d3e2bc78691c4e28cfaa3668047025aa5d942e5e020fb810bd5a93b1ba"},
+    {"path": "candidate_runs/evolved_negotiation_default_fail_probe8/results.tsv", "sha256": "9b3a712e82359e9b1f4a1c64eb5dd9b05014688641d041edbf69366da5ea64a4"},
+    {"path": "candidate_runs/evolved_negotiation_bpquad_center_probe/results.tsv", "sha256": "fdd9f2c3bf0af07ebcee739974621734ce80081b8058e2c14306646a4bc9110d"}
+  ],
+  "extraction": "Only the nine Table 6 case/pattern rows were copied into fixed_routes.tsv and reviewdse.tsv."
+}
