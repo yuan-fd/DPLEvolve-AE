@@ -148,7 +148,7 @@ def parse_baseline_packet(state_root: Path, round_id: str) -> stage_metrics.Stag
     values: dict[str, str] = {}
     try:
         lines = packets[-1].read_text(encoding="utf-8", errors="replace").splitlines()
-    except Exception:
+    except Exception:  # Broad except acceptable for reporting scripts
         return None
     for raw_line in lines:
         line = raw_line.strip()
@@ -171,7 +171,7 @@ def parse_baseline_packet(state_root: Path, round_id: str) -> stage_metrics.Stag
         try:
             payload = json.loads(metrics_path.read_text(encoding="utf-8"))
             runtime_seconds = as_float(payload.get("runtime_seconds"))
-        except Exception:
+        except Exception:  # Broad except acceptable for reporting scripts
             runtime_seconds = None
     return stage_metrics.StageRow(
         round_id=round_id,
@@ -219,7 +219,7 @@ def load_candidates(state_root: Path, round_id: str) -> list[CandidateRow]:
                     mtime=path.stat().st_mtime,
                 )
             )
-        except Exception:
+        except Exception:  # Broad except acceptable for reporting scripts
             continue
     return rows
 

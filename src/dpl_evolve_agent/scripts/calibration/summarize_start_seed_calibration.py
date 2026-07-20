@@ -45,7 +45,7 @@ def load_metrics(path: Path) -> dict[str, float | str | None]:
         }
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
+    except Exception:  # Broad except acceptable for reporting scripts
         return {
             "legality": "bad_json",
             "hpwlg": None,

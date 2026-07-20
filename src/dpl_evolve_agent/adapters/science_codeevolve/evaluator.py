@@ -22,6 +22,9 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from shared_constants import HPWL_RUNTIME_GAIN_FORMULA, VALUE_REFERENCE_LINE
 from typing import Any, Dict, Iterable, List
 
 AGENT_ROOT = Path(__file__).resolve().parents[2]
@@ -40,12 +43,8 @@ from runtime_paths import (
 )
 from scripts.teacher_loop.common import CANONICAL_LINES
 
-VALUE_REFERENCE_LINE = "openroad_dpl_flow"
-HPWL_RUNTIME_GAIN_FORMULA = (
-    "G_HR = 100 * (HPWL_ref - HPWL_sol) / HPWL_ref "
-    "- P(runtime_sol / runtime_ref), where P(r)=0 for r <= 1.10 "
-    "and P(2.0)=1.0 percentage point"
-)
+
+
 # Runtime is a value check, not the primary objective: 2x runtime requires
 # 1 percentage point of reference-normalized final-HPWL improvement to break even.
 RUNTIME_DEADBAND_RATIO = 1.10

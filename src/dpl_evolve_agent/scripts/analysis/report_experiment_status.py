@@ -204,7 +204,7 @@ def active_process_summary(round_ids: set[str], state_root: Path = DEFAULT_STATE
             text=True,
             stderr=subprocess.DEVNULL,
         )
-    except Exception:
+    except Exception:  # Broad except acceptable for reporting scripts
         return ProcessSummary(active_round_ids=set(), counts=counts, lines=[])
 
     interesting = (
