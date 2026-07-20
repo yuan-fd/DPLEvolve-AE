@@ -21,7 +21,7 @@ dpl_ae_resolve_env() {
   if [[ -z "${DPL_EVOLVE_AGENT_ROOT:-}" ]]; then
     local candidate
     # Prefer the bundled copy inside this AE repo (self-contained submission)
-    candidate="${AE_ROOT}/framework/dpl_evolve_agent"
+    candidate="${AE_ROOT}/src/dpl_evolve_agent"
     if [[ -d "${candidate}" ]]; then
       DPL_EVOLVE_AGENT_ROOT="${candidate}"
     else

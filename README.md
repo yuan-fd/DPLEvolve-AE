@@ -66,8 +66,8 @@ The pipeline operates in six stages:
 
 ![Verification Flow](dplevolve-verification-flow.png)
 
-**Step 1 — Environment check** (< 1 second): Confirms that Python, GNU Make,
-and Bash are available at the required versions.
+**Step 1 — Environment check** (< 1 second): Verifies the full toolchain — Python, GNU Make, Bash, ORFS workspace,
+Yosys binary, OpenROAD binary, and all pinned commit hashes. Requires `make bootstrap` to have been run first.
 
 **Step 2 — Evidence verification** (< 5 seconds): Cross-checks every
 pre-computed result against its expected value. This is the primary
@@ -162,7 +162,7 @@ EDA tools; the remaining claims run on Python standard library alone.
 
 ### Hardware
 
-- **OS:** Linux x86-64 (Ubuntu 20.04 or 22.04 tested)
+- **OS:** Linux x86-64 (tested on Ubuntu 20.04/22.04 and Rocky Linux 8)
 - **CPU:** Any for evidence checks; 2+ cores (4 recommended) for smoke flow
 - **GPU:** Not required
 - **RAM:** < 1 GB for evidence; 8 GB (16 GB recommended) for smoke
@@ -202,17 +202,26 @@ No pip packages, EDA tools, or API keys are required for evidence checking.
 ## Quick Start
 
 ```bash
-make check           # Verify environment: Python, Make, Bash
-make evidence        # Verify all packaged results against expected values
+make evidence        # Step 1: Verify all packaged results against expected values
 ```
 
-If both pass, the artifact is verified. `make evidence` should produce:
-
+**Expected output from `make evidence`:**
 ```
 [PASS] All packaged paper-evidence bundles passed
 ```
 
-Individual tables can also be verified:
+When you see that, every number in the bundled results matches the paper's claims.
+No dependencies beyond Python 3.11+, GNU Make, and Bash are needed for this step.
+
+Once evidence passes, you can verify the full environment and smoke flow:
+
+```bash
+make bootstrap       # Step 2: Clone ORFS at pinned commits
+make check           # Step 3: Verify full toolchain (tools, paths, commits)
+make smoke           # Step 4: Run AES RTL-to-GDS end-to-end
+```
+
+Individual tables can also be verified independently:
 
 ```bash
 make table4          # Table 4: QoR comparison

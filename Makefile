@@ -11,7 +11,7 @@ HUMAN_SCRIPTS := $(AE_ROOT)/scripts/human
 SHARED_SCRIPTS := $(AE_ROOT)/scripts/shared
 MAINTENANCE_SCRIPTS := $(AE_ROOT)/scripts/maintenance
 
-DPL_EVOLVE_AGENT_ROOT ?= $(AE_ROOT)/framework/dpl_evolve_agent
+DPL_EVOLVE_AGENT_ROOT ?= $(AE_ROOT)/src/dpl_evolve_agent
 ORFS_ROOT ?= $(AE_ROOT)/../OpenROAD-flow-scripts
 DPL_EVOLVE_STATE_ROOT ?= $(AE_ROOT)/../dpl_evolve_state
 DPL_EVOLVE_PYTHON ?= python3
