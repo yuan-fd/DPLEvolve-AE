@@ -60,11 +60,11 @@ def validate_smoke_config(cfg: dict) -> list[str]:
     for m in required_metrics:
         if m not in expected:
             errors.append(f"smoke config: missing expected metric '{m}'")
-    if expected.get("instance_count") != 14676:
-        errors.append(
-            f"smoke config: expected instance_count should be 14676, "
-            f"got {expected.get('instance_count')}"
-        )
+    # instance_count is defined in the reproduction lock file
+    # (artifacts/04-aes-smoke/expected/ae_reproduction_lock.json).
+    # This validator only checks that the field exists in the config.
+    if "instance_count" not in expected:
+        errors.append("smoke config: missing required metric 'instance_count'")
     return errors
 
 

@@ -50,7 +50,7 @@ case "${artifact}" in
   smoke)
     bundle="${AE_ROOT}/artifacts/04-aes-smoke"
     if [[ "${run_smoke}" -eq 1 ]]; then
-      command=(bash "${bundle}/run.sh" --run --threads 8)
+      command=(bash "${bundle}/run.sh" --run --threads "${DPL_EVOLVE_THREADS:-4}")
     else
       command=(bash "${bundle}/run.sh" --check-only)
     fi

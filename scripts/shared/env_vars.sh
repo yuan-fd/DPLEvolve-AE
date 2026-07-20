@@ -50,11 +50,13 @@ dpl_ae_resolve_env() {
     candidate="$(realpath -m "${AE_ROOT}/../dpl_evolve_state")"
     if [[ -d "${candidate}" ]]; then
       DPL_EVOLVE_STATE_ROOT="${candidate}"
-    else
-      DPL_EVOLVE_STATE_ROOT="${candidate}"
     fi
+    # When dpl_evolve_state does not exist, leave STATE_ROOT unset.
+    # Downstream lookups are guarded by [[ -n "${DPL_EVOLVE_STATE_ROOT:-}" ]].
   fi
-  export DPL_EVOLVE_STATE_ROOT
+  if [[ -n "${DPL_EVOLVE_STATE_ROOT:-}" ]]; then
+    export DPL_EVOLVE_STATE_ROOT
+  fi
 
   # Resolve Python
   if [[ -z "${DPL_EVOLVE_PYTHON:-}" ]]; then
@@ -81,8 +83,8 @@ dpl_ae_resolve_env() {
     source "${DPL_EVOLVE_STATE_ROOT}/ae/environment.sh"
   fi
 
-  # Resolve Yosys binary
-  if [[ -z "${YOSYS_EXE:-}" ]]; then
+  # Resolve Yosys binary (requires state root)
+  if [[ -z "${YOSYS_EXE:-}" && -n "${DPL_EVOLVE_STATE_ROOT:-}" ]]; then
     local candidate
     candidate="${DPL_EVOLVE_STATE_ROOT}/yosys/8449dd470/bin/yosys"
     if [[ -x "${candidate}" ]]; then
@@ -91,8 +93,8 @@ dpl_ae_resolve_env() {
   fi
   export YOSYS_EXE
 
-  # Resolve OpenROAD binary
-  if [[ -z "${OPENROAD_EXE:-}" ]]; then
+  # Resolve OpenROAD binary (requires state root)
+  if [[ -z "${OPENROAD_EXE:-}" && -n "${DPL_EVOLVE_STATE_ROOT:-}" ]]; then
     local candidate
     candidate="${DPL_EVOLVE_STATE_ROOT}/openroad_core/d5ff63a/install/OpenROAD/bin/openroad"
     if [[ -x "${candidate}" ]]; then

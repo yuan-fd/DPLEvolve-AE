@@ -1,70 +1,105 @@
 # Troubleshooting
 
-## `make evidence` cannot find Python
+Common issues encountered during artifact evaluation and their solutions.
 
-Install Python 3.11 or newer, or select an interpreter explicitly:
+## Environment Issues
+
+### `python3: command not found`
+
+Install Python 3.11 or later, or override the interpreter:
 
 ```bash
-DPL_EVOLVE_PYTHON=/path/to/python make evidence
+DPL_EVOLVE_PYTHON=/path/to/python3 make evidence
 ```
 
-The evidence verifiers use only the Python standard library.
+### `make: command not found`
 
-## Permission denied when running a bundle
+On Ubuntu:
 
-The documented commands invoke scripts through Bash and work even if archive
-extraction removed executable bits:
+```bash
+sudo apt-get install build-essential
+```
+
+On CentOS/RHEL:
+
+```bash
+sudo yum install make
+```
+
+### `make check` reports missing tools
+
+See `docs/environment.md` for the complete list of required tools and
+minimum versions. Install any missing tools before proceeding.
+
+## Evidence Verification Issues
+
+### Digest or claim mismatch
+
+This indicates the expected values in `artifacts/*/expected/` have been
+modified or the evidence bundles are corrupted.
+
+1. Run `git status` to see which files changed.
+2. Do **not** manually edit files under `expected/` — these are the
+   authoritative reference values.
+3. If evidence bundles were corrupted, re-extract them from the original
+   archive or re-clone the repository.
+
+### `Permission denied` on verification scripts
+
+Scripts do not require executable permissions. Run them via Bash:
 
 ```bash
 bash artifacts/01-table4-qor/run.sh
 ```
 
-Repository tests still check executable bits because Git preserves them.
+## Smoke Flow Issues
 
-## A digest or paper-claim check fails
+### `make bootstrap` fails
 
-Do not edit the expected value to make the check pass. Run `git status`, then
-compare the affected `inputs/` or `expected/` file with the released archive.
-Generated files belong only in `output/`.
+Check your internet connection. `bootstrap` clones Yosys and OpenROAD
+from their upstream repositories. If behind a firewall, configure your
+Git proxy settings before running.
 
-## `make smoke-check` cannot find ORFS
+### `make setup` fails during compilation
 
-The smoke path requires a sibling ORFS workspace. Prepare it with:
+1. Verify you have the build dependencies installed (see `docs/environment.md`).
+2. Check that your system has at least 8 GB of free RAM.
+3. Try reducing parallelism: `SMOKE_THREADS=2 make setup`
+
+### `make smoke` reports hash mismatch
+
+The smoke output does not match the expected values. Verify:
+
+1. Tool commits match `provenance/source-commits.json`:
+   ```bash
+   git -C deps/yosys log --oneline -1
+   git -C deps/OpenROAD log --oneline -1
+   ```
+2. If commits differ, re-run `make bootstrap` to fetch the correct versions.
+
+### OOM (Out of Memory) during smoke
+
+Reduce thread count:
 
 ```bash
-make bootstrap
-make setup
-make check
+SMOKE_THREADS=1 make smoke
 ```
 
-If the workspace is elsewhere, set `ORFS_ROOT`. See
-[`environment.md`](environment.md) for all overrides.
+If the issue persists, ensure your machine meets the minimum requirement
+of 8 GB RAM.
 
-## Smoke input hash mismatch
+### Smoke cannot find ORFS
 
-The generated AES ODB does not match the reproduction lock. Confirm both the
-ORFS and nested OpenROAD prepared tree hashes in
-`provenance/source-commits.json`, then regenerate the input with a new smoke
-run. Do not reuse an ODB from a different commit or flow variant.
+The ORFS directory is expected at `../OpenROAD-flow-scripts` relative to
+the repository root. If your ORFS checkout is elsewhere:
 
-## Smoke metrics differ
+```bash
+ORFS_ROOT=/path/to/your/OpenROAD-flow-scripts make smoke
+```
 
-Check the complete log for tool errors and confirm placement legality. Also
-verify the pinned binary hashes, design configuration, input stage, and thread
-count. The validator applies the tolerances in the reproduction lock; it does
-not use approximate string matching.
+Or run `make bootstrap` to let the build system handle this automatically.
 
-## The selected-program replay asks for ODB inputs
+## Still Stuck?
 
-This is expected. The 18 selected source trees are packaged, but the original
-nine paper-time ODB inputs were deleted because they occupied several
-terabytes. The default Table 4 command therefore performs source integrity and
-archived-record checks only.
-
-## Full DSE is not available
-
-The artifact does not expose a one-command full discovery search. Such a run
-would need authenticated model access, many persistent agent sessions,
-hundreds of candidate generations and compilations, repeated EDA evaluations,
-and the complete original intermediate state. This is outside the supported
-review path.
+File an issue at the project's GitHub repository or contact the authors
+listed in the README.

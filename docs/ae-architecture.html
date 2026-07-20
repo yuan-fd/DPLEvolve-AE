@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DPLEvolve AE Architecture</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; padding: 40px; }
+  svg { display: block; margin: 0 auto; }
+  .title { text-align: center; font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 32px; }
+</style>
+</head>
+<body>
+<div class="title">DPLEvolve Artifact Evaluation — Architecture &amp; Verification Flow</div>
+
+<svg viewBox="0 0 960 720" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Connectors (behind nodes) -->
+  <!-- Top section: Paper → Experiment artifacts -->
+  <path d="M160,95 L160,135" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M320,95 L320,135" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M480,95 L480,135" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M640,95 L640,135" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M800,95 L800,135" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Artifacts → shared verifier -->
+  <path d="M240,230 L240,280" stroke="#6c757d" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M400,230 L400,280" stroke="#6c757d" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M560,230 L560,280" stroke="#6c757d" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Verifier → outputs -->
+  <path d="M400,340 L240,400" stroke="#6c757d" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M400,340 L400,400" stroke="#6c757d" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M400,340 L560,400" stroke="#6c757d" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Smoke path (right side) -->
+  <path d="M640,230 L640,290" stroke="#198754" stroke-width="2" fill="none" marker-end="url(#arrow-green)"/>
+  <path d="M800,230 L800,290" stroke="#198754" stroke-width="2" fill="none" marker-end="url(#arrow-green)"/>
+
+  <path d="M640,350 L720,410" stroke="#198754" stroke-width="2" fill="none" marker-end="url(#arrow-green)"/>
+  <path d="M800,350 L720,410" stroke="#198754" stroke-width="2" fill="none" marker-end="url(#arrow-green)"/>
+
+  <path d="M720,470 L720,540" stroke="#198754" stroke-width="2" fill="none" marker-end="url(#arrow-green)"/>
+
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#6c757d"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#198754"/>
+    </marker>
+  </defs>
+
+  <!-- ===== Top Row: Paper Claims ===== -->
+  <text x="480" y="42" text-anchor="middle" font-size="13" font-weight="600" fill="#495057">PAPER CLAIMS (MLCAD 2026)</text>
+
+  <rect x="80" y="60" width="160" height="35" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="160" y="82" text-anchor="middle" font-size="11" fill="#856404">Table 4 — QoR</text>
+
+  <rect x="260" y="60" width="120" height="35" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="320" y="82" text-anchor="middle" font-size="11" fill="#856404">Table 5 — Composability</text>
+
+  <rect x="400" y="60" width="160" height="35" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="480" y="82" text-anchor="middle" font-size="11" fill="#856404">Table 6 — Cut-Row</text>
+
+  <rect x="580" y="60" width="120" height="35" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="640" y="82" text-anchor="middle" font-size="11" fill="#856404">Selected Programs</text>
+
+  <rect x="720" y="60" width="160" height="35" rx="6" fill="#fff3cd" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="800" y="82" text-anchor="middle" font-size="11" fill="#856404">AES Smoke Flow</text>
+
+  <!-- ===== Second Row: Artifact Experiments ===== -->
+  <text x="480" y="158" text-anchor="middle" font-size="13" font-weight="600" fill="#495057">ARTIFACT EXPERIMENTS</text>
+
+  <rect x="50" y="175" width="380" height="55" rx="8" fill="#d1ecf1" stroke="#0c5460" stroke-width="1.5"/>
+  <text x="240" y="200" text-anchor="middle" font-size="12" font-weight="600" fill="#0c5460">01-table4-qor</text>
+  <text x="240" y="218" text-anchor="middle" font-size="10" fill="#0c5460">run.sh → verify.py → selected-programs/run.sh</text>
+
+  <rect x="450" y="175" width="220" height="55" rx="8" fill="#d1ecf1" stroke="#0c5460" stroke-width="1.5"/>
+  <text x="560" y="200" text-anchor="middle" font-size="12" font-weight="600" fill="#0c5460">02-table5-composability</text>
+  <text x="560" y="218" text-anchor="middle" font-size="10" fill="#0c5460">run.sh → verify.py (3 counterexamples)</text>
+
+  <rect x="690" y="175" width="240" height="55" rx="8" fill="#d1ecf1" stroke="#0c5460" stroke-width="1.5"/>
+  <text x="810" y="200" text-anchor="middle" font-size="12" font-weight="600" fill="#0c5460">03-table6-cutrow</text>
+  <text x="810" y="218" text-anchor="middle" font-size="10" fill="#0c5460">run.sh → verify.py (9 cut-row patterns)</text>
+
+  <!-- ===== Third Row: Evidence/Smoke split ===== -->
+  <text x="300" y="270" text-anchor="middle" font-size="13" font-weight="600" fill="#495057">EVIDENCE PATH</text>
+  <text x="760" y="270" text-anchor="middle" font-size="13" font-weight="600" fill="#198754">SMOKE PATH</text>
+
+  <!-- Evidence verifier -->
+  <rect x="70" y="290" width="660" height="50" rx="8" fill="#e2e3e5" stroke="#6c757d" stroke-width="1.5"/>
+  <text x="400" y="312" text-anchor="middle" font-size="12" font-weight="600" fill="#495057">make evidence</text>
+  <text x="400" y="330" text-anchor="middle" font-size="10" fill="#6c757d">Single command. Python stdlib only. Seconds. No network, no EDA, no API key.</text>
+
+  <!-- Smoke artifacts -->
+  <rect x="580" y="300" width="120" height="50" rx="8" fill="#d4edda" stroke="#198754" stroke-width="1.5"/>
+  <text x="640" y="322" text-anchor="middle" font-size="11" font-weight="600" fill="#155724">04-aes-smoke</text>
+  <text x="640" y="340" text-anchor="middle" font-size="9" fill="#155724">run.sh → check.sh</text>
+
+  <rect x="720" y="300" width="180" height="50" rx="8" fill="#d4edda" stroke="#198754" stroke-width="1.5"/>
+  <text x="810" y="322" text-anchor="middle" font-size="11" font-weight="600" fill="#155724">make bootstrap → setup → smoke</text>
+  <text x="810" y="340" text-anchor="middle" font-size="9" fill="#155724">Build ORFS + run AES flow</text>
+
+  <!-- ===== Fourth Row: Outputs ===== -->
+  <text x="400" y="390" text-anchor="middle" font-size="13" font-weight="600" fill="#495057">VERIFICATION OUTPUTS</text>
+
+  <rect x="50" y="410" width="220" height="50" rx="8" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1.5"/>
+  <text x="160" y="430" text-anchor="middle" font-size="11" font-weight="600" fill="#212529">Paper Claim Check</text>
+  <text x="160" y="448" text-anchor="middle" font-size="10" fill="#6c757d">BO: 0.38% | HPWL: 1.78% | GHR: 1.68%</text>
+
+  <rect x="290" y="410" width="220" height="50" rx="8" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1.5"/>
+  <text x="400" y="430" text-anchor="middle" font-size="11" font-weight="600" fill="#212529">Source Integrity</text>
+  <text x="400" y="448" text-anchor="middle" font-size="10" fill="#6c757d">18/18 selected-program digests</text>
+
+  <rect x="530" y="410" width="210" height="50" rx="8" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1.5"/>
+  <text x="635" y="430" text-anchor="middle" font-size="11" font-weight="600" fill="#212529">Machine Reports</text>
+  <text x="635" y="448" text-anchor="middle" font-size="10" fill="#6c757d">summary.json, CSV per experiment</text>
+
+  <!-- Smoke output -->
+  <path d="M640,355 L640,410" stroke="#198754" stroke-width="1.5" fill="none" />
+  <path d="M800,355 L800,410" stroke="#198754" stroke-width="1.5" fill="none" />
+
+  <!-- ===== Bottom: Smoke results ===== -->
+  <rect x="570" y="480" width="300" height="50" rx="8" fill="#d4edda" stroke="#198754" stroke-width="1.5"/>
+  <text x="720" y="502" text-anchor="middle" font-size="12" font-weight="600" fill="#155724">AES Smoke Result</text>
+  <text x="720" y="520" text-anchor="middle" font-size="10" fill="#155724">[OK] Instances: 14,676 | HPWL: ~176,845 μ m | Legality: Clean</text>
+
+  <!-- ===== Left legend ===== -->
+  <rect x="30" y="520" width="200" height="100" rx="6" fill="#fff" stroke="#dee2e6" stroke-width="1"/>
+  <text x="130" y="542" text-anchor="middle" font-size="11" font-weight="600" fill="#495057">Key</text>
+
+  <rect x="45" y="555" width="16" height="16" rx="3" fill="#fff3cd" stroke="#ffc107" stroke-width="1"/>
+  <text x="70" y="568" font-size="10" fill="#495057">Paper claim</text>
+
+  <rect x="45" y="578" width="16" height="16" rx="3" fill="#d1ecf1" stroke="#0c5460" stroke-width="1"/>
+  <text x="70" y="591" font-size="10" fill="#495057">Evidence artifact</text>
+
+  <rect x="45" y="601" width="16" height="16" rx="3" fill="#d4edda" stroke="#198754" stroke-width="1"/>
+  <text x="70" y="614" font-size="10" fill="#495057">Fresh execution (smoke)</text>
+
+  <!-- ===== Right: Document separation note ===== -->
+  <rect x="570" y="555" width="350" height="65" rx="6" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="745" y="575" text-anchor="middle" font-size="11" font-weight="600" fill="#495057">Document &amp; Script Separation</text>
+  <text x="745" y="593" text-anchor="middle" font-size="9" fill="#6c757d">Human docs: README.md, docs/, artifacts/*/README.md</text>
+  <text x="745" y="609" text-anchor="middle" font-size="9" fill="#6c757d">Agent docs: agent/, scripts/agent/ (never shown to reviewers)</text>
+
+  <!-- Bottom border line -->
+  <line x1="30" y1="640" x2="930" y2="640" stroke="#dee2e6" stroke-width="1"/>
+
+  <!-- CI & tests note -->
+  <text x="480" y="668" text-anchor="middle" font-size="10" fill="#adb5bd">
+    CI Gate: make evidence → make test → make validate-configs → make zenodo-audit
+  </text>
+  <text x="480" y="686" text-anchor="middle" font-size="10" fill="#adb5bd">
+    Structure tests · Integration tests · Unit tests · Schema validation · Tamper checks · Portability checks
+  </text>
+
+</svg>
+</body>
+</html>

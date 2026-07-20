@@ -5,6 +5,7 @@ SHELL := /bin/bash
 .SHELLFLAGS := -euo pipefail -c
 
 AE_ROOT := $(CURDIR)
+SMOKE_THREADS ?= $(shell nproc 2>/dev/null || echo 4)
 ARTIFACTS_DIR := $(AE_ROOT)/artifacts
 HUMAN_SCRIPTS := $(AE_ROOT)/scripts/human
 SHARED_SCRIPTS := $(AE_ROOT)/scripts/shared
@@ -67,7 +68,7 @@ table6:
 	@bash "$(ARTIFACTS_DIR)/03-table6-cutrow/run.sh"
 
 smoke:
-	@bash "$(ARTIFACTS_DIR)/04-aes-smoke/run.sh" --run --threads 8
+	@bash "$(ARTIFACTS_DIR)/04-aes-smoke/run.sh" --run --threads $(SMOKE_THREADS)
 
 smoke-check:
 	@bash "$(ARTIFACTS_DIR)/04-aes-smoke/run.sh" --check-only
@@ -93,7 +94,7 @@ test-integration:
 
 test-unit:
 	@"$(DPL_EVOLVE_PYTHON)" -m pytest "$(AE_ROOT)/tests/unit/" -v 2>/dev/null || \
-	 "$(DPL_EVOLVE_PYTHON)" -m unittest discover -s "$(AE_ROOT)/tests/unit/" -v
+	 PYTHONPATH="$(AE_ROOT)" "$(DPL_EVOLVE_PYTHON)" -m unittest discover -s "$(AE_ROOT)/tests/unit/" -v
 
 validate-configs:
 	@"$(DPL_EVOLVE_PYTHON)" "$(SHARED_SCRIPTS)/validate_config.py" --all

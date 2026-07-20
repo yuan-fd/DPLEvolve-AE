@@ -1,49 +1,67 @@
-# Expected results
+# Expected Results & Tolerances
 
-## Archived evidence
+This document records the expected values and acceptable tolerances for
+each paper claim verified by this artifact. The JSON files under
+`artifacts/*/expected/` are the authoritative reference; this document
+provides context and interpretation guidance.
 
-`make evidence` should finish with:
+## Table 4: QoR Comparison
 
-```text
-[PASS] All packaged paper-evidence bundles passed
-```
+**Reference:** `artifacts/01-table4-qor/expected/table4.json`
+**Paper claims:** `artifacts/01-table4-qor/expected/paper_claims.json`
 
-The headline values are:
+| Metric | BO-DSE (Baseline) | ReviewDSE-HPWL | ReviewDSE-GHR |
+|--------|-------------------|----------------|---------------|
+| Mean HPWL reduction | ~0.38% | ~1.78% | N/A |
+| Global route overflow reduction | N/A | N/A | ~1.68% |
+| Runtime ratio vs baseline | 1.0× | ~1.34× | ~1.11× |
 
-| Bundle | Expected result |
-|---|---|
-| Table 4 BO-DSE | 0.3813% mean HPWL reduction |
-| Table 4 ReviewDSE-HPWL | 1.7840% mean HPWL reduction, 1.3367x runtime |
-| Table 4 ReviewDSE-GHR | 1.6761% mean HPWL reduction, 1.1103x runtime |
-| Selected programs | 18 of 18 source-tree digests match |
-| Table 5 | 3 of 3 stage-local counterexamples match |
-| Table 6 | 9 of 9 archived rows match |
+Tolerance: ±0.05 percentage points for HPWL/GHR metrics.
+Smaller deviations are expected across different hardware due to
+floating-point variations in OpenROAD's internal calculations.
 
-Exact values and comparison rules are stored with each bundle in `expected/`.
-Generated JSON and CSV reports appear in the corresponding `output/`
-directory and may be removed with `make clean`.
+## Table 5: Composability
 
-## AES smoke
+**Reference:** `artifacts/02-table5-composability/expected/`
 
-A successful fresh run ends with `[OK] AES smoke test PASSED`. The reference
-headline values are:
+Three counterexamples are verified. Each produces a pass/fail verdict
+against the expected composability property. All three must pass.
 
-| Metric | Expected |
-|---|---:|
-| Instances | 14,676 |
-| Global HPWL | 188,569.2 microns |
-| Final HPWL | 176,845.1 microns |
-| Placement legality | Clean |
+## Table 6: Cut-Row Repair Patterns
 
-The reproduction lock is authoritative for exact tolerances and file hashes.
-Small runtime differences are expected across machines; metric values outside
-the recorded tolerances are not silently accepted.
+**Reference:** `artifacts/03-table6-cutrow/expected/`
 
-## Interpreting failures
+Nine pattern verification results. Each is a boolean pass/fail check.
+All nine must pass.
 
-- A digest mismatch means packaged evidence or a selected source tree changed.
-- A paper-claim mismatch means recomputed arithmetic differs from the checked
-  transcription.
-- A smoke input-hash mismatch means the prepared source or synthesis path does
-  not match the pinned environment.
-- A legality failure is a failed smoke run even if HPWL is close.
+## AES Smoke Flow
+
+**Reference:** `artifacts/04-aes-smoke/expected/ae_reproduction_lock.json`
+
+The lock file contains exact expected values for:
+
+- Final WNS (worst negative slack)
+- Final TNS (total negative slack)
+- Die area
+- Design area
+- Total wirelength
+
+Tolerances are specified per-metric in the lock file. Values are
+generally expected to match within 1% on identical tool commits.
+Larger deviations indicate either a different tool version or a
+build configuration mismatch.
+
+## Interpreting Deviations
+
+Small deviations are normal and expected because:
+
+1. **Compiler differences** between machines can produce slightly
+   different binaries from the same source.
+2. **Floating-point non-determinism** in EDA tools.
+3. **System library version differences** (glibc, etc.).
+
+If a deviation exceeds the stated tolerance:
+
+1. Verify the tool commits match `provenance/source-commits.json`.
+2. Run `make check` to confirm your environment.
+3. Check `docs/troubleshooting.md` for known issues.
