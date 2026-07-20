@@ -129,7 +129,13 @@ DPLEvolve-AE/
 │
 ├── paper/                             # Camera-ready PDF
 ├── tests/                             # Structure and integration tests
-└── agent/                             # CI/CD automation (included; not reviewed)
+│   ├── artifact/                      #   AE structure tests
+│   ├── integration/                   #   Smoke pipeline tests
+│   └── unit/                          #   Unit tests
+├── agent/                             # Agent task definitions and schemas
+│   ├── context/                       #   Task context templates
+│   ├── schemas/                       #   Task schema definitions
+│   └── tasks/                         #   Task definitions
 ```
 
 ---
