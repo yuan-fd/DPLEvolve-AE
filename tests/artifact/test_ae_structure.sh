@@ -7,7 +7,7 @@ failures=0
 pass() { printf '[PASS] %s\n' "$1"; }
 fail() { printf '[FAIL] %s\n' "$1" >&2; failures=$((failures + 1)); }
 
-required_root=(README.md LICENSE CITATION.cff Makefile artifacts docs agent scripts framework schemas provenance paper)
+required_root=(README.md LICENSE CITATION.cff Makefile artifacts docs agent scripts src schemas provenance paper)
 for path in "${required_root[@]}"; do
   [[ -e "${ROOT}/${path}" ]] && pass "root path: ${path}" || fail "missing root path: ${path}"
 done

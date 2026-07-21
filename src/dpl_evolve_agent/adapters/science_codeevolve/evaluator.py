@@ -22,7 +22,6 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from shared_constants import HPWL_RUNTIME_GAIN_FORMULA, VALUE_REFERENCE_LINE
 from typing import Any, Dict, Iterable, List

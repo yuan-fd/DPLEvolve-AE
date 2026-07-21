@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>DPLEvolve — Artifact Reviewer Console</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%23b85c38'/><path d='M18 18h13c10 0 17 5 17 14S41 46 31 46H18V18zm9 7v14h4c5 0 8-2 8-7s-3-7-8-7h-4z' fill='white'/></svg>">
+  <style>
+    :root {
+      --canvas: #f7f5f2;
+      --surface: #fdfcfb;
+      --surface-muted: #f1eee9;
+      --ink: #2b2926;
+      --muted: #716c65;
+      --faint: #99928a;
+      --line: #e4dfd8;
+      --line-strong: #d5cec5;
+      --accent: #b85c38;
+      --accent-soft: #f4e5dd;
+      --accent-dark: #8f4328;
+      --success: #47745a;
+      --success-soft: #e5eee8;
+      --warning: #8c6a2f;
+      --warning-soft: #f4ecd9;
+      --danger: #a34c43;
+      --danger-soft: #f5e3e0;
+      --terminal: #292825;
+      --terminal-line: #403e39;
+      --terminal-text: #e9e4dc;
+      --shadow: 0 1px 2px rgba(43, 41, 38, .04), 0 12px 34px rgba(43, 41, 38, .055);
+      --radius: 14px;
+      --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --serif: Iowan Old Style, Palatino Linotype, Book Antiqua, Georgia, serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: var(--canvas); }
+    body { margin: 0; color: var(--ink); background: var(--canvas); font: 14px/1.5 var(--sans); }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    a { color: var(--accent-dark); }
+    code { font-family: var(--mono); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    .app { min-height: 100vh; display: grid; grid-template-columns: 244px minmax(0, 1fr); }
+    .sidebar { position: sticky; top: 0; height: 100vh; padding: 26px 18px 20px; border-right: 1px solid var(--line); background: rgba(247,245,242,.94); display: flex; flex-direction: column; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 9px 28px; }
+    .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 9px; color: white; background: var(--accent); font: 700 15px/1 var(--serif); }
+    .brand-name { font: 600 16px/1.2 var(--serif); letter-spacing: -.01em; }
+    .brand-sub { margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .nav { display: grid; gap: 4px; }
+    .nav-button { width: 100%; padding: 10px 11px; display: flex; align-items: center; gap: 10px; border: 0; border-radius: 9px; color: var(--muted); background: transparent; cursor: pointer; text-align: left; transition: .15s ease; }
+    .nav-button:hover { color: var(--ink); background: var(--surface-muted); }
+    .nav-button.active { color: var(--accent-dark); background: var(--accent-soft); }
+    .nav-icon { width: 18px; font-family: var(--mono); font-size: 12px; text-align: center; }
+    .sidebar-meta { margin-top: auto; padding: 18px 10px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .server-state { display: flex; align-items: center; gap: 8px; color: var(--ink); margin-bottom: 10px; }
+    .state-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 3px var(--success-soft); }
+    .state-dot.busy { background: var(--warning); box-shadow: 0 0 0 3px var(--warning-soft); animation: pulse 1.4s ease-in-out infinite; }
+    .state-dot.error { background: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+    .meta-row { display: flex; justify-content: space-between; gap: 12px; margin-top: 5px; }
+    .meta-row span:last-child { color: var(--ink); font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @keyframes pulse { 50% { opacity: .45; } }
+
+    .main { min-width: 0; }
+    .view { display: none; max-width: 1180px; margin: 0 auto; padding: 64px 54px 80px; }
+    .view.active { display: block; }
+    .eyebrow { margin: 0 0 12px; color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { max-width: 780px; margin: 0; font: 500 clamp(34px, 4.5vw, 54px)/1.08 var(--serif); letter-spacing: -.035em; }
+    .lead { max-width: 720px; margin: 18px 0 0; color: var(--muted); font-size: 16px; line-height: 1.7; }
+    .page-head { margin-bottom: 42px; }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin: 42px 0 15px; }
+    .section-head h2 { margin: 0; font: 500 23px/1.2 var(--serif); letter-spacing: -.02em; }
+    .section-head p { margin: 5px 0 0; color: var(--muted); }
+    .section-note { max-width: 400px; color: var(--muted); font-size: 12px; text-align: right; }
+
+    .card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+    .connection-card { padding: 26px; }
+    .connection-top { display: flex; justify-content: space-between; align-items: start; gap: 20px; }
+    .connection-title { margin: 0; font: 500 18px/1.2 var(--serif); }
+    .connection-copy { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+    .segmented { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-muted); }
+    .segment { padding: 6px 12px; border: 0; border-radius: 6px; color: var(--muted); background: transparent; font-size: 12px; cursor: pointer; }
+    .segment.active { color: var(--ink); background: var(--surface); box-shadow: 0 1px 3px rgba(43,41,38,.1); }
+    .form-grid { display: grid; grid-template-columns: 1.15fr 1fr 100px; gap: 14px; margin-top: 22px; }
+    .field { min-width: 0; }
+    .field.wide { grid-column: span 2; }
+    .field label { display: block; margin: 0 0 6px; color: var(--muted); font-size: 11px; font-weight: 650; letter-spacing: .035em; text-transform: uppercase; }
+    .field input { width: 100%; height: 40px; padding: 0 11px; border: 1px solid var(--line-strong); border-radius: 8px; outline: 0; color: var(--ink); background: white; font-family: var(--mono); font-size: 12px; transition: .15s ease; }
+    .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .remote-fields { display: contents; }
+    .remote-fields.hidden { display: none; }
+    .connection-actions { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+    .connection-message { min-height: 20px; color: var(--muted); font-size: 12px; }
+    .connection-message.success { color: var(--success); }
+    .connection-message.error { color: var(--danger); }
+    .privacy-note { margin-top: 17px; padding-top: 15px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+
+    .button { min-height: 38px; padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); cursor: pointer; transition: .15s ease; }
+    .button:hover:not(:disabled) { border-color: #bdb5ab; background: #faf8f5; }
+    .button:disabled { opacity: .45; cursor: not-allowed; }
+    .button.primary { border-color: var(--accent); color: white; background: var(--accent); }
+    .button.primary:hover:not(:disabled) { border-color: var(--accent-dark); background: var(--accent-dark); }
+    .button.subtle { min-height: 32px; padding: 5px 10px; color: var(--muted); background: transparent; font-size: 11px; }
+    .button.danger { color: var(--danger); }
+
+    .path-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .path-card { min-height: 228px; padding: 22px; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    .path-step { color: var(--accent); font: 600 11px/1 var(--mono); letter-spacing: .08em; }
+    .path-card h3 { margin: 17px 0 9px; font: 500 19px/1.25 var(--serif); }
+    .path-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .path-meta { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+    .tag { padding: 4px 7px; border-radius: 6px; color: var(--muted); background: var(--surface-muted); font-size: 10px; }
+    .path-card .button { width: 100%; margin-top: auto; }
+
+    .command-list { overflow: hidden; }
+    .command-row { min-height: 68px; padding: 14px 18px; display: grid; grid-template-columns: 150px minmax(0,1fr) auto; align-items: center; gap: 18px; border-top: 1px solid var(--line); }
+    .command-row:first-child { border-top: 0; }
+    .command-name { font: 600 12px/1.4 var(--mono); }
+    .command-description { color: var(--muted); font-size: 12px; }
+
+    .queue-panel { display: none; margin-top: 16px; padding: 16px 18px; }
+    .queue-panel.visible { display: block; }
+    .queue-title { margin: 0 0 9px; color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .queue-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+    .queue-position { width: 24px; color: var(--faint); font-family: var(--mono); font-size: 11px; }
+    .queue-label { flex: 1; font-size: 12px; }
+
+    .error-card { display: none; margin-top: 16px; padding: 18px 20px; border-color: #e5c8c3; background: #fdf8f7; box-shadow: none; }
+    .error-card.visible { display: block; }
+    .error-title { margin: 0; color: var(--danger); font: 600 15px/1.3 var(--serif); }
+    .error-summary { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+    .error-suggestions { margin: 12px 0 0 18px; padding: 0; color: var(--muted); font-size: 12px; }
+
+    .terminal-card { margin-top: 16px; overflow: hidden; scroll-margin-top: 24px; border-color: #363530; background: var(--terminal); box-shadow: 0 14px 36px rgba(28,27,25,.15); }
+    .terminal-bar { min-height: 48px; padding: 8px 13px 8px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--terminal-line); }
+    .terminal-title { display: flex; align-items: center; gap: 10px; color: #bcb6ad; font-size: 11px; }
+    .terminal-title strong { color: var(--terminal-text); font-weight: 500; }
+    .terminal-actions { display: flex; gap: 5px; flex-wrap: wrap; justify-content: end; }
+    .terminal-actions button { padding: 5px 8px; border: 0; border-radius: 5px; color: #aaa49b; background: transparent; font-size: 10px; cursor: pointer; }
+    .terminal-actions button:hover { color: white; background: #3a3935; }
+    .terminal-output { height: 390px; padding: 18px; overflow: auto; color: var(--terminal-text); font: 12px/1.65 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+    .terminal-line.stderr { color: #e9a49b; }
+    .terminal-line.info { color: #b9ad91; }
+    .terminal-line.success { color: #a7c9b0; }
+    .terminal-empty { color: #8f8980; }
+
+    .history { margin-top: 16px; overflow: hidden; }
+    .history-empty { padding: 22px; color: var(--muted); font-size: 12px; }
+    .history-row { padding: 13px 17px; display: grid; grid-template-columns: 18px minmax(0,1fr) auto; gap: 11px; align-items: center; border-top: 1px solid var(--line); font-size: 12px; }
+    .history-row:first-child { border-top: 0; }
+    .history-time { color: var(--muted); font-family: var(--mono); font-size: 10px; }
+
+    .results-shell { padding: 24px; }
+    .slide { display: none; min-height: 590px; padding: 46px 50px 42px; border: 1px solid var(--line); border-radius: 12px; background: #fffefa; }
+    .slide.active { display: block; }
+    .slide-kicker { margin-bottom: 12px; color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+    .slide h2 { max-width: 750px; margin: 0; font: 500 36px/1.15 var(--serif); letter-spacing: -.025em; }
+    .slide .slide-lead { max-width: 760px; margin: 14px 0 32px; color: var(--muted); font-size: 15px; line-height: 1.65; }
+    .slide-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
+    .metric { padding: 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+    .metric-value { color: var(--accent-dark); font: 500 27px/1.1 var(--serif); }
+    .metric-label { margin-top: 7px; color: var(--muted); font-size: 11px; }
+    .slide-image { display: block; max-width: 100%; max-height: 380px; margin: 0 auto; object-fit: contain; border-radius: 8px; }
+    .result-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .result-table th, .result-table td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; }
+    .result-table th { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+    .pass { color: var(--success); font-weight: 650; }
+    .slide-list { margin: 0; padding-left: 19px; color: var(--muted); line-height: 1.9; }
+    .slide-list strong { color: var(--ink); }
+    .concept-compare { display: grid; grid-template-columns: 1fr 56px 1fr; gap: 12px; align-items: stretch; }
+    .concept-card { padding: 22px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); }
+    .concept-card.accent { border-color: #dfb6a5; background: #fcf4f0; }
+    .concept-card h3 { margin: 0 0 12px; font: 600 17px/1.25 var(--serif); }
+    .concept-card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .concept-arrow { display: grid; place-items: center; color: var(--accent); font: 500 26px/1 var(--serif); }
+    .method-flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; align-items: stretch; }
+    .method-stage { position: relative; min-height: 126px; padding: 16px 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+    .method-stage:not(:last-child)::after { content: "→"; position: absolute; z-index: 2; right: -14px; top: 48px; width: 18px; color: var(--accent); text-align: center; }
+    .method-stage .number { color: var(--accent); font: 650 10px/1 var(--mono); }
+    .method-stage strong { display: block; margin: 13px 0 7px; font: 600 13px/1.25 var(--serif); }
+    .method-stage span { color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .architecture-layers { display: grid; gap: 9px; }
+    .architecture-layer { padding: 14px 17px; display: grid; grid-template-columns: 155px 1fr; gap: 18px; align-items: center; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+    .architecture-layer .layer-name { color: var(--accent-dark); font: 600 12px/1.3 var(--mono); }
+    .architecture-layer .layer-detail { color: var(--muted); font-size: 11px; }
+    .verification-flow { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1.15fr; gap: 8px; align-items: center; }
+    .verification-node { min-height: 152px; padding: 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+    .verification-node.accent { border-color: #d8aa97; background: #fcf4f0; }
+    .verification-node h3 { margin: 0 0 9px; font: 600 15px/1.25 var(--serif); }
+    .verification-node p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .verification-arrow { color: var(--accent); font-size: 24px; text-align: center; }
+    .effect-list { display: grid; gap: 17px; }
+    .effect-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 90px; gap: 14px; align-items: center; }
+    .effect-label { font: 600 12px/1.3 var(--serif); }
+    .effect-track { height: 12px; overflow: hidden; border-radius: 6px; background: var(--surface-muted); }
+    .effect-fill { height: 100%; border-radius: inherit; background: var(--accent); }
+    .effect-value { color: var(--accent-dark); font: 650 12px/1 var(--mono); text-align: right; }
+    .boundary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .boundary-card { padding: 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+    .boundary-card h3 { margin: 0 0 10px; font: 600 16px/1.2 var(--serif); }
+    .boundary-card ul { margin: 0; padding-left: 17px; color: var(--muted); font-size: 11px; line-height: 1.8; }
+    .slide-nav { padding: 16px 3px 0; display: flex; align-items: center; justify-content: space-between; }
+    .slide-dots { display: flex; align-items: center; gap: 7px; }
+    .slide-dot { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 50%; background: var(--line-strong); cursor: pointer; }
+    .slide-dot.active { width: 18px; border-radius: 4px; background: var(--accent); }
+    .slide-counter { color: var(--muted); font-family: var(--mono); font-size: 10px; }
+
+    .guide-layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(250px, .75fr); gap: 22px; align-items: start; }
+    .guide-stack { display: grid; gap: 16px; }
+    .guide-card { padding: 26px; }
+    .guide-card h2 { margin: 0 0 8px; font: 500 21px/1.25 var(--serif); }
+    .guide-card h3 { margin: 24px 0 7px; font: 600 14px/1.3 var(--serif); }
+    .guide-card p, .guide-card li { color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .guide-card ol, .guide-card ul { padding-left: 20px; }
+    .code-block { position: relative; margin-top: 13px; padding: 15px 44px 15px 16px; border-radius: 9px; color: #e8e3dc; background: var(--terminal); font: 11px/1.7 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+    .copy-code { position: absolute; top: 8px; right: 8px; padding: 4px 7px; border: 0; border-radius: 5px; color: #aaa49b; background: #3a3935; font-size: 9px; cursor: pointer; }
+    .make-table { width: 100%; border-collapse: collapse; }
+    .make-table th, .make-table td { padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; font-size: 11px; }
+    .make-table th { color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: .07em; }
+    .make-table code { color: var(--accent-dark); font-weight: 650; }
+    .sticky-guide { position: sticky; top: 24px; }
+    .checklist { list-style: none; margin: 18px 0 0; padding: 0 !important; }
+    .checklist li { position: relative; padding: 0 0 16px 28px; }
+    .checklist li::before { content: ""; position: absolute; left: 0; top: 5px; width: 12px; height: 12px; border: 1px solid var(--line-strong); border-radius: 4px; background: white; }
+
+    .mobile-header { display: none; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 900px) {
+      .app { display: block; }
+      .sidebar { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; top: auto; height: 66px; padding: 8px 12px; border: 0; border-top: 1px solid var(--line); flex-direction: row; background: rgba(247,245,242,.97); backdrop-filter: blur(12px); }
+      .brand, .sidebar-meta { display: none; }
+      .nav { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); }
+      .nav-button { justify-content: center; flex-direction: column; gap: 2px; padding: 5px; font-size: 10px; }
+      .view { padding: 38px 22px 100px; }
+      .path-grid, .slide-grid, .concept-compare, .boundary-grid { grid-template-columns: 1fr; }
+      .concept-arrow { transform: rotate(90deg); min-height: 28px; }
+      .method-flow { grid-template-columns: 1fr; }
+      .method-stage:not(:last-child)::after { content: "↓"; right: 50%; top: auto; bottom: -17px; }
+      .verification-flow { grid-template-columns: 1fr; }
+      .verification-arrow { transform: rotate(90deg); }
+      .effect-row { grid-template-columns: 110px minmax(0, 1fr) 70px; }
+      .guide-layout { grid-template-columns: 1fr; }
+      .sticky-guide { position: static; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .field.wide { grid-column: span 2; }
+    }
+
+    @media (max-width: 620px) {
+      .view { padding-left: 16px; padding-right: 16px; }
+      .connection-top, .section-head { align-items: stretch; flex-direction: column; }
+      .section-note { text-align: left; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.wide { grid-column: auto; }
+      .command-row { grid-template-columns: 1fr auto; gap: 8px; }
+      .command-description { grid-column: 1 / -1; grid-row: 2; }
+      .terminal-bar { align-items: start; flex-direction: column; }
+      .slide { min-height: 520px; padding: 28px 22px; }
+      .slide h2 { font-size: 29px; }
+      .results-shell { padding: 10px; }
+      .make-table { display: block; overflow-x: auto; }
+    }
+
+    @media print {
+      @page { size: landscape; margin: 12mm; }
+      body { background: white; }
+      .sidebar, .page-head, .slide-nav { display: none !important; }
+      .app { display: block; }
+      .view { display: none !important; max-width: none; padding: 0; }
+      #view-slides { display: block !important; }
+      .results-shell { padding: 0; border: 0; box-shadow: none; }
+      .slide { display: block !important; min-height: 0; margin: 0; border: 0; page-break-after: always; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">D</div>
+        <div><div class="brand-name">DPLEvolve</div><div class="brand-sub">Artifact reviewer console</div></div>
+      </div>
+      <nav class="nav" aria-label="Primary navigation">
+        <button class="nav-button active" data-view="review"><span class="nav-icon">01</span><span>Review</span></button>
+        <button class="nav-button" data-view="slides"><span class="nav-icon">02</span><span>Slides</span></button>
+        <button class="nav-button" data-view="guide"><span class="nav-icon">03</span><span>Guide</span></button>
+      </nav>
+      <div class="sidebar-meta">
+        <div class="server-state"><span class="state-dot" id="stateDot"></span><span id="stateLabel">Connecting</span></div>
+        <div class="meta-row"><span>Task</span><span id="metaTask">Idle</span></div>
+        <div class="meta-row"><span>Queue</span><span id="metaQueue">0</span></div>
+        <div class="meta-row"><span>Uptime</span><span id="metaUptime">—</span></div>
+        <div class="meta-row"><span>Python</span><span id="metaPython">—</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="view active" id="view-review">
+        <header class="page-head">
+          <p class="eyebrow">Artifact evaluation · MLCAD 2026</p>
+          <h1>Reproduce the evidence, one deliberate step at a time.</h1>
+          <p class="lead">Connect to the evaluation machine, run the packaged checks, and keep a complete record of every command. No GPU, EDA license, or model API is required for the primary evidence path.</p>
+        </header>
+
+        <div class="card connection-card">
+          <div class="connection-top">
+            <div>
+              <h2 class="connection-title">Execution machine</h2>
+              <p class="connection-copy">Commands run on the machine hosting this console, not in the browser. Choose SSH only when EDA lives on a second machine.</p>
+            </div>
+            <div class="segmented" role="group" aria-label="Execution mode">
+              <button class="segment active" data-mode="local">This machine</button>
+              <button class="segment" data-mode="remote">Another machine via SSH</button>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="field local-field wide">
+              <label>Local repository</label>
+              <input id="localRoot" value="Loaded from DPLEVOLVE_AE_ROOT" disabled>
+            </div>
+            <div class="remote-fields hidden" id="remoteFields">
+              <div class="field"><label for="sshHost">Host</label><input id="sshHost" placeholder="review-machine.example.edu" autocomplete="off"></div>
+              <div class="field"><label for="sshUser">User</label><input id="sshUser" placeholder="reviewer" autocomplete="username"></div>
+              <div class="field"><label for="sshPort">Port</label><input id="sshPort" type="number" value="22" min="1" max="65535"></div>
+              <div class="field wide"><label for="sshRoot">Repository path on remote host</label><input id="sshRoot" placeholder="/home/reviewer/DPLEvolve-AE" autocomplete="off"></div>
+              <div class="field"><label for="sshKey">Private key path on web server</label><input id="sshKey" placeholder="~/.ssh/id_ed25519" autocomplete="off"></div>
+              <div class="field"><label for="sshPassword">Password (optional)</label><input id="sshPassword" type="password" autocomplete="current-password"></div>
+            </div>
+          </div>
+          <div class="connection-actions">
+            <button class="button primary" id="testConnection">Test connection</button>
+            <span class="connection-message" id="connectionMessage" aria-live="polite"></span>
+          </div>
+          <div class="privacy-note">For a remote browser, keep this service bound to localhost and use an SSH tunnel. The Guide provides the exact command.</div>
+        </div>
+
+        <div class="section-head">
+          <div><h2>Recommended review path</h2><p>Diagnose first, then verify the evidence.</p></div>
+          <div class="section-note">Tasks are serialized. You may add more checks while another task is running.</div>
+        </div>
+        <div class="path-grid">
+          <article class="path-card">
+            <div class="path-step">STEP 01</div><h3>Diagnose this machine</h3>
+            <p>Checks prerequisites, versions, resources, repository inputs, and EDA readiness without installing anything.</p>
+            <div class="path-meta"><span class="tag">Read-only</span><span class="tag">Exact fix commands</span></div>
+            <button class="button primary run-task" data-task="doctor">Run make doctor</button>
+          </article>
+          <article class="path-card">
+            <div class="path-step">STEP 02</div><h3>Verify packaged evidence</h3>
+            <p>Checks Tables 4, 5, and 6 against authoritative expected values and integrity manifests.</p>
+            <div class="path-meta"><span class="tag">&lt; 5 seconds</span><span class="tag">No network</span><span class="tag">Primary</span></div>
+            <button class="button run-task" data-task="evidence">Run make evidence</button>
+          </article>
+          <article class="path-card">
+            <div class="path-step">STEP 03 · OPTIONAL</div><h3>Run the AES smoke flow</h3>
+            <p>Executes a fresh RTL-to-GDS validation using the pinned Yosys and OpenROAD toolchain.</p>
+            <div class="path-meta"><span class="tag">2–5 minutes</span><span class="tag">Tools required</span></div>
+            <button class="button run-task" data-task="smoke" data-confirm="Run the AES smoke flow now? The pinned toolchain must already be built.">Run make smoke</button>
+          </article>
+        </div>
+
+        <div class="section-head"><div><h2>All reviewer commands</h2><p>Fixed commands only; arbitrary shell input is not accepted.</p></div></div>
+        <div class="card command-list">
+          <div class="command-row"><code class="command-name">make doctor-smoke</code><span class="command-description">Strictly require all rebuild tools, the prepared ORFS workspace, and pinned EDA binaries.</span><button class="button subtle run-task" data-task="doctor-smoke">Queue</button></div>
+          <div class="command-row"><code class="command-name">make check</code><span class="command-description">Inspect revisions, binaries, hashes, and shared libraries after setup.</span><button class="button subtle run-task" data-task="check">Queue</button></div>
+          <div class="command-row"><code class="command-name">make table4</code><span class="command-description">Verify QoR values and the 18 selected-program source trees.</span><button class="button subtle run-task" data-task="table4">Queue</button></div>
+          <div class="command-row"><code class="command-name">make table5</code><span class="command-description">Verify the three composability counterexamples.</span><button class="button subtle run-task" data-task="table5">Queue</button></div>
+          <div class="command-row"><code class="command-name">make table6</code><span class="command-description">Verify nine cut-row repair cases across three designs.</span><button class="button subtle run-task" data-task="table6">Queue</button></div>
+          <div class="command-row"><code class="command-name">make smoke-check</code><span class="command-description">Validate the archived reference smoke result without a fresh EDA run.</span><button class="button subtle run-task" data-task="smoke-check">Queue</button></div>
+          <div class="command-row"><code class="command-name">make bootstrap</code><span class="command-description">Create the pinned sibling ORFS/OpenROAD workspace; requires network access.</span><button class="button subtle run-task" data-task="bootstrap" data-confirm="Bootstrap downloads the pinned ORFS workspace. Continue?">Queue</button></div>
+          <div class="command-row"><code class="command-name">make setup</code><span class="command-description">Build pinned Yosys and OpenROAD binaries; typically takes 10–30 minutes.</span><button class="button subtle run-task" data-task="setup" data-confirm="Setup compiles the EDA toolchain and may take 10–30 minutes. Continue?">Queue</button></div>
+          <div class="command-row"><code class="command-name">full reproduction</code><span class="command-description">Run bootstrap, setup, and smoke in sequence. Requires network, build tools, and about 10 GB.</span><button class="button subtle danger run-task" data-task="full" data-confirm="Start the full reproduction? This downloads and builds tools, uses about 10 GB, and may run for over 30 minutes.">Queue</button></div>
+        </div>
+
+        <div class="card queue-panel" id="queuePanel"><p class="queue-title">Waiting queue</p><div id="queueList"></div></div>
+        <div class="card error-card" id="errorCard" aria-live="polite"></div>
+
+        <div class="terminal-card card" id="terminalCard">
+          <div class="terminal-bar">
+            <div class="terminal-title"><strong id="terminalTask">Reviewer terminal</strong><span id="elapsed"></span></div>
+            <div class="terminal-actions">
+              <button id="cancelTask" disabled>Cancel active</button><button id="copyLog">Copy</button><button id="downloadLog">Download log</button><button id="exportJson">Export JSON</button><button id="clearLog">Clear</button>
+            </div>
+          </div>
+          <div class="terminal-output" id="terminalOutput" role="log" aria-live="polite"><div class="terminal-empty">Waiting for a reviewer command.</div></div>
+        </div>
+
+        <div class="section-head"><div><h2>Run history</h2><p>Completed tasks from this server session.</p></div></div>
+        <div class="card history" id="history"><div class="history-empty">No completed tasks yet.</div></div>
+      </section>
+
+      <section class="view" id="view-slides">
+        <header class="page-head">
+          <p class="eyebrow">Paper and artifact presentation</p><h1>From black-box tuning to source-mechanism exploration.</h1>
+          <p class="lead">An architecture-led presentation of the proposed method, the AE package, the verification flow, and the observed DSE effects. Use the arrow keys to move through the slides.</p>
+        </header>
+        <div class="card results-shell">
+          <div id="slides"></div>
+          <div class="slide-nav">
+            <div><button class="button subtle" id="previousSlide">Previous</button><button class="button subtle" id="nextSlide">Next</button></div>
+            <div class="slide-dots" id="slideDots"></div>
+            <div><span class="slide-counter" id="slideCounter"></span><button class="button subtle" id="printSlides">Print / PDF</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-guide">
+        <header class="page-head">
+          <p class="eyebrow">Reviewer guide</p><h1>Connect safely, then verify from fast to complete.</h1>
+          <p class="lead">The primary evidence path takes seconds. Building the EDA toolchain and running a fresh smoke flow are optional deeper checks.</p>
+        </header>
+        <div class="guide-layout">
+          <div class="guide-stack">
+            <article class="card guide-card">
+              <h2>1. Run the console on the evaluation machine</h2>
+              <p>Clone or unpack the artifact, then start the web console from the repository root. The service listens on localhost by default.</p>
+              <div class="code-block"><button class="copy-code">Copy</button>cd DPLEvolve-AE/web-demo
+bash start.sh</div>
+              <h3>Open it on the same machine</h3>
+              <p>Visit <code>http://127.0.0.1:8080</code> and keep the execution mode set to <strong>This machine</strong>.</p>
+              <h3>Open it from your laptop through an SSH tunnel</h3>
+              <p>Run the following command on your laptop, replacing the user and host. Then open <code>http://127.0.0.1:8080</code> locally.</p>
+              <div class="code-block"><button class="copy-code">Copy</button>ssh -L 8080:127.0.0.1:8080 reviewer@evaluation-host</div>
+              <p>Do not expose the console directly to a public interface. The tunnel encrypts browser traffic and avoids adding a second authentication layer.</p>
+            </article>
+
+            <article class="card guide-card">
+              <h2>2. Optional: execute on a separate machine</h2>
+              <p>If the console and the EDA environment are on different machines, select <strong>Another machine via SSH</strong> in the Review page and provide:</p>
+              <ul><li>the SSH host, user, and port;</li><li>the absolute path to <code>DPLEvolve-AE</code> on that host;</li><li>either a private-key path available to the web-server process or a password.</li></ul>
+              <p>Use <strong>Test connection</strong> first. It verifies both SSH access and the remote repository directory. Credentials are held only in server memory while queued tasks exist; they are not included in status or export responses.</p>
+            </article>
+
+            <article class="card guide-card">
+              <h2>3. Diagnose without changing the host</h2>
+              <p>Run Doctor before the evidence check. It never installs packages or changes files.</p>
+              <div class="code-block"><button class="copy-code">Copy</button>cd DPLEvolve-AE
+make doctor</div>
+              <p>If Doctor reports a missing command, copy the suggested Ubuntu/Debian or Rocky/RHEL command into a normal SSH terminal, review it, run it manually if your administrator permits, and then run Doctor again. Do not run interactive <code>sudo</code> installation through the browser console.</p>
+              <p>Use <code>make doctor-smoke</code> only when checking whether the complete source-rebuild and fresh AES flow are ready.</p>
+            </article>
+
+            <article class="card guide-card">
+              <h2>4. What every Make target does</h2>
+              <table class="make-table">
+                <thead><tr><th>Target</th><th>Purpose</th><th>Typical cost</th><th>Writes / network</th></tr></thead>
+                <tbody>
+                  <tr><td><code>make doctor</code></td><td>Read-only first-run diagnosis. Reports missing prerequisites and exact OS-specific commands without installing.</td><td>&lt; 1 sec</td><td>No changes</td></tr>
+                  <tr><td><code>make doctor-smoke</code></td><td>Strictly checks rebuild tools, resources, ORFS, and pinned EDA binaries.</td><td>&lt; 1 sec</td><td>No changes</td></tr>
+                  <tr><td><code>make evidence</code></td><td>Runs Table 4, 5, and 6 verification and checks packaged claims against expected values.</td><td>&lt; 5 sec</td><td>No network; read-only checks</td></tr>
+                  <tr><td><code>make table4</code></td><td>Checks QoR comparisons, tolerances, manifests, and 18 selected source trees.</td><td>&lt; 5 sec</td><td>No network</td></tr>
+                  <tr><td><code>make table5</code></td><td>Checks three non-composable counterexamples and expected verdicts.</td><td>&lt; 1 sec</td><td>No network</td></tr>
+                  <tr><td><code>make table6</code></td><td>Checks nine cut-row repair cases for Ariane133, SWERV, and BPQUAD.</td><td>&lt; 1 sec</td><td>No network</td></tr>
+                  <tr><td><code>make check</code></td><td>Reports system tools, repository paths, revisions, EDA binaries, hashes, and libraries.</td><td>&lt; 1 sec</td><td>Read-only</td></tr>
+                  <tr><td><code>make bootstrap</code></td><td>Creates a sibling ORFS workspace at the pinned prepared source trees.</td><td>About 2 min</td><td>Downloads sources; writes outside repo</td></tr>
+                  <tr><td><code>make setup</code></td><td>Creates the Python environment and builds pinned Yosys and OpenROAD binaries.</td><td>10–30 min</td><td>Build output; may install Python packages</td></tr>
+                  <tr><td><code>make smoke</code></td><td>Runs a fresh AES/Nangate45 flow and checks hashes, legality, instance count, and HPWL.</td><td>2–5 min</td><td>Writes ORFS results/logs</td></tr>
+                  <tr><td><code>make smoke-check</code></td><td>Validates the prepared reference smoke run without executing EDA again.</td><td>Seconds</td><td>Read-only</td></tr>
+                  <tr><td><code>make test</code></td><td>Runs artifact structure, integration, and Python unit tests for maintainers.</td><td>Varies</td><td>May create test output</td></tr>
+                  <tr><td><code>make clean</code></td><td>Removes generated artifact-bundle output while preserving archived inputs and expected values.</td><td>Seconds</td><td>Destructive to generated output</td></tr>
+                </tbody>
+              </table>
+            </article>
+          </div>
+
+          <aside class="card guide-card sticky-guide">
+            <p class="eyebrow">Suggested checklist</p><h2>Minimum defensible review</h2>
+            <ol class="checklist">
+              <li>Test the This machine or SSH connection.</li>
+              <li>Run <code>make doctor</code>; copy any suggested install command into a normal SSH terminal.</li>
+              <li>Run <code>make evidence</code> and save the terminal log.</li>
+              <li>Compare the summary with Tables 4, 5, and 6.</li>
+              <li>Inspect the archived traces and selected source trees.</li>
+              <li>Run <code>make smoke-check</code> for the reference EDA output.</li>
+              <li>If resources permit, run bootstrap, setup, check, then smoke.</li>
+              <li>Export the session JSON for the review record.</li>
+            </ol>
+            <h3>Expected headline</h3>
+            <div class="code-block">[PASS] All packaged paper-evidence bundles passed</div>
+            <h3>Full-flow headline</h3>
+            <div class="code-block">[OK] AES smoke test PASSED</div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    'use strict';
+
+    const state = {
+      mode: 'local',
+      ws: null,
+      reconnectTimer: null,
+      currentView: 'review',
+      currentSlide: 0,
+      commandStarted: null,
+      elapsedTimer: null,
+      hasOutput: false,
+      lastWsStatus: 0,
+      paramikoAvailable: null,
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const terminal = $('terminalOutput');
+
+    function formatDuration(value) {
+      const seconds = Math.max(0, Math.floor(Number(value) || 0));
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const rest = seconds % 60;
+      if (hours) return `${hours}h ${minutes}m`;
+      if (minutes) return `${minutes}m ${rest}s`;
+      return `${rest}s`;
+    }
+
+    function stripAnsi(value) {
+      return String(value ?? '').replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '');
+    }
+
+    function appendOutput(text, stream = 'stdout') {
+      if (!state.hasOutput) {
+        terminal.replaceChildren();
+        state.hasOutput = true;
+      }
+      const line = document.createElement('div');
+      const clean = stripAnsi(text);
+      const warning = clean.startsWith('[WARN]') || clean.startsWith('[WARNING]');
+      line.className = `terminal-line ${warning || stream === 'info' ? 'info' : stream === 'stderr' ? 'stderr' : ''}`;
+      if (clean.startsWith('✅') || clean.includes('[PASS]') || clean.includes('[OK]')) line.classList.add('success');
+      line.textContent = clean;
+      terminal.appendChild(line);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function switchView(name) {
+      if (!['review', 'slides', 'guide'].includes(name)) return;
+      state.currentView = name;
+      document.querySelectorAll('.view').forEach((view) => view.classList.toggle('active', view.id === `view-${name}`));
+      document.querySelectorAll('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.view === name));
+      window.history.replaceState(null, '', `#${name}`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('.nav-button').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.view)));
+
+    function setMode(mode) {
+      state.mode = mode;
+      document.querySelectorAll('.segment').forEach((button) => button.classList.toggle('active', button.dataset.mode === mode));
+      $('remoteFields').classList.toggle('hidden', mode !== 'remote');
+      document.querySelectorAll('.local-field').forEach((field) => field.classList.toggle('hidden', mode !== 'local'));
+      if (mode === 'remote' && state.paramikoAvailable === false) {
+        setConnectionMessage('SSH support is unavailable. Install the web-demo requirements and restart the console.', 'error');
+      } else {
+        setConnectionMessage('', '');
+      }
+    }
+
+    document.querySelectorAll('.segment').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.mode)));
+
+    function connectionConfig() {
+      if (state.mode === 'local') return { host: 'localhost', user: '', port: 22, key_path: '', password: '', root_path: '' };
+      return {
+        host: $('sshHost').value.trim(),
+        user: $('sshUser').value.trim(),
+        port: Number.parseInt($('sshPort').value, 10) || 22,
+        key_path: $('sshKey').value.trim(),
+        password: $('sshPassword').value,
+        root_path: $('sshRoot').value.trim(),
+      };
+    }
+
+    function setConnectionMessage(message, kind) {
+      const target = $('connectionMessage');
+      target.textContent = message;
+      target.className = `connection-message ${kind || ''}`;
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, options);
+      let data;
+      try { data = await response.json(); } catch { data = {}; }
+      if (!response.ok) throw new Error(data.detail || data.message || `Request failed (${response.status})`);
+      return data;
+    }
+
+    $('testConnection').addEventListener('click', async () => {
+      const button = $('testConnection');
+      button.disabled = true;
+      setConnectionMessage('Testing…', '');
+      try {
+        const result = await api('/api/ssh/connect', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(connectionConfig()),
+        });
+        setConnectionMessage(result.message, result.success ? 'success' : 'error');
+      } catch (error) {
+        setConnectionMessage(error.message, 'error');
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    async function runTask(button) {
+      const warning = button.dataset.confirm;
+      if (warning && !window.confirm(warning)) return;
+      try {
+        const result = await api(`/api/run/task/${encodeURIComponent(button.dataset.task)}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ssh: connectionConfig() }),
+        });
+        appendOutput(result.message, 'info');
+        focusTerminal();
+      } catch (error) {
+        appendOutput(`Could not submit task: ${error.message}`, 'stderr');
+        focusTerminal();
+      }
+    }
+
+    function focusTerminal() {
+      window.requestAnimationFrame(() => {
+        $('terminalCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    document.querySelectorAll('.run-task').forEach((button) => button.addEventListener('click', () => runTask(button)));
+
+    function updateStatus(message) {
+      state.lastWsStatus = Date.now();
+      const dot = $('stateDot');
+      dot.className = 'state-dot';
+      if (message.running) dot.classList.add('busy');
+      else if (message.exit_code !== null && message.exit_code !== 0) dot.classList.add('error');
+      $('stateLabel').textContent = message.running ? 'Running' : message.exit_code === 0 ? 'Ready' : message.exit_code ? 'Needs attention' : 'Ready';
+      $('metaTask').textContent = message.running ? (message.current_command || 'Starting') : 'Idle';
+      $('metaQueue').textContent = String(message.queue_length || 0);
+      if (message.uptime !== undefined) $('metaUptime').textContent = formatDuration(message.uptime);
+      $('terminalTask').textContent = message.running ? (message.current_command || 'Starting task') : 'Reviewer terminal';
+      $('cancelTask').disabled = !message.running;
+      renderQueue(message.queued_jobs || []);
+      renderHistory(message.history || []);
+      updateElapsedState(message);
+    }
+
+    function updateElapsedState(message) {
+      if (message.running && message.start_time) {
+        state.commandStarted = message.start_time;
+        if (!state.elapsedTimer) state.elapsedTimer = window.setInterval(renderElapsed, 1000);
+        renderElapsed();
+      } else {
+        state.commandStarted = null;
+        if (state.elapsedTimer) window.clearInterval(state.elapsedTimer);
+        state.elapsedTimer = null;
+        $('elapsed').textContent = '';
+      }
+    }
+
+    function renderElapsed() {
+      if (state.commandStarted) $('elapsed').textContent = formatDuration(Date.now() / 1000 - state.commandStarted);
+    }
+
+    function renderQueue(jobs) {
+      const panel = $('queuePanel');
+      const list = $('queueList');
+      panel.classList.toggle('visible', jobs.length > 0);
+      list.replaceChildren();
+      jobs.forEach((job, index) => {
+        const row = document.createElement('div'); row.className = 'queue-item';
+        const position = document.createElement('span'); position.className = 'queue-position'; position.textContent = String(index + 1).padStart(2, '0');
+        const label = document.createElement('span'); label.className = 'queue-label'; label.textContent = job.label;
+        const cancel = document.createElement('button'); cancel.className = 'button subtle'; cancel.textContent = 'Remove';
+        cancel.addEventListener('click', async () => {
+          try {
+            const result = await api(`/api/queue/cancel/${encodeURIComponent(job.id)}`, { method: 'POST' });
+            appendOutput(result.cancelled ? `Removed from queue: ${result.label}` : result.message, result.cancelled ? 'info' : 'stderr');
+          } catch (error) { appendOutput(`Queue update failed: ${error.message}`, 'stderr'); }
+        });
+        row.append(position, label, cancel); list.appendChild(row);
+      });
+    }
+
+    function renderHistory(history) {
+      const target = $('history'); target.replaceChildren();
+      if (!history.length) {
+        const empty = document.createElement('div'); empty.className = 'history-empty'; empty.textContent = 'No completed tasks yet.'; target.appendChild(empty); return;
+      }
+      history.slice().reverse().forEach((entry) => {
+        const row = document.createElement('div'); row.className = 'history-row';
+        const mark = document.createElement('span'); mark.textContent = entry.exit_code === 0 ? '✓' : entry.exit_code === -15 ? '–' : '×'; mark.className = entry.exit_code === 0 ? 'pass' : '';
+        const name = document.createElement('span'); name.textContent = entry.command;
+        const meta = document.createElement('span'); meta.className = 'history-time';
+        const duration = Math.max(0, Number(entry.finished) - Number(entry.started));
+        meta.textContent = `${new Date(entry.started * 1000).toLocaleTimeString()} · ${duration.toFixed(1)}s · exit ${entry.exit_code}`;
+        row.append(mark, name, meta); target.appendChild(row);
+      });
+    }
+
+    function showErrorDetail(detail) {
+      const card = $('errorCard'); card.replaceChildren(); card.classList.add('visible');
+      const title = document.createElement('h3'); title.className = 'error-title'; title.textContent = `${detail.command || 'Command'} did not complete`;
+      const summary = document.createElement('p'); summary.className = 'error-summary'; summary.textContent = `Exit ${detail.exit_code}: ${detail.meaning || 'Review the terminal output.'}`;
+      card.append(title, summary);
+      if (Array.isArray(detail.suggestions) && detail.suggestions.length) {
+        const list = document.createElement('ul'); list.className = 'error-suggestions';
+        detail.suggestions.forEach((suggestion) => { const item = document.createElement('li'); item.textContent = suggestion; list.appendChild(item); });
+        card.appendChild(list);
+      }
+    }
+
+    function connectWebSocket() {
+      if (state.ws && [WebSocket.OPEN, WebSocket.CONNECTING].includes(state.ws.readyState)) return;
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      state.ws = new WebSocket(`${protocol}//${location.host}/ws/output`);
+      state.ws.onopen = () => appendOutput('Live output connected.', 'info');
+      state.ws.onmessage = (event) => {
+        let message;
+        try { message = JSON.parse(event.data); } catch { return; }
+        if (message.type === 'output') appendOutput(message.text, message.stream);
+        if (message.type === 'status') updateStatus(message);
+        if (message.type === 'error_detail') showErrorDetail(message);
+      };
+      state.ws.onclose = () => { window.clearTimeout(state.reconnectTimer); state.reconnectTimer = window.setTimeout(connectWebSocket, 1800); };
+    }
+
+    $('cancelTask').addEventListener('click', async () => {
+      try {
+        const result = await api('/api/run/cancel', { method: 'POST' });
+        appendOutput(result.message || (result.cancelled ? 'Cancellation requested.' : 'Nothing to cancel.'), result.cancelled ? 'info' : 'stderr');
+      } catch (error) { appendOutput(`Cancellation failed: ${error.message}`, 'stderr'); }
+    });
+
+    function terminalText() { return Array.from(terminal.children).map((node) => node.textContent).join('\n'); }
+    function download(name, content, type = 'text/plain') {
+      const url = URL.createObjectURL(new Blob([content], { type }));
+      const link = document.createElement('a'); link.href = url; link.download = name; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+    }
+    $('copyLog').addEventListener('click', async () => { try { await navigator.clipboard.writeText(terminalText()); appendOutput('Terminal copied to the clipboard.', 'info'); } catch { appendOutput('Clipboard access was denied.', 'stderr'); } });
+    $('downloadLog').addEventListener('click', () => download(`dplevolve-review-${new Date().toISOString().replace(/[:.]/g, '-')}.txt`, terminalText()));
+    $('clearLog').addEventListener('click', () => { terminal.replaceChildren(); state.hasOutput = false; const empty = document.createElement('div'); empty.className = 'terminal-empty'; empty.textContent = 'Terminal cleared.'; terminal.appendChild(empty); $('errorCard').classList.remove('visible'); });
+    $('exportJson').addEventListener('click', async () => { try { const data = await api('/api/export/results'); download(`dplevolve-review-${new Date().toISOString().replace(/[:.]/g, '-')}.json`, JSON.stringify(data, null, 2), 'application/json'); } catch (error) { appendOutput(`Export failed: ${error.message}`, 'stderr'); } });
+
+    const slides = [
+      {
+        kicker: '01 · Research problem',
+        title: 'Black-box DSE finds a better point, but cannot explain the mechanism',
+        lead: 'DPLEvolve changes the unit of exploration from exposed knobs to source-level optimization behavior.',
+        body: `<div class="concept-compare"><div class="concept-card"><h3>Conventional black-box DSE</h3><p>Parameter configuration → EDA tool → QoR number. The optimizer learns correlation, but the code path and physical mechanism remain hidden.</p></div><div class="concept-arrow">→</div><div class="concept-card accent"><h3>DPLEvolve white-box DSE</h3><p>Instrument source transformations, trace their PPA consequences, attribute the mechanism, then select the next candidate with causal evidence.</p></div></div>`,
+      },
+      {
+        kicker: '02 · Proposed architecture',
+        title: 'An advisor, a source-aware exploration engine, and the physical-design flow',
+        lead: 'The architecture connects archived LLM reasoning to OpenROAD instrumentation, DSE candidate selection, and reproducible verification.',
+        body: `<img class="slide-image" src="/static/dplevolve-architecture.png" alt="DPLEvolve proposed architecture">`,
+      },
+      {
+        kicker: '03 · ReviewDSE mechanism',
+        title: 'The white-box loop turns a QoR delta into an actionable source mechanism',
+        lead: 'Each iteration preserves the path from an intervention in source code to the physical-design effect it produced.',
+        body: `<div class="method-flow"><div class="method-stage"><div class="number">01</div><strong>Instrument</strong><span>Expose individual OpenROAD transformations and candidate intervention points.</span></div><div class="method-stage"><div class="number">02</div><strong>Execute</strong><span>Run the prepared ORFS flow on the selected design state.</span></div><div class="method-stage"><div class="number">03</div><strong>Trace</strong><span>Record the optimization path and incremental PPA changes.</span></div><div class="method-stage"><div class="number">04</div><strong>Attribute</strong><span>Connect QoR movement to a concrete source-level mechanism.</span></div><div class="method-stage"><div class="number">05</div><strong>Evolve</strong><span>Use the explanation to compose or select the next program candidate.</span></div></div>`,
+      },
+      {
+        kicker: '04 · AE project architecture',
+        title: 'The artifact separates the interface, evidence, implementation, and fresh EDA execution',
+        lead: 'A reviewer can audit paper claims quickly, inspect the source mechanisms, and optionally rebuild the complete toolchain.',
+        body: `<div class="architecture-layers"><div class="architecture-layer"><span class="layer-name">Reviewer interface</span><span class="layer-detail">web-demo/ · Makefile · doctor · logs and session export</span></div><div class="architecture-layer"><span class="layer-name">Claim evidence</span><span class="layer-detail">Table 4 QoR · Table 5 composability · Table 6 cut-row bundles · authoritative expected JSON</span></div><div class="architecture-layer"><span class="layer-name">Method source</span><span class="layer-detail">ReviewDSE framework · archived reasoning traces · 18 selected program trees · SHA-256 manifests</span></div><div class="architecture-layer"><span class="layer-name">Reproducibility locks</span><span class="layer-detail">Pinned ORFS, OpenROAD, Yosys commits · configuration and provenance records</span></div><div class="architecture-layer"><span class="layer-name">Optional fresh flow</span><span class="layer-detail">AES/Nangate45 synthesis → floorplan → placement → routing → legality and QoR checks</span></div></div>`,
+      },
+      {
+        kicker: '05 · Verification architecture',
+        title: 'Diagnosis, paper evidence, and source reproduction are deliberately separate',
+        lead: 'The reviewer receives useful results even when the host is not yet prepared for a long EDA build.',
+        body: `<div class="verification-flow"><div class="verification-node accent"><h3>1. Doctor</h3><p>Read-only host diagnosis. Reports missing commands, versions, memory, disk, repository state, and exact OS-specific remediation commands.</p></div><div class="verification-arrow">→</div><div class="verification-node"><h3>2. Evidence</h3><p>Recompute Tables 4–6 summaries from packaged inputs, compare authoritative values, and audit traces and manifests in seconds.</p></div><div class="verification-arrow">→</div><div class="verification-node"><h3>3. Optional reproduction</h3><p>Bootstrap pinned sources, build Yosys/OpenROAD, inspect the prepared environment, then run a fresh AES end-to-end smoke flow.</p></div></div>`,
+      },
+      {
+        kicker: '06 · DSE effect',
+        title: 'Source-mechanism exploration improves QoR with modest runtime overhead',
+        lead: 'Table 4 compares the black-box BO-DSE baseline with objective-specific ReviewDSE programs.',
+        body: `<div class="effect-list"><div class="effect-row"><span class="effect-label">BO-DSE · HPWL</span><div class="effect-track"><div class="effect-fill" style="width:21%;opacity:.42"></div></div><span class="effect-value">0.38%</span></div><div class="effect-row"><span class="effect-label">ReviewDSE · HPWL</span><div class="effect-track"><div class="effect-fill" style="width:100%"></div></div><span class="effect-value">1.78%</span></div><div class="effect-row"><span class="effect-label">ReviewDSE · GHR</span><div class="effect-track"><div class="effect-fill" style="width:94%"></div></div><span class="effect-value">1.68%</span></div></div><table class="result-table" style="margin-top:28px"><thead><tr><th>Program objective</th><th>Observed effect</th><th>Runtime relative to BO-DSE</th></tr></thead><tbody><tr><td>ReviewDSE-HPWL</td><td>1.78% mean HPWL reduction</td><td>1.34×</td></tr><tr><td>ReviewDSE-GHR</td><td>1.68% global-routing overflow reduction</td><td>1.11×</td></tr></tbody></table>`,
+      },
+      {
+        kicker: '07 · Mechanism evidence',
+        title: 'The artifact tests whether source-level programs compose and repair hard placement cases',
+        lead: 'Tables 5 and 6 focus on behavior that a parameter-only result table cannot explain.',
+        body: `<div class="slide-grid"><div class="metric"><div class="metric-value">3</div><div class="metric-label">Composability counterexamples expose when individually useful steps cannot be safely combined.</div></div><div class="metric"><div class="metric-value">9</div><div class="metric-label">Cut-row cases across Ariane133, SWERV, and BPQUAD exercise mechanism-level repair.</div></div><div class="metric"><div class="metric-value">18</div><div class="metric-label">Selected source-program trees preserve the concrete transformations used for audit.</div></div></div><ul class="slide-list" style="margin-top:22px"><li>ReviewDSE finds legal placements in cases where fixed Diamond or Negotiation strategies fail or time out.</li><li>The archived programs make each claimed mechanism inspectable instead of presenting only a final score.</li></ul>`,
+      },
+      {
+        kicker: '08 · Reproducibility boundary',
+        title: 'The AE package distinguishes auditable evidence from expensive regeneration',
+        lead: 'This boundary keeps the primary review fast without pretending that multi-terabyte inputs or proprietary LLM calls are cheap to repeat.',
+        body: `<div class="boundary-grid"><div class="boundary-card"><h3>Packaged for direct audit</h3><ul><li>Tables 4–6 inputs and expected values</li><li>Archived LLM reasoning traces</li><li>18 selected source-program trees</li><li>Pinned revisions and integrity manifests</li><li>AES reference and fresh smoke path</li></ul></div><div class="boundary-card"><h3>Not required for primary review</h3><ul><li>Regenerating roughly 3 TB of full experiment ODBs</li><li>Repeating proprietary multi-billion-token LLM traces</li><li>Re-running every paper design point</li><li>Building EDA tools before checking packaged claims</li><li>Any GPU or commercial EDA license</li></ul></div></div>`,
+      },
+    ];
+
+    function renderSlides() {
+      const target = $('slides'); target.replaceChildren();
+      slides.forEach((slide, index) => {
+        const article = document.createElement('article'); article.className = `slide ${index === state.currentSlide ? 'active' : ''}`;
+        const kicker = document.createElement('div'); kicker.className = 'slide-kicker'; kicker.textContent = slide.kicker;
+        const title = document.createElement('h2'); title.textContent = slide.title;
+        const lead = document.createElement('p'); lead.className = 'slide-lead'; lead.textContent = slide.lead;
+        const body = document.createElement('div'); body.innerHTML = slide.body;
+        article.append(kicker, title, lead, body); target.appendChild(article);
+      });
+      const dots = $('slideDots'); dots.replaceChildren();
+      slides.forEach((_, index) => { const dot = document.createElement('button'); dot.className = `slide-dot ${index === state.currentSlide ? 'active' : ''}`; dot.setAttribute('aria-label', `Open slide ${index + 1}`); dot.addEventListener('click', () => goToSlide(index)); dots.appendChild(dot); });
+      $('slideCounter').textContent = `${state.currentSlide + 1} / ${slides.length}`;
+      $('previousSlide').disabled = state.currentSlide === 0;
+      $('nextSlide').disabled = state.currentSlide === slides.length - 1;
+    }
+
+    function goToSlide(index) { if (index < 0 || index >= slides.length) return; state.currentSlide = index; renderSlides(); }
+    $('previousSlide').addEventListener('click', () => goToSlide(state.currentSlide - 1));
+    $('nextSlide').addEventListener('click', () => goToSlide(state.currentSlide + 1));
+    $('printSlides').addEventListener('click', () => window.print());
+    document.addEventListener('keydown', (event) => { if (state.currentView !== 'slides') return; if (event.key === 'ArrowRight') goToSlide(state.currentSlide + 1); if (event.key === 'ArrowLeft') goToSlide(state.currentSlide - 1); });
+
+    document.querySelectorAll('.copy-code').forEach((button) => button.addEventListener('click', async () => {
+      const text = Array.from(button.parentElement.childNodes).filter((node) => node !== button).map((node) => node.textContent).join('').trim();
+      try { await navigator.clipboard.writeText(text); button.textContent = 'Copied'; window.setTimeout(() => { button.textContent = 'Copy'; }, 1200); } catch { button.textContent = 'Unavailable'; }
+    }));
+
+    async function loadServerInfo() {
+      try {
+        const info = await api('/api/server-info');
+        $('metaPython').textContent = info.python_version;
+        $('metaUptime').textContent = formatDuration(info.uptime);
+        $('localRoot').value = info.ae_root;
+        state.paramikoAvailable = info.paramiko_available;
+        if (state.mode === 'remote' && !info.paramiko_available) {
+          setConnectionMessage('SSH support is unavailable. Install the web-demo requirements and restart the console.', 'error');
+        }
+      } catch { $('stateLabel').textContent = 'Offline'; $('stateDot').classList.add('error'); }
+    }
+
+    window.setInterval(async () => {
+      if (Date.now() - state.lastWsStatus > 15000) {
+        try { updateStatus(await api('/api/status')); } catch { /* WebSocket reconnect handles this. */ }
+      }
+    }, 15000);
+    window.setInterval(loadServerInfo, 30000);
+
+    renderSlides();
+    switchView(location.hash.slice(1) || 'review');
+    loadServerInfo();
+    connectWebSocket();
+  </script>
+</body>
+</html>

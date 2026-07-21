@@ -13,13 +13,16 @@ in this artifact. All versions are pinned to prevent bit-rot.
 | GNU Make | 4.0 | 4.3 | `make --version` |
 | Bash | 4.0 | 5.1 | `bash --version` |
 
-Run `make check` to verify your environment against these requirements.
+Run `make doctor` for a non-mutating first-run diagnosis. Unlike `make check`,
+Doctor does not require ORFS or prebuilt EDA binaries. Run `make check` after
+bootstrap/setup to inspect pinned commits, binary hashes, and shared libraries.
 
-### Smoke Flow (Auto-Installed)
+### Smoke Flow (Built After Host Prerequisites)
 
-The following tools are fetched and built automatically by
-`make bootstrap && make setup`. Exact commit hashes are recorded in
-`provenance/source-commits.json`.
+The following EDA tools are fetched and built by `make bootstrap && make setup`
+after the reviewer has installed any missing host packages reported by Doctor.
+The artifact never invokes `sudo` automatically. Exact commit hashes are
+recorded in `provenance/source-commits.json`.
 
 | Tool | Version / Commit | Build Time |
 |------|-----------------|------------|
@@ -39,9 +42,17 @@ If a build fails, check that your system has:
 - Tcl/Tk development headers (for Yosys)
 - Boost development libraries (for OpenROAD)
 
-On Ubuntu 22.04:
+Doctor prints an OS-specific command containing only the missing command-line
+packages it can detect. It never executes package installation. After
+`make bootstrap`, the pinned ORFS dependency installer is the authoritative
+source for the complete C++ dependency set.
+
+Typical Ubuntu 22.04 build prerequisites are:
 
 ```bash
 sudo apt-get install build-essential cmake tcl-dev tk-dev \
   libboost-all-dev libeigen3-dev libspdlog-dev
 ```
+
+Do not paste installation commands blindly on a managed server. Review them or
+ask the system administrator, then repeat `make doctor`.

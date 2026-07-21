@@ -35,6 +35,7 @@ This artifact contains:
 
 - **Source code** for the ReviewDSE framework
 - **Pre-computed experiment traces** for all paper tables and figures
+- **Web Demo** — a visual reviewer console for evidence checks, reproduction, live logs, and project slides
 - **AES smoke flow** — a fresh RTL-to-GDS run you can execute on your own machine
 - **SHA-256 integrity checks** on every evidence bundle
 
@@ -66,15 +67,20 @@ The pipeline operates in six stages:
 
 ![Verification Flow](dplevolve-verification-flow.png)
 
-**Step 1 — Environment check** (< 1 second): Verifies the full toolchain — Python, GNU Make, Bash, ORFS workspace,
-Yosys binary, OpenROAD binary, and all pinned commit hashes. Requires `make bootstrap` to have been run first.
+**Step 1 — Reviewer Doctor** (< 1 second): Checks Python, GNU Make, Bash,
+web-console support, build commands, memory, disk, repository inputs, ORFS, and
+EDA binaries. It never installs packages; missing items produce copyable,
+OS-specific commands for the reviewer to run manually.
 
 **Step 2 — Evidence verification** (< 5 seconds): Cross-checks every
 pre-computed result against its expected value. This is the primary
 verification path — it confirms that the packaged evidence matches the
 paper's claims.
 
-**Step 3 — Smoke flow** (~20–35 minutes, optional): Builds Yosys and
+**Step 3 — Prepared environment inspection** (< 1 second, after setup): Checks
+pinned source revisions, Yosys/OpenROAD binaries, hashes, and shared libraries.
+
+**Step 4 — Smoke flow** (~20–35 minutes including setup, optional): Builds Yosys and
 OpenROAD from pinned source revisions, then runs synthesis → floorplan →
 place → route on the AES (Nangate45) design. Run this to verify that the
 entire toolchain functions end-to-end on your hardware.
@@ -85,57 +91,43 @@ entire toolchain functions end-to-end on your hardware.
 
 ```
 DPLEvolve-AE/
-├── README.md                          # This document
-├── Makefile                           # All entry points
+├── README.md                          # Primary reviewer guide
+├── README.pdf                         # PDF copy of the reviewer guide
+├── Makefile                           # All command-line entry points
 ├── dplevolve-architecture.png         # Architecture diagram
 ├── dplevolve-verification-flow.png    # Verification flow diagram
 │
+├── web-demo/                          # Visual artifact reviewer console
+│   ├── server.py                      # FastAPI task queue and SSH backend
+│   ├── start.sh                       # Isolated web environment launcher
+│   ├── requirements.txt               # Pinned-compatible web dependencies
+│   ├── templates/                     # English UI, guide, and project slides
+│   ├── static/                        # Local visual assets
+│   └── tests/                         # Web backend regression tests
+│
 ├── artifacts/                         # Experiment results and evidence
-│   ├── 01-table4-qor/                 #   Table 4: QoR comparison
-│   │   ├── expected/                  #     Expected values (JSON, authoritative)
-│   │   ├── traces/                    #     LLM reasoning traces (readable text)
-│   │   ├── selected-programs/         #     18 source trees with SHA-256 manifests
-│   │   └── output/                    #     Generated verification output
-│   ├── 02-table5-composability/       #   Table 5: Composability
-│   ├── 03-table6-cutrow/              #   Table 6: Cut-row patterns
-│   └── 04-aes-smoke/                  #   AES smoke flow
+│   ├── 01-table4-qor/                 # Table 4: QoR comparison
+│   │   ├── expected/                  # Authoritative expected values
+│   │   ├── traces/                    # Readable archived reasoning traces
+│   │   ├── selected-programs/         # 18 source trees and SHA-256 manifests
+│   │   └── output/                    # Generated verification output
+│   ├── 02-table5-composability/       # Table 5: composability
+│   ├── 03-table6-cutrow/              # Table 6: cut-row patterns
+│   └── 04-aes-smoke/                  # Fresh and archived AES smoke checks
 │
-├── src/                               # ReviewDSE source code
-│   └── dpl_evolve_agent/              #   Agent orchestration
-│       ├── agent/                     #     Core agent loop
-│       ├── adapters/                  #     Tool and API adapters
-│       ├── baseline/                  #     BO-DSE baseline implementation
-│       ├── calibration/               #     Parameter calibration
-│       ├── configs/                   #     Agent and experiment configs
-│       ├── database/                  #     Experiment database
-│       ├── experiments/               #     Experiment definitions
-│       ├── knowledge/                 #     Domain knowledge base
-│       ├── learning/                  #     Learning and optimization
-│       ├── memory/                    #     Agent memory management
-│       ├── scripts/                   #     Agent execution scripts
-│       ├── skills/                    #     Agent skill definitions
-│       ├── tests/                     #     Agent-level tests
-│       └── validation/                #     Validation utilities
-│
-├── docs/                              # Supplementary documentation
-│   ├── environment.md                 #   Pinned tool versions
-│   ├── expected-results.md            #   Expected values and tolerances
-│   ├── troubleshooting.md             #   Common issues and solutions
-│   └── claims-to-artifacts.md         #   Full paper-claim-to-command mapping
-│
-├── scripts/                           # Setup and helper scripts
+├── src/dpl_evolve_agent/              # ReviewDSE implementation
+├── docs/                              # Reviewer and technical documentation
+│   ├── quickstart.md                  # Detailed execution instructions
+│   ├── environment.md                 # Pinned tools and machine setup
+│   ├── expected-results.md            # Expected values and tolerances
+│   ├── troubleshooting.md             # Diagnosis and remediation guidance
+│   └── claims-to-artifacts.md         # Paper-claim-to-command mapping
+├── scripts/                           # Human, agent, and shared scripts
 ├── provenance/                        # Pinned revisions and checksums
-│   └── source-commits.json            #   Exact tool commit hashes
-│
-├── paper/                             # Camera-ready PDF
-├── tests/                             # Structure and integration tests
-│   ├── artifact/                      #   AE structure tests
-│   ├── integration/                   #   Smoke pipeline tests
-│   └── unit/                          #   Unit tests
-├── agent/                             # Agent task definitions and schemas
-│   ├── context/                       #   Task context templates
-│   ├── schemas/                       #   Task schema definitions
-│   └── tasks/                         #   Task definitions
+│   └── source-commits.json            # Exact tool commit hashes
+├── tests/                             # Structure, integration, and unit tests
+├── paper/                             # Paper PDF and notes
+└── agent/                             # Agent task definitions and schemas
 ```
 
 ---
@@ -146,15 +138,15 @@ Each claim in the paper that this artifact supports is listed below.
 All seven pass `make evidence` on a clean checkout. Only C5 requires
 EDA tools; the remaining claims run on Python standard library alone.
 
-| ID | Paper Location | Claim | Command | Input | Expected Output | Time / Hardware |
-|----|---------------|-------|---------|-------|----------------|-----------------|
-| C1 | Table 4 | ReviewDSE-HPWL reduces wirelength by 1.78% vs BO-DSE baseline | `make table4` | `artifacts/01-table4-qor/` | CSV with per-design QoR metrics matching Table 4 | < 5 sec / any |
-| C2 | Table 4 | ReviewDSE-GHR reduces global route overflow by 1.68%, 1.11× runtime | `make table4` | `artifacts/01-table4-qor/` | Same CSV; GHR column matches Table 4 | < 5 sec / any |
-| C3 | Table 5 | 3 counterexamples demonstrate ReviewDSE composability | `make table5` | `artifacts/02-table5-composability/` | 3 pass/fail verdicts matching Table 5 | < 1 sec / any |
-| C4 | Table 6 | 9 cut-row repair patterns verified across designs | `make table6` | `artifacts/03-table6-cutrow/` | 9 pattern verification results matching Table 6 | < 1 sec / any |
-| C5 | Sec. V-C | AES smoke flow: full RTL-to-GDS runs on Nangate45 | `make bootstrap && make setup && make smoke` | ~10 GB disk, internet (setup only) | `[OK] AES smoke test PASSED` | setup ~10–30 min; smoke ~2–5 min / Linux x86-64 |
-| C6 | Table 4 | 18 selected program source trees for audit | `make table4` | `artifacts/01-table4-qor/selected-programs/` | 18 source trees with SHA-256 integrity manifests | < 5 sec / any |
-| C7 | Sec. IV | ReviewDSE source code | Source inspection | `src/` | Python source with inline documentation | — |
+| ID / Paper | Claim | Command | Input | Expected Result / Time |
+|------------|-------|---------|-------|------------------------|
+| C1 / Table 4 | ReviewDSE-HPWL reduces wirelength by 1.78% vs BO-DSE baseline | `make table4` | Table 4 bundle | Table 4 QoR CSV; < 5 sec |
+| C2 / Table 4 | ReviewDSE-GHR reduces global route overflow by 1.68%, 1.11× runtime | `make table4` | Table 4 bundle | Table 4 GHR values; < 5 sec |
+| C3 / Table 5 | 3 counterexamples demonstrate ReviewDSE composability | `make table5` | Table 5 bundle | 3 matching verdicts; < 1 sec |
+| C4 / Table 6 | 9 cut-row repair patterns verified across designs | `make table6` | Table 6 bundle | 9 matching cases; < 1 sec |
+| C5 / Sec. V-C | AES smoke flow: full RTL-to-GDS runs on Nangate45 | `make bootstrap && make setup && make smoke` | 10 GB; network during setup | `[OK] AES smoke test PASSED`; setup 10–30 min plus smoke 2–5 min |
+| C6 / Table 4 | 18 selected program source trees for audit | `make table4` | Table 4 selected programs | 18 trees with SHA-256 manifests; < 5 sec |
+| C7 / Sec. IV | ReviewDSE source code | Source inspection | `src/` | Documented Python source |
 
 ---
 
@@ -162,7 +154,7 @@ EDA tools; the remaining claims run on Python standard library alone.
 
 ### Hardware
 
-- **OS:** Linux x86-64 (tested on Ubuntu 20.04/22.04 and Rocky Linux 8)
+- **OS:** Linux x86-64 (Ubuntu 20.04 or 22.04 tested)
 - **CPU:** Any for evidence checks; 2+ cores (4 recommended) for smoke flow
 - **GPU:** Not required
 - **RAM:** < 1 GB for evidence; 8 GB (16 GB recommended) for smoke
@@ -174,9 +166,9 @@ EDA tools; the remaining claims run on Python standard library alone.
 
 **Evidence verification:**
 
-- Python ≥ 3.11
-- GNU Make ≥ 4.0
-- Bash ≥ 4.0
+- Python >= 3.11
+- GNU Make >= 4.0
+- Bash >= 4.0
 
 No pip packages, EDA tools, or API keys are required for evidence checking.
 
@@ -199,29 +191,72 @@ No pip packages, EDA tools, or API keys are required for evidence checking.
 
 ---
 
-## Quick Start
+## Web Demo (Recommended)
+
+The artifact includes an English visual reviewer console under `web-demo/`.
+It moves the fixed command-line workflow into a browser while preserving the
+same Make targets, working directory, live output, and exit codes. It also
+includes a project Slides view covering the proposed DPLEvolve architecture,
+the AE repository architecture, the verification workflow, and the reported
+DSE effects.
+
+Using the Web Demo is sufficient for review: it can replace both the
+command-line **Quick Start** and **Full Reproduction** sections below. Those
+sections remain as equivalent references for reviewers who prefer a terminal
+or need automation.
+
+Start the console from the repository root:
 
 ```bash
-make evidence        # Step 1: Verify all packaged results against expected values
+bash web-demo/start.sh
 ```
 
-**Expected output from `make evidence`:**
+Then open:
+
+- Review console: `http://127.0.0.1:8080/#review`
+- Project slides: `http://127.0.0.1:8080/#slides`
+- Reviewer guide: `http://127.0.0.1:8080/#guide`
+
+The recommended browser workflow is:
+
+1. Run **make doctor** and follow any Suggested commands in a normal terminal.
+2. Run **make evidence**, or inspect Tables 4–6 individually.
+3. Optionally run **make doctor-smoke**, **bootstrap**, **setup**, **check**, and
+   **smoke**; the **full reproduction** button runs the preparation and fresh
+   smoke path in sequence.
+4. Read the live terminal output and confirm a zero exit code in Run history.
+
+If the repository is on a remote Linux server, keep the console bound to
+loopback and create a tunnel from the reviewer's computer:
+
+```bash
+ssh -L 8080:127.0.0.1:8080 USER@SERVER
+```
+
+Then open the same `http://127.0.0.1:8080/` address locally. The launcher
+creates an isolated `web-demo/.venv` and installs only the web application's
+Python dependencies. It does not install system packages or EDA tools. Because
+the console can launch builds, do not expose it directly to the public
+Internet. See `web-demo/README.md` for connection modes and troubleshooting.
+
+---
+
+## Quick Start (Command Line)
+
+```bash
+make doctor          # Read-only diagnosis; prints exact commands for missing prerequisites
+make evidence        # Verify all packaged results against expected values
+```
+
+Doctor works before ORFS exists and never installs packages. Review and run any
+suggested remediation command manually, then repeat Doctor. If both commands
+pass, the packaged artifact evidence is verified. `make evidence` should produce:
+
 ```
 [PASS] All packaged paper-evidence bundles passed
 ```
 
-When you see that, every number in the bundled results matches the paper's claims.
-No dependencies beyond Python 3.11+, GNU Make, and Bash are needed for this step.
-
-Once evidence passes, you can verify the full environment and smoke flow:
-
-```bash
-make bootstrap       # Step 2: Clone ORFS at pinned commits
-make check           # Step 3: Verify full toolchain (tools, paths, commits)
-make smoke           # Step 4: Run AES RTL-to-GDS end-to-end
-```
-
-Individual tables can also be verified independently:
+Individual tables can also be verified:
 
 ```bash
 make table4          # Table 4: QoR comparison
@@ -231,14 +266,16 @@ make table6          # Table 6: Cut-row patterns
 
 ---
 
-## Full Reproduction: Smoke Flow
+## Full Reproduction: Smoke Flow (Command Line)
 
 The smoke flow rebuilds Yosys and OpenROAD from source and runs a fresh
 AES design through synthesis, floorplanning, placement, and routing.
 
 ```bash
+make doctor-smoke    # Strictly check full-reproduction readiness
 make bootstrap       # Clone pinned Yosys and OpenROAD revisions (~2 min)
 make setup           # Build from source (~10–30 min, one-time)
+make check           # Inspect prepared commits, binaries, hashes, and libraries
 make smoke           # Run AES RTL-to-GDS (~2–5 min after build)
 ```
 
@@ -342,7 +379,7 @@ Further detail: `docs/troubleshooting.md`
 
 ## License & Citation
 
-BSD 3-Clause. See [LICENSE](LICENSE). Machine-readable: `CITATION.cff`
+BSD 3-Clause. See [LICENSE](LICENSE). Machine-readable: [CITATION.cff](CITATION.cff)
 
 ```bibtex
 @inproceedings{dplevolve2026,

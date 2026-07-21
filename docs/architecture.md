@@ -9,7 +9,7 @@ artifacts/
   02-table5-composability/
   03-table6-cutrow/
   04-aes-smoke/
-framework/dpl_evolve_agent/
+src/dpl_evolve_agent/
 scripts/
   human/
   agent/
@@ -47,7 +47,7 @@ do not appear in the reviewer quick start.
 
 ## Framework boundary
 
-`framework/dpl_evolve_agent/` contains the research implementation used by the
+`src/dpl_evolve_agent/` contains the research implementation used by the
 fresh smoke flow and optional source replay. Evidence-only verification does
 not import or initialize the framework. This keeps archived checks fast and
 independent of OpenROAD, model APIs, and the original discovery workspace.

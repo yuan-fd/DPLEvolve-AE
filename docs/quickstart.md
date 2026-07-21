@@ -3,6 +3,17 @@
 This guide gives reviewers the shortest path to each supported result. All
 commands are run from the repository root.
 
+## Diagnose the machine first
+
+```bash
+make doctor
+```
+
+Doctor is read-only and works before ORFS or any EDA binary exists. It reports
+evidence, web-console, rebuild-tool, resource, and prepared-workspace readiness.
+If something is missing, review and manually run the OS-specific command printed
+under `Suggested commands`, then repeat `make doctor`.
+
 ## Archived evidence
 
 Requirements: Linux x86-64, Bash, GNU Make, and Python 3.11 or newer. No
@@ -32,8 +43,10 @@ needs network access during bootstrap, about 10 GB of disk, 16 GB of RAM, and
 four or more CPU cores.
 
 ```bash
+make doctor-smoke
 make bootstrap
 make setup
+make check
 make smoke
 ```
 
@@ -66,6 +79,7 @@ See `agent/README.md` for the accepted artifact IDs and manifest behavior.
 
 ## If a command fails
 
-Run `make check` for the EDA environment, then consult
+Run `make doctor` first. For an already prepared EDA environment, run
+`make check`, then consult
 [`troubleshooting.md`](troubleshooting.md). When reporting a problem, include
 the command, complete terminal output, operating system, and Python version.

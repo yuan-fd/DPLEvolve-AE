@@ -31,7 +31,7 @@ required_paths=(
   artifacts/02-table5-composability/inputs/provenance.json
   artifacts/03-table6-cutrow/inputs/provenance.json
   artifacts/04-aes-smoke/expected/ae_reproduction_lock.json
-  framework/dpl_evolve_agent
+  src/dpl_evolve_agent
   scripts/agent/run_artifact.sh
 )
 for path in "${required_paths[@]}"; do
@@ -84,10 +84,10 @@ rsync -a \
   --exclude='extras/' \
   --exclude='artifacts/*/output/*' \
   --exclude='artifacts/*/selected-programs/output/*' \
-  --exclude='framework/dpl_evolve_agent/.dpl_evolve_state/' \
-  --exclude='framework/dpl_evolve_agent/.venv_raytune/' \
-  --exclude='framework/dpl_evolve_agent/.runtime_aliases/' \
-  --exclude='framework/dpl_evolve_agent/local_backups/' \
+  --exclude='src/dpl_evolve_agent/.dpl_evolve_state/' \
+  --exclude='src/dpl_evolve_agent/.venv_raytune/' \
+  --exclude='src/dpl_evolve_agent/.runtime_aliases/' \
+  --exclude='src/dpl_evolve_agent/local_backups/' \
   "${AE_ROOT}/" "${STAGING}/${ARCHIVE_ROOT}/DPLEvolve-AE/"
 
 release_path_pattern='/'"home/"'[A-Za-z0-9._-]+/|/'"Users/"'[A-Za-z0-9._-]+/|/'"root/"
@@ -170,7 +170,7 @@ for required in \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/02-table5-composability/inputs/counterexamples.tsv" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/03-table6-cutrow/inputs/reviewdse.tsv" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/04-aes-smoke/expected/ae_reproduction_lock.json" \
-  "${ARCHIVE_ROOT}/DPLEvolve-AE/framework/dpl_evolve_agent/baseline/run_baseline.sh" \
+  "${ARCHIVE_ROOT}/DPLEvolve-AE/src/dpl_evolve_agent/baseline/run_baseline.sh" \
   "${ARCHIVE_ROOT}/MANIFEST.sha256"; do
   if ! grep -Fxq "${required}" "${LISTING}"; then
     echo "[ERROR] Archive is missing: ${required}" >&2

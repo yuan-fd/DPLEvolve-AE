@@ -2,6 +2,30 @@
 
 Common issues encountered during artifact evaluation and their solutions.
 
+## Start With Doctor
+
+```bash
+make doctor
+```
+
+If GNU Make itself is missing, invoke the same check directly:
+
+```bash
+bash scripts/human/doctor.sh
+```
+
+Doctor is read-only. It works on a fresh checkout before ORFS exists and groups
+the result into evidence, web-console, rebuild-tool, and prepared-smoke
+readiness. When a command is missing it prints a distro-specific command but
+does not run it. Review that command in a normal terminal, run it manually if
+permitted, and repeat Doctor.
+
+For the complete source-rebuild path:
+
+```bash
+make doctor-smoke
+```
+
 ## Environment Issues
 
 ### `python3: command not found`
@@ -28,8 +52,9 @@ sudo yum install make
 
 ### `make check` reports missing tools
 
-See `docs/environment.md` for the complete list of required tools and
-minimum versions. Install any missing tools before proceeding.
+`make check` inspects an environment that has already been prepared. On a fresh
+checkout, use `make doctor` instead. See `docs/environment.md` for minimum
+versions, install only the missing tools reported by Doctor, then proceed.
 
 ## Evidence Verification Issues
 
@@ -64,7 +89,7 @@ Git proxy settings before running.
 
 1. Verify you have the build dependencies installed (see `docs/environment.md`).
 2. Check that your system has at least 8 GB of free RAM.
-3. Try reducing parallelism: `SMOKE_THREADS=2 make setup`
+3. Try reducing build parallelism: `JOBS=2 make setup`
 
 ### `make smoke` reports hash mismatch
 
@@ -72,8 +97,9 @@ The smoke output does not match the expected values. Verify:
 
 1. Tool commits match `provenance/source-commits.json`:
    ```bash
-   git -C deps/yosys log --oneline -1
-   git -C deps/OpenROAD log --oneline -1
+   git -C ../OpenROAD-flow-scripts log --oneline -1
+   git -C ../OpenROAD-flow-scripts/tools/OpenROAD log --oneline -1
+   git -C ../OpenROAD-flow-scripts/tools/yosys log --oneline -1
    ```
 2. If commits differ, re-run `make bootstrap` to fetch the correct versions.
 

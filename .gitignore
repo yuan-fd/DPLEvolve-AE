@@ -75,15 +75,15 @@ temp/
 DPLEvolve-AE-*.zip
 
 # ── Bundled dpl_evolve_agent gitignore patterns ──────────────────────────
-# These apply to the bundled framework under framework/.
-framework/dpl_evolve_agent/env.sh
-framework/dpl_evolve_agent/.dpl_evolve_state/
-framework/dpl_evolve_agent/.runtime_aliases/
-framework/dpl_evolve_agent/.venv_raytune/
-framework/dpl_evolve_agent/local_backups/
-framework/dpl_evolve_agent/family_ideas/
-framework/dpl_evolve_agent/variant_ideas/
-framework/dpl_evolve_agent/checkpoints/
-framework/dpl_evolve_agent/knowledge/packets/current_run_packet.md
-framework/dpl_evolve_agent/knowledge/packets/current_run_packet.json
-framework/dpl_evolve_agent/knowledge/reference/papers/pdf_cache/
+# These apply to the bundled framework under src/.
+src/dpl_evolve_agent/env.sh
+src/dpl_evolve_agent/.dpl_evolve_state/
+src/dpl_evolve_agent/.runtime_aliases/
+src/dpl_evolve_agent/.venv_raytune/
+src/dpl_evolve_agent/local_backups/
+src/dpl_evolve_agent/family_ideas/
+src/dpl_evolve_agent/variant_ideas/
+src/dpl_evolve_agent/checkpoints/
+src/dpl_evolve_agent/knowledge/packets/current_run_packet.md
+src/dpl_evolve_agent/knowledge/packets/current_run_packet.json
+src/dpl_evolve_agent/knowledge/reference/papers/pdf_cache/

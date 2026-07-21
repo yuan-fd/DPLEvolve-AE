@@ -25,7 +25,7 @@ export DPL_EVOLVE_STATE_ROOT
 export DPL_EVOLVE_PYTHON
 
 .PHONY: help evidence table4 table5 table6 smoke smoke-check
-.PHONY: check bootstrap setup test test-structure test-integration test-unit
+.PHONY: doctor doctor-smoke check bootstrap setup test test-structure test-integration test-unit
 .PHONY: validate-configs provenance zenodo zenodo-audit clean
 
 .DEFAULT_GOAL := help
@@ -42,6 +42,8 @@ help:
 	@echo "  make smoke-check    Validate an existing reference smoke run"
 	@echo ""
 	@echo "Environment:"
+	@echo "  make doctor         Read-only preflight with exact missing-package guidance"
+	@echo "  make doctor-smoke   Strict preflight for a fully prepared smoke environment"
 	@echo "  make check          Inspect the prepared tool environment"
 	@echo "  make bootstrap      Create a pinned sibling ORFS workspace"
 	@echo "  make setup          Build the pinned Python/Yosys/OpenROAD environment"
@@ -75,6 +77,12 @@ smoke-check:
 
 check:
 	@bash "$(HUMAN_SCRIPTS)/check_environment.sh"
+
+doctor:
+	@bash "$(HUMAN_SCRIPTS)/doctor.sh"
+
+doctor-smoke:
+	@bash "$(HUMAN_SCRIPTS)/doctor.sh" --strict-smoke
 
 bootstrap:
 	@bash "$(HUMAN_SCRIPTS)/bootstrap_workspace.sh"

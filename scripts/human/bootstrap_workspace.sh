@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AE_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 LOCK="${AE_ROOT}/provenance/source-commits.json"
-AGENT_ROOT="${DPL_EVOLVE_AGENT_ROOT:-${AE_ROOT}/framework/dpl_evolve_agent}"
+AGENT_ROOT="${DPL_EVOLVE_AGENT_ROOT:-${AE_ROOT}/src/dpl_evolve_agent}"
 ORFS_ROOT="${ORFS_ROOT:-$(realpath -m "${AE_ROOT}/../OpenROAD-flow-scripts")}"
 STATE_ROOT="${DPL_EVOLVE_STATE_ROOT:-$(realpath -m "${AE_ROOT}/../dpl_evolve_state")}"
 
