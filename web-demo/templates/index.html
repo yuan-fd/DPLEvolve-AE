@@ -424,8 +424,8 @@ bash start.sh</div>
               <h3>Open it on the same machine</h3>
               <p>Visit <code>http://127.0.0.1:8080</code> and keep the execution mode set to <strong>This machine</strong>.</p>
               <h3>Open it from your laptop through an SSH tunnel</h3>
-              <p>Run the following command on your laptop, replacing the user and host. Then open <code>http://127.0.0.1:8080</code> locally.</p>
-              <div class="code-block"><button class="copy-code">Copy</button>ssh -L 8080:127.0.0.1:8080 reviewer@evaluation-host</div>
+              <p>Run the following command on your laptop, replacing the user and host, and keep it open. The <code>-N</code> option creates the tunnel without opening a remote shell. Then open <code>http://127.0.0.1:8080</code> locally.</p>
+              <div class="code-block"><button class="copy-code">Copy</button>ssh -N -L 8080:127.0.0.1:8080 reviewer@evaluation-host</div>
               <p>Do not expose the console directly to a public interface. The tunnel encrypts browser traffic and avoids adding a second authentication layer.</p>
             </article>
 

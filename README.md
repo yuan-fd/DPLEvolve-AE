@@ -236,10 +236,12 @@ If the repository is on a remote Linux server, keep the console bound to
 loopback and create a tunnel from the reviewer's computer:
 
 ```bash
-ssh -L 8080:127.0.0.1:8080 USER@SERVER
+ssh -N -L 8080:127.0.0.1:8080 USER@SERVER
 ```
 
-Then open the same `http://127.0.0.1:8080/` address locally. The launcher
+Run this command on the reviewer's computer and keep it open; `-N` creates the
+tunnel without opening a remote shell. Then open the same
+`http://127.0.0.1:8080/` address locally. The launcher
 creates an isolated `web-demo/.venv` and installs only the web application's
 Python dependencies. It does not install system packages or EDA tools. Because
 the console can launch builds, do not expose it directly to the public

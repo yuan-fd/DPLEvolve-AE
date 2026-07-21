@@ -99,10 +99,11 @@ Start the console on the evaluation machine. On the reviewer's laptop, create
 an SSH tunnel:
 
 ```bash
-ssh -L 8080:127.0.0.1:8080 reviewer@evaluation-host
+ssh -N -L 8080:127.0.0.1:8080 reviewer@evaluation-host
 ```
 
-Keep that SSH session open, browse to `http://127.0.0.1:8080` on the laptop,
+Run the command on the reviewer's computer. Keep it open (`-N` means tunnel
+only, with no remote shell), browse to `http://127.0.0.1:8080` on the laptop,
 and use **This machine** execution in the console. “This machine” means local to the web
 server, which is the remote evaluation machine in this arrangement.
 
