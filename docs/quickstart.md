@@ -3,6 +3,16 @@
 This guide gives reviewers the shortest path to each supported result. All
 commands are run from the repository root.
 
+## Get the artifact
+
+```bash
+git clone https://github.com/yuan-fd/DPLEvolve-AE.git
+cd DPLEvolve-AE
+```
+
+For a private repository, the reviewer must first accept a GitHub collaborator
+invitation and authenticate Git on the evaluation machine.
+
 ## Diagnose the machine first
 
 ```bash

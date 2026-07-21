@@ -205,11 +205,17 @@ command-line **Quick Start** and **Full Reproduction** sections below. Those
 sections remain as equivalent references for reviewers who prefer a terminal
 or need automation.
 
-Start the console from the repository root:
+Clone the artifact and start the console from the repository root:
 
 ```bash
+git clone https://github.com/yuan-fd/DPLEvolve-AE.git
+cd DPLEvolve-AE
 bash web-demo/start.sh
 ```
+
+If the GitHub repository is private, accept the maintainer's collaborator
+invitation and authenticate Git before cloning. GitHub private repositories do
+not support anonymous clone access.
 
 Then open:
 

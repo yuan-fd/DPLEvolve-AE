@@ -86,6 +86,16 @@ if [[ -f "${LOCK}" ]]; then
       dpl_ae_warn "ORFS: expected ${ORFS_COMMIT:0:8}, got ${oc:0:8}"
     fi
   fi
+
+  if [[ -n "${OR_COMMIT}" ]] && \
+     git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse --git-dir >/dev/null 2>&1; then
+    orc="$(git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse HEAD)"
+    if [[ "${orc}" == "${OR_COMMIT}" ]]; then
+      dpl_ae_ok "OpenROAD: ${orc:0:8}"
+    else
+      dpl_ae_warn "OpenROAD: expected ${OR_COMMIT:0:8}, got ${orc:0:8}"
+    fi
+  fi
 fi
 echo ""
 

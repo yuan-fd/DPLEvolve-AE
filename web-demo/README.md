@@ -54,9 +54,14 @@ Remote execution uses Paramiko, which is included in `requirements.txt`.
 From the artifact repository:
 
 ```bash
+git clone https://github.com/yuan-fd/DPLEvolve-AE.git
 cd DPLEvolve-AE/web-demo
 bash start.sh
 ```
+
+For a private GitHub repository, accept the collaborator invitation and
+authenticate Git before cloning; private repositories cannot be cloned
+anonymously.
 
 The script creates `web-demo/.venv`, installs the web dependencies, discovers
 the repository root, and starts the service at:

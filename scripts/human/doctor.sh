@@ -121,13 +121,11 @@ printf '%s\n' '============================================================'
 printf '\n'
 
 OS_ID="unknown"
-OS_VERSION="unknown"
 OS_NAME="unknown Linux"
 if [[ -r /etc/os-release ]]; then
   # shellcheck source=/dev/null
   source /etc/os-release
   OS_ID="${ID:-unknown}"
-  OS_VERSION="${VERSION_ID:-unknown}"
   OS_NAME="${PRETTY_NAME:-${NAME:-unknown Linux}}"
 fi
 
