@@ -722,7 +722,7 @@ TASKS: dict[str, tuple[str, list[str]]] = {
     "smoke-check": ("Inspect Optional Prepared Smoke Result", ["make", "smoke-check"]),
     "full": (
         "Prepare and Run Full Reproduction",
-        ["bash", "-c", "make bootstrap && make setup && make smoke"],
+        ["bash", "-c", "make bootstrap && make setup && make check && make smoke"],
     ),
 }
 
@@ -764,7 +764,7 @@ async def run_minimal(req: RunRequest):
 async def run_full(req: RunRequest):
     return await _enqueue(
         "Full Reproduction",
-        ["bash", "-c", "make bootstrap && make setup && make smoke"],
+        ["bash", "-c", "make bootstrap && make setup && make check && make smoke"],
         req.ssh,
     )
 

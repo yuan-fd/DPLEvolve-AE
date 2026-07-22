@@ -214,8 +214,9 @@ The final command should end with:
 ```
 
 `make bootstrap` and `make setup` are one-time preparation steps. The console's
-**Full reproduction** action runs bootstrap, setup, and smoke in sequence, but
-running the four explicit steps above makes failures easier to diagnose.
+**Full reproduction** action runs bootstrap, setup, check, and smoke in
+sequence. Running the four explicit steps above makes failures easier to
+diagnose.
 
 ## Make target reference
 

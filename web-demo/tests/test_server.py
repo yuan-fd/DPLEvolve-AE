@@ -101,6 +101,19 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
             ["bash", "scripts/human/doctor.sh", "--strict-smoke"],
         )
 
+    def test_full_reproduction_uses_documented_order(self):
+        self.assertEqual(
+            server.TASKS["full"][1],
+            ["bash", "-c", "make bootstrap && make setup && make check && make smoke"],
+        )
+
+    def test_ui_explains_fresh_clone_paths(self):
+        html = (WEB_DEMO_ROOT / "templates" / "index.html").read_text(encoding="utf-8")
+        self.assertIn("Using a fresh Git clone?", html)
+        self.assertIn("make doctor → make evidence", html)
+        self.assertIn("make bootstrap → make setup → make check → make smoke", html)
+        self.assertIn("Seeing <code>[SKIP]</code> on a clean clone is expected", html)
+
     def test_ui_exposes_every_fixed_reviewer_task(self):
         html = (WEB_DEMO_ROOT / "templates" / "index.html").read_text(encoding="utf-8")
         ui_tasks = set(re.findall(r'data-task="([^"]+)"', html))

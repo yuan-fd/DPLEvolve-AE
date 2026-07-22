@@ -228,8 +228,8 @@ The recommended browser workflow is:
 1. Run **make doctor** and follow any Suggested commands in a normal terminal.
 2. Run **make evidence**, or inspect Tables 4–6 individually.
 3. Optionally run **make doctor-smoke**, **bootstrap**, **setup**, **check**, and
-   **smoke**; the **full reproduction** button runs the preparation and fresh
-   smoke path in sequence.
+   **smoke**; the **full reproduction** button runs bootstrap, setup, check,
+   and the fresh smoke path in sequence.
 4. Read the live terminal output and confirm a zero exit code in Run history.
 
 If the repository is on a remote Linux server, keep the console bound to

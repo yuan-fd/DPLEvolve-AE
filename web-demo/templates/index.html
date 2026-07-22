@@ -98,6 +98,17 @@
     .connection-message.error { color: var(--danger); }
     .privacy-note { margin-top: 17px; padding-top: 15px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
 
+    .fresh-clone-note { margin-top: 20px; padding: 23px 24px; border-color: #dfc99a; background: #fffbf1; box-shadow: none; }
+    .fresh-clone-note h2 { margin: 0; font: 500 20px/1.25 var(--serif); }
+    .fresh-clone-note > p { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .clone-paths { display: grid; grid-template-columns: 1fr 1.3fr; gap: 12px; margin-top: 17px; }
+    .clone-path { padding: 15px 16px; border: 1px solid #eadbb9; border-radius: 9px; background: rgba(255,255,255,.7); }
+    .clone-path strong, .clone-path span { display: block; }
+    .clone-path strong { margin-bottom: 8px; font: 600 13px/1.3 var(--serif); }
+    .clone-path code { color: var(--accent-dark); font-size: 11px; font-weight: 650; }
+    .clone-path span { margin-top: 7px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .skip-explanation { padding-top: 13px; border-top: 1px solid #eadbb9; }
+
     .button { min-height: 38px; padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); cursor: pointer; transition: .15s ease; }
     .button:hover:not(:disabled) { border-color: #bdb5ab; background: #faf8f5; }
     .button:disabled { opacity: .45; cursor: not-allowed; }
@@ -236,7 +247,7 @@
       .nav { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); }
       .nav-button { justify-content: center; flex-direction: column; gap: 2px; padding: 5px; font-size: 10px; }
       .view { padding: 38px 22px 100px; }
-      .path-grid, .slide-grid, .concept-compare, .boundary-grid { grid-template-columns: 1fr; }
+      .path-grid, .clone-paths, .slide-grid, .concept-compare, .boundary-grid { grid-template-columns: 1fr; }
       .concept-arrow { transform: rotate(90deg); min-height: 28px; }
       .method-flow { grid-template-columns: 1fr; }
       .method-stage:not(:last-child)::after { content: "↓"; right: 50%; top: auto; bottom: -17px; }
@@ -337,8 +348,26 @@
           <div class="privacy-note">For a remote browser, keep this service bound to localhost and use an SSH tunnel. The Guide provides the exact command.</div>
         </div>
 
+        <aside class="card fresh-clone-note" aria-labelledby="freshCloneTitle">
+          <h2 id="freshCloneTitle">Using a fresh Git clone? Start with the primary review.</h2>
+          <p>Git contains the packaged Table 4–6 evidence, but it intentionally does not contain the roughly 10 GB EDA workspace, compiled tools, or large ODB result tree.</p>
+          <div class="clone-paths">
+            <div class="clone-path">
+              <strong>Recommended primary review</strong>
+              <code>make doctor → make evidence</code>
+              <span>Works directly after cloning. No EDA build, GPU, license, or model API key is required.</span>
+            </div>
+            <div class="clone-path">
+              <strong>Optional full EDA reproduction</strong>
+              <code>make bootstrap → make setup → make check → make smoke</code>
+              <span>Requires network access, build tools, about 10 GB of disk, and typically 15–35 minutes.</span>
+            </div>
+          </div>
+          <p class="skip-explanation"><code>make smoke-check</code> only inspects a reference result already present on this machine. Seeing <code>[SKIP]</code> on a clean clone is expected and does not mean the packaged evidence failed.</p>
+        </aside>
+
         <div class="section-head">
-          <div><h2>Recommended review path</h2><p>Diagnose first, then verify the evidence.</p></div>
+          <div><h2>Recommended review path</h2><p>Complete Steps 1–2 first. Step 3 is an optional, resource-intensive reproduction.</p></div>
           <div class="section-note">Tasks are serialized. You may add more checks while another task is running.</div>
         </div>
         <div class="path-grid">
@@ -355,10 +384,10 @@
             <button class="button run-task" data-task="evidence">Run make evidence</button>
           </article>
           <article class="path-card">
-            <div class="path-step">STEP 03 · OPTIONAL</div><h3>Run the AES smoke flow</h3>
-            <p>Executes a fresh RTL-to-GDS validation using the pinned Yosys and OpenROAD toolchain.</p>
-            <div class="path-meta"><span class="tag">2–5 minutes</span><span class="tag">Tools required</span></div>
-            <button class="button run-task" data-task="smoke" data-confirm="Run the AES smoke flow now? The pinned toolchain must already be built.">Run make smoke</button>
+            <div class="path-step">STEP 03 · OPTIONAL</div><h3>Prepare and run full EDA reproduction</h3>
+            <p>Downloads pinned sources, builds Yosys and OpenROAD, checks the environment, then runs a fresh AES RTL-to-GDS validation.</p>
+            <div class="path-meta"><span class="tag">15–35 minutes</span><span class="tag">Network + 10 GB</span></div>
+            <button class="button run-task" data-task="full" data-confirm="Start the optional full reproduction? This downloads and builds tools, uses about 10 GB, and may run for over 30 minutes.">Run full reproduction</button>
           </article>
         </div>
 
@@ -372,7 +401,7 @@
           <div class="command-row"><code class="command-name">make smoke-check</code><span class="command-description">Inspect a locally prepared reference result; clean clones report a normal skip.</span><button class="button subtle run-task" data-task="smoke-check">Queue</button></div>
           <div class="command-row"><code class="command-name">make bootstrap</code><span class="command-description">Create the pinned sibling ORFS/OpenROAD workspace; requires network access.</span><button class="button subtle run-task" data-task="bootstrap" data-confirm="Bootstrap downloads the pinned ORFS workspace. Continue?">Queue</button></div>
           <div class="command-row"><code class="command-name">make setup</code><span class="command-description">Build pinned Yosys and OpenROAD binaries; typically takes 10–30 minutes.</span><button class="button subtle run-task" data-task="setup" data-confirm="Setup compiles the EDA toolchain and may take 10–30 minutes. Continue?">Queue</button></div>
-          <div class="command-row"><code class="command-name">full reproduction</code><span class="command-description">Run bootstrap, setup, and smoke in sequence. Requires network, build tools, and about 10 GB.</span><button class="button subtle danger run-task" data-task="full" data-confirm="Start the full reproduction? This downloads and builds tools, uses about 10 GB, and may run for over 30 minutes.">Queue</button></div>
+          <div class="command-row"><code class="command-name">make smoke</code><span class="command-description">Run a fresh AES flow after bootstrap, setup, and check have succeeded.</span><button class="button subtle run-task" data-task="smoke" data-confirm="Run the AES smoke flow now? The pinned toolchain must already be built and checked.">Queue</button></div>
         </div>
 
         <div class="card queue-panel" id="queuePanel"><p class="queue-title">Waiting queue</p><div id="queueList"></div></div>
