@@ -14,9 +14,10 @@ usage() {
   cat <<'EOF'
 Usage: run_artifact.sh --artifact table4|table5|table6|smoke [--run-smoke] [--dry-run]
 
-The smoke artifact defaults to check-only mode. Pass --run-smoke to create a
-fresh AES OpenROAD run. A machine-readable run manifest is written to the
-selected artifact's output directory.
+The smoke artifact defaults to optional check-only mode and reports SKIP when
+the prepared ORFS result is absent. Pass --run-smoke to create a fresh AES
+OpenROAD run. A machine-readable run manifest is written to the selected
+artifact's output directory.
 EOF
 }
 

@@ -9,13 +9,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AE_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 export AE_ROOT
 
-# shellcheck source=/dev/null
-source "${AE_ROOT}/scripts/shared/env_vars.sh"
-dpl_ae_resolve_env
-
-# shellcheck source=/dev/null
-source "${AE_ROOT}/scripts/shared/utils.sh"
-
 MODE=""
 FLOW_VARIANT=""
 RUN_TAG=""
@@ -41,32 +34,58 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --check-only|--run|--rebuild)
-      if [[ -n "${MODE}" ]]; then dpl_ae_error "Choose exactly one mode." >&2; exit 2; fi
+      if [[ -n "${MODE}" ]]; then echo "[ERROR] Choose exactly one mode." >&2; exit 2; fi
       MODE="${1#--}"
       shift
       ;;
-    --flow-variant) FLOW_VARIANT="$2"; shift 2 ;;
-    --run-tag) RUN_TAG="$2"; shift 2 ;;
-    --threads) THREADS="$2"; shift 2 ;;
+    --flow-variant|--run-tag|--threads)
+      if [[ $# -lt 2 ]]; then echo "[ERROR] $1 requires a value." >&2; exit 2; fi
+      case "$1" in
+        --flow-variant) FLOW_VARIANT="$2" ;;
+        --run-tag) RUN_TAG="$2" ;;
+        --threads) THREADS="$2" ;;
+      esac
+      shift 2
+      ;;
     --help|-h) usage; exit 0 ;;
-    *) dpl_ae_error "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
+    *) echo "[ERROR] Unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
 done
 if [[ -z "${MODE}" ]]; then
-  dpl_ae_error "Choose --check-only, --run, or --rebuild." >&2
+  echo "[ERROR] Choose --check-only, --run, or --rebuild." >&2
   usage >&2
   exit 2
 fi
 if ! [[ "${THREADS}" =~ ^[1-9][0-9]*$ ]]; then
-  dpl_ae_error "--threads must be a positive integer." >&2
+  echo "[ERROR] --threads must be a positive integer." >&2
   exit 2
 fi
 
 LOCK="${SCRIPT_DIR}/expected/ae_reproduction_lock.json"
 if [[ ! -f "${LOCK}" ]]; then
-  dpl_ae_error "Reproduction lock not found: ${LOCK}"
+  echo "[ERROR] Reproduction lock not found: ${LOCK}" >&2
   exit 1
 fi
+
+# A clean artifact clone intentionally does not include the large ORFS result
+# tree.  The check-only action is an optional inspection of a locally prepared
+# reference run, so report its absence as a skip rather than making the primary
+# reviewer flow look broken.  Fresh runs remain strict and resolve the complete
+# environment below.
+requested_orfs_root="${ORFS_ROOT:-$(realpath -m "${AE_ROOT}/../OpenROAD-flow-scripts")}"
+if [[ "${MODE}" == "check-only" && ! -d "${requested_orfs_root}/flow" ]]; then
+  echo "[SKIP] Optional prepared AES smoke result is not available."
+  echo "       A clean clone does not contain the large ORFS/ODB result tree."
+  echo "       Run 'make bootstrap && make setup && make smoke' for a fresh validation."
+  exit 0
+fi
+
+# shellcheck source=/dev/null
+source "${AE_ROOT}/scripts/shared/env_vars.sh"
+dpl_ae_resolve_env
+
+# shellcheck source=/dev/null
+source "${AE_ROOT}/scripts/shared/utils.sh"
 
 read_lock() {
   "${DPL_EVOLVE_PYTHON}" -c 'import json,sys; data=json.load(open(sys.argv[1], encoding="utf-8")); value=data; [value := value[key] for key in sys.argv[2].split(".")]; print(value)' "${LOCK}" "$1"
@@ -87,6 +106,14 @@ fi
 FLOW_HOME="${ORFS_ROOT}/flow"
 INPUT_ODB="${FLOW_HOME}/results/nangate45/aes/${FLOW_VARIANT}/${INPUT_STAGE}.odb"
 METRICS="${FLOW_HOME}/reports/nangate45/aes/${FLOW_VARIANT}/dpl_evolve_baseline/${RUN_TAG}/metrics.json"
+
+if [[ "${MODE}" == "check-only" && ( ! -f "${INPUT_ODB}" || ! -f "${METRICS}" ) ]]; then
+  echo "[SKIP] Optional prepared AES smoke result is not available."
+  echo "       Expected input:   ${INPUT_ODB}"
+  echo "       Expected metrics: ${METRICS}"
+  echo "       Run 'make smoke' to create and validate a fresh timestamped result."
+  exit 0
+fi
 
 echo "=============================================="
 echo " DPLEvolve AE — AES Smoke Test"

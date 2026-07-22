@@ -185,13 +185,16 @@ Then inspect:
 - `artifacts/03-table6-cutrow/`;
 - `docs/claims-to-artifacts.md` for the full claim mapping.
 
-### 4. Check the archived smoke result
+### 4. Inspect an optional prepared smoke result
 
 ```bash
 make smoke-check
 ```
 
-This validates the prepared reference run without performing a new EDA flow.
+This validates a locally prepared reference run without performing a new EDA
+flow. Its large ORFS/ODB result tree is not included in Git, so a clean clone
+reports `[SKIP]` and exits successfully. Use the next step for a fresh
+end-to-end validation.
 
 ### 5. Optional full toolchain reproduction
 
@@ -228,7 +231,7 @@ running the four explicit steps above makes failures easier to diagnose.
 | `make bootstrap` | Create the pinned sibling ORFS/OpenROAD workspace | ~2 min | Downloads and writes outside the repository |
 | `make setup` | Create the Python environment and build Yosys/OpenROAD | 10–30 min | Build output and Python packages |
 | `make smoke` | Run a fresh AES/Nangate45 EDA flow and validate it | 2–5 min | Writes ORFS results, reports, and logs |
-| `make smoke-check` | Validate the archived reference smoke run | Seconds | Read-only |
+| `make smoke-check` | Inspect a locally prepared reference smoke run, or skip if absent | Seconds | Read-only |
 | `make test` | Run structure, integration, and Python unit tests | Varies | May create test output |
 | `make clean` | Remove generated artifact output, preserving inputs/expected data | Seconds | Destructive to generated output |
 

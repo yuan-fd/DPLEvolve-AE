@@ -39,7 +39,7 @@ help:
 	@echo "  make table5         Run only the Table 5 composability bundle"
 	@echo "  make table6         Run only the Table 6 cut-row bundle"
 	@echo "  make smoke          Run a fresh AES Nangate45 OpenROAD smoke flow"
-	@echo "  make smoke-check    Validate an existing reference smoke run"
+	@echo "  make smoke-check    Inspect a locally prepared reference smoke run (optional)"
 	@echo ""
 	@echo "Environment:"
 	@echo "  make doctor         Read-only preflight with exact missing-package guidance"

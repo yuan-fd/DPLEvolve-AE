@@ -719,7 +719,7 @@ TASKS: dict[str, tuple[str, list[str]]] = {
     "table5": ("Verify Table 5", ["make", "table5"]),
     "table6": ("Verify Table 6", ["make", "table6"]),
     "smoke": ("Run AES Smoke Flow", ["make", "smoke"]),
-    "smoke-check": ("Check Archived Smoke Result", ["make", "smoke-check"]),
+    "smoke-check": ("Inspect Optional Prepared Smoke Result", ["make", "smoke-check"]),
     "full": (
         "Prepare and Run Full Reproduction",
         ["bash", "-c", "make bootstrap && make setup && make smoke"],

@@ -32,11 +32,16 @@ Each run uses a new timestamped flow variant and refuses to overwrite an
 existing result. EDA products are written to the sibling ORFS workspace under
 `flow/results`, `flow/reports`, and `flow/logs`.
 
-To validate the prepared reference run without creating a new run:
+To validate a locally prepared reference run without creating a new run:
 
 ```bash
 bash artifacts/04-aes-smoke/check.sh
 ```
+
+The reference ORFS result tree is too large for this Git repository and is not
+included in a clean clone. In that case the command prints `[SKIP]` and exits
+successfully. Run the preparation and fresh-flow commands above for an
+end-to-end validation.
 
 This artifact verifies one default OpenROAD case. It does not execute a
 selected ReviewDSE program or reproduce all nine Table 4 cases.

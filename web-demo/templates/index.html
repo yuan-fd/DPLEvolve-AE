@@ -369,7 +369,7 @@
           <div class="command-row"><code class="command-name">make table4</code><span class="command-description">Verify QoR values and the 18 selected-program source trees.</span><button class="button subtle run-task" data-task="table4">Queue</button></div>
           <div class="command-row"><code class="command-name">make table5</code><span class="command-description">Verify the three composability counterexamples.</span><button class="button subtle run-task" data-task="table5">Queue</button></div>
           <div class="command-row"><code class="command-name">make table6</code><span class="command-description">Verify nine cut-row repair cases across three designs.</span><button class="button subtle run-task" data-task="table6">Queue</button></div>
-          <div class="command-row"><code class="command-name">make smoke-check</code><span class="command-description">Validate the archived reference smoke result without a fresh EDA run.</span><button class="button subtle run-task" data-task="smoke-check">Queue</button></div>
+          <div class="command-row"><code class="command-name">make smoke-check</code><span class="command-description">Inspect a locally prepared reference result; clean clones report a normal skip.</span><button class="button subtle run-task" data-task="smoke-check">Queue</button></div>
           <div class="command-row"><code class="command-name">make bootstrap</code><span class="command-description">Create the pinned sibling ORFS/OpenROAD workspace; requires network access.</span><button class="button subtle run-task" data-task="bootstrap" data-confirm="Bootstrap downloads the pinned ORFS workspace. Continue?">Queue</button></div>
           <div class="command-row"><code class="command-name">make setup</code><span class="command-description">Build pinned Yosys and OpenROAD binaries; typically takes 10–30 minutes.</span><button class="button subtle run-task" data-task="setup" data-confirm="Setup compiles the EDA toolchain and may take 10–30 minutes. Continue?">Queue</button></div>
           <div class="command-row"><code class="command-name">full reproduction</code><span class="command-description">Run bootstrap, setup, and smoke in sequence. Requires network, build tools, and about 10 GB.</span><button class="button subtle danger run-task" data-task="full" data-confirm="Start the full reproduction? This downloads and builds tools, uses about 10 GB, and may run for over 30 minutes.">Queue</button></div>
@@ -460,7 +460,7 @@ make doctor</div>
                   <tr><td><code>make bootstrap</code></td><td>Creates a sibling ORFS workspace at the pinned prepared source trees.</td><td>About 2 min</td><td>Downloads sources; writes outside repo</td></tr>
                   <tr><td><code>make setup</code></td><td>Creates the Python environment and builds pinned Yosys and OpenROAD binaries.</td><td>10–30 min</td><td>Build output; may install Python packages</td></tr>
                   <tr><td><code>make smoke</code></td><td>Runs a fresh AES/Nangate45 flow and checks hashes, legality, instance count, and HPWL.</td><td>2–5 min</td><td>Writes ORFS results/logs</td></tr>
-                  <tr><td><code>make smoke-check</code></td><td>Validates the prepared reference smoke run without executing EDA again.</td><td>Seconds</td><td>Read-only</td></tr>
+                  <tr><td><code>make smoke-check</code></td><td>Validates a locally prepared reference smoke run, or reports a normal skip when its large ORFS result tree is absent.</td><td>Seconds</td><td>Read-only</td></tr>
                   <tr><td><code>make test</code></td><td>Runs artifact structure, integration, and Python unit tests for maintainers.</td><td>Varies</td><td>May create test output</td></tr>
                   <tr><td><code>make clean</code></td><td>Removes generated artifact-bundle output while preserving archived inputs and expected values.</td><td>Seconds</td><td>Destructive to generated output</td></tr>
                 </tbody>
@@ -476,7 +476,7 @@ make doctor</div>
               <li>Run <code>make evidence</code> and save the terminal log.</li>
               <li>Compare the summary with Tables 4, 5, and 6.</li>
               <li>Inspect the archived traces and selected source trees.</li>
-              <li>Run <code>make smoke-check</code> for the reference EDA output.</li>
+              <li>If a prepared reference ORFS result is available, inspect it with <code>make smoke-check</code>.</li>
               <li>If resources permit, run bootstrap, setup, check, then smoke.</li>
               <li>Export the session JSON for the review record.</li>
             </ol>

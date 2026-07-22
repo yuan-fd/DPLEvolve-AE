@@ -295,11 +295,18 @@ Expected output: `[OK] AES smoke test PASSED`
 - `smoke` runs the full flow on AES (Nangate45) and compares the output
   against the lock file at `artifacts/04-aes-smoke/expected/ae_reproduction_lock.json`.
 
-To verify archived smoke results without re-running:
+To inspect the reference smoke result when it is already present in a prepared
+sibling ORFS workspace:
 
 ```bash
 make smoke-check
 ```
+
+The large ODB and metrics tree is intentionally not stored in this Git
+repository. On a clean clone, `make smoke-check` therefore reports `[SKIP]`
+and exits successfully. This is normal and does not affect the packaged
+Table 4–6 evidence checks. Use `make bootstrap && make setup && make smoke`
+to create and validate a fresh smoke result.
 
 ### Output Locations
 

@@ -31,6 +31,15 @@ done
 bash scripts/agent/run_artifact.sh --artifact table4 --dry-run | grep -F 'artifacts/01-table4-qor/run.sh' >/dev/null
 bash scripts/agent/run_artifact.sh --artifact smoke --dry-run | grep -F -- '--check-only' >/dev/null
 
+missing_orfs="$(mktemp -d)/OpenROAD-flow-scripts"
+smoke_check_output="$(ORFS_ROOT="${missing_orfs}" bash artifacts/04-aes-smoke/run.sh --check-only)"
+grep -F '[SKIP] Optional prepared AES smoke result is not available.' <<<"${smoke_check_output}" >/dev/null
+ORFS_ROOT="${missing_orfs}" bash artifacts/04-aes-smoke/run.sh --help | grep -F 'Usage:' >/dev/null
+if ORFS_ROOT="${missing_orfs}" bash artifacts/04-aes-smoke/run.sh --run >/dev/null 2>&1; then
+  echo '[FAIL] A fresh smoke run accepted a missing ORFS workspace.' >&2
+  exit 1
+fi
+
 if bash scripts/agent/run_artifact.sh --artifact unsupported --dry-run >/dev/null 2>&1; then
   echo '[FAIL] Agent dispatcher accepted an unsupported artifact.' >&2
   exit 1
