@@ -188,6 +188,10 @@ The fixed asset URL is
 `https://github.com/yuan-fd/DPLEvolve-AE/releases/download/paper-data-v1/dplevolve-table6-paper-data-20260722.tar.gz`;
 its SHA-256 is
 `c73f84c6008ddf578bce9c2708dbe1eff55b2a8e96dada95376369afe9008b63`.
+While the repository is private, collaborators need an authenticated GitHub
+CLI session (`gh auth login`); `make fetch-table6-data` automatically falls
+back from anonymous `curl` to `gh release download`. No authentication is
+needed after the repository becomes public.
 Then run:
 
 ```bash

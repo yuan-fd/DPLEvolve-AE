@@ -101,6 +101,7 @@ class ReproductionContractTests(unittest.TestCase):
         self.assertIn("--pattern requires --case", runner)
         fetcher = (ROOT / "scripts/reproduce/fetch_table6_data.sh").read_text()
         self.assertIn("releases/download/paper-data-v1", fetcher)
+        self.assertIn("gh release download", fetcher)
         self.assertIn(
             "c73f84c6008ddf578bce9c2708dbe1eff55b2a8e96dada95376369afe9008b63",
             fetcher,

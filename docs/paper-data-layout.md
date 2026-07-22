@@ -58,6 +58,11 @@ The published archive is:
 https://github.com/yuan-fd/DPLEvolve-AE/releases/download/paper-data-v1/dplevolve-table6-paper-data-20260722.tar.gz
 ```
 
+GitHub returns 404 for anonymous release downloads while this repository is
+private. A collaborator should run `gh auth login` first; the fetch target
+automatically retries through the authenticated GitHub CLI. The same command
+uses anonymous `curl` after the repository becomes public.
+
 The easiest verified installation is:
 
 ```bash

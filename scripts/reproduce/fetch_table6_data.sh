@@ -5,6 +5,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
 ARCHIVE_NAME="dplevolve-table6-paper-data-20260722.tar.gz"
+RELEASE_TAG="paper-data-v1"
+REPOSITORY="yuan-fd/DPLEvolve-AE"
 ARCHIVE_URL="https://github.com/yuan-fd/DPLEvolve-AE/releases/download/paper-data-v1/${ARCHIVE_NAME}"
 ARCHIVE_SHA256="c73f84c6008ddf578bce9c2708dbe1eff55b2a8e96dada95376369afe9008b63"
 
@@ -45,7 +47,19 @@ trap 'rm -rf "${temporary}"' EXIT
 archive="${temporary}/${ARCHIVE_NAME}"
 
 repro_note "downloading ${ARCHIVE_URL}"
-curl -fL --retry 3 --output "${archive}" "${ARCHIVE_URL}"
+if ! curl -fL --retry 3 --output "${archive}" "${ARCHIVE_URL}"; then
+  # GitHub returns 404 for anonymous browser downloads while a repository is
+  # private. Collaborators can still fetch the exact same release asset via an
+  # authenticated gh session. Once the repository is public, curl is enough.
+  rm -f "${archive}"
+  if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+    repro_note "anonymous download unavailable; retrying with authenticated GitHub CLI"
+    gh release download "${RELEASE_TAG}" --repo "${REPOSITORY}" \
+      --pattern "${ARCHIVE_NAME}" --dir "${temporary}" --clobber
+  else
+    repro_die "release download failed; if the repository is private, authenticate with 'gh auth login'"
+  fi
+fi
 printf '%s  %s\n' "${ARCHIVE_SHA256}" "${archive}" | sha256sum -c -
 
 if tar -tzf "${archive}" | grep -Ev '^table6(/|$)' >/dev/null; then
