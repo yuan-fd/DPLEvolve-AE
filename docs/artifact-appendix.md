@@ -11,8 +11,9 @@ The artifact exposes runnable experiment paths for OpenROAD detailed placement:
 - rerun the default and 400-trial BO baselines;
 - rebuild and replay the 18 selected ReviewDSE source trees;
 - rerun the Level 1 calibration and Level 2 Teacher/Student search;
-- rerun the Table 5 composability and Table 6 cut-row experiments when their
-  separately distributed exact inputs are installed.
+- regenerate the deleted Table 5 dense inputs and rerun its six candidates if
+  the missing SWERV DENSE_2 config and source commits are recovered;
+- rerun all 27 Table 6 OpenROAD jobs from retained cut-row DEF/V/SDC data.
 
 The compact archived records are supplied for provenance and fast inspection.
 They are not the primary evaluation path.
@@ -24,7 +25,7 @@ They are not the primary evaluation path.
 | GPU / commercial license | Not required |
 | Languages | Bash, Python, C++, Tcl |
 | EDA framework | OpenROAD-flow-scripts and OpenROAD at pinned revisions |
-| Evaluation scope | Detailed placement from `3_4_place_resized.odb` |
+| Evaluation scope | Table 4/5 detailed placement from regenerated ODB; Table 6 from retained cut-row DEF/V/SDC |
 | License | BSD 3-Clause |
 
 The author machine is a reference configuration, not a universal minimum.
@@ -60,10 +61,15 @@ make reproduce-level1 ACKNOWLEDGE_LLM_COST=yes
 make plan-dse-paper
 make run-dse-paper ACKNOWLEDGE_LLM_COST=yes
 
-# Tables 5/6 after exact paper data is installed
-make paper-data-check
-make reproduce-table5 THREADS=10
+# Download, verify, and replay retained Table 6 data
+make fetch-table6-data
+make check-table6-data
 make reproduce-table6 THREADS=10
+
+# Table 5 reconstruction; awaits one input config and six sources
+make prepare-table5-inputs THREADS=10
+make check-table5-data
+make reproduce-table5 THREADS=10
 ```
 
 Fresh products are written outside the Git checkout under
@@ -86,9 +92,13 @@ not to spend that budget.
 ## Current completeness boundary
 
 Table 4 execution code, selected source trees, and regenerable inputs are
-present. The exact Table 5/6 ODB/SDC pairs and complete candidate sources have not yet
-been recovered into the public package. Their commands intentionally exit
-`BLOCKED` until the layout in `docs/paper-data-layout.md` is complete.
+present. Table 6's nine exact DEF/Verilog pairs, three SDC files, and single
+evolved source survived; the exported 200 MB data archive and replay were
+validated against a real Ariane run. Table 5 is not complete: its ODBs can be
+regenerated for AES/JPEG, but SWERV's untracked `config_dense2.mk` and all six
+selected/reference source commits are missing from the original workspace and
+retained backup. Its command intentionally exits `BLOCKED` instead of using
+the standard config or treating the archived TSV as reproduction.
 
 The main paper also omits the exact Level 1 Student breadth. The public
 50-Student calibration profile is explicitly marked as a reconstruction.

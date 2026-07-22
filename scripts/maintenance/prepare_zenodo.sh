@@ -62,12 +62,12 @@ if [[ "${metadata_has_placeholders}" -ne 0 && "${ALLOW_PLACEHOLDER_AUTHORS}" -ne
   exit 2
 fi
 
-paper_data_complete=1
-if ! make -C "${AE_ROOT}" paper-data-check; then
-  paper_data_complete=0
+table6_data_complete=1
+if ! make -C "${AE_ROOT}" check-table6-data; then
+  table6_data_complete=0
   if [[ "${ALLOW_INCOMPLETE_PAPER_DATA}" -ne 1 ]]; then
-    echo "[ERROR] Formal release refused: exact Table 5/6 paper data is incomplete." >&2
-    echo "        Install the data described in docs/paper-data-layout.md." >&2
+    echo "[ERROR] Formal release refused: retained Table 6 replay data is unavailable or invalid." >&2
+    echo "        Run 'make fetch-table6-data' and see docs/paper-data-layout.md." >&2
     echo "        Use --allow-incomplete-paper-data only for an audit-only package." >&2
     exit 3
   fi
@@ -161,8 +161,10 @@ make audit-archive
 ## Known Limitation
 
 Table 4 ODBs can be regenerated, but only AES Nangate45 currently has an
-archived input checksum. Exact Table 5/6 assets remain external and their fresh
-commands block until the data layout in `docs/paper-data-layout.md` is filled.
+archived input checksum. Table 6 is replayable after `make fetch-table6-data`.
+Table 5 is incomplete: the untracked SWERV DENSE_2 input config and six exact
+candidate source trees were not retained, so its replay command reports
+`BLOCKED`. See `docs/paper-data-layout.md`.
 
 All versions are pinned in `DPLEvolve-AE/provenance/source-commits.json`.
 ZENODOEOF
@@ -209,6 +211,6 @@ echo "SHA-256: ${SHA256}"
 if [[ "${metadata_has_placeholders}" -ne 0 ]]; then
   echo "[WARN] Audit-only archive: author metadata is still incomplete."
 fi
-if [[ "${paper_data_complete}" -ne 1 ]]; then
-  echo "[WARN] Audit-only archive: exact Table 5/6 paper data is still incomplete."
+if [[ "${table6_data_complete}" -ne 1 ]]; then
+  echo "[WARN] Audit-only archive: retained Table 6 replay data was not installed."
 fi

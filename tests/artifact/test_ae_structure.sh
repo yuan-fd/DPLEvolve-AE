@@ -51,7 +51,12 @@ required_files=(
   agent/schemas/run-manifest.schema.json
   configs/reproduction/paper-experiments.json
   configs/reproduction/paper9.tsv
+  configs/reproduction/table5-inputs.tsv
+  configs/reproduction/table5-sources.tsv
+  configs/reproduction/table6-replay.tsv
   scripts/reproduce/prepare_paper_inputs.sh
+  scripts/reproduce/fetch_table6_data.sh
+  scripts/reproduce/prepare_table5_inputs.sh
   scripts/reproduce/run_baselines.sh
   scripts/reproduce/run_bo.sh
   scripts/reproduce/run_level1.sh
@@ -64,6 +69,8 @@ required_files=(
   scripts/reproduce/summarize_table5.py
   scripts/reproduce/summarize_table6.py
   scripts/reproduce/verify_data_manifest.py
+  scripts/reproduce/openroad_legalize_cutrow.tcl
+  scripts/maintenance/export_table6_data.sh
   images/dplevolve-architecture.png
 )
 for path in "${required_files[@]}"; do

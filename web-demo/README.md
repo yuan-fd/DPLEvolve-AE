@@ -28,7 +28,9 @@ experiments.
 2. Run `bootstrap`, `build-tools`, and `prepare-paper-inputs`.
 3. Run `validate-evaluator` to produce a fresh four-stage metric trajectory.
 4. Run a Table 4 default, BO, or ReviewDSE fixed-source replay.
-5. Run `paper-data-check` before Table 5/6.
+5. Use `fetch-table6-data`, `check-table6-data`, and `table6-fresh` for the
+   retained cut-row experiment; Table 5 still lacks its SWERV DENSE_2 config
+   and six sources.
 6. Use `audit-archive` only as a secondary integrity check.
 
 Full BO is 3,600 placements. Full ReviewDSE search is not exposed as a one-click

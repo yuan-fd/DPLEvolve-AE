@@ -101,6 +101,8 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
             ["make", "validate-evaluator"],
         )
         self.assertEqual(server.TASKS["audit-archive"][1], ["make", "audit-archive"])
+        self.assertEqual(server.TASKS["fetch-table6-data"][1], ["make", "fetch-table6-data"])
+        self.assertEqual(server.TASKS["prepare-table5-inputs"][1], ["make", "prepare-table5-inputs"])
 
     def test_full_reproduction_uses_documented_order(self):
         self.assertEqual(
@@ -117,6 +119,9 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("Fresh clone: prepare the experiment", html)
         self.assertIn("prepare-paper-inputs", html)
         self.assertIn("reproduce-bo", html)
+        self.assertIn("six missing candidate sources", html)
+        self.assertIn("config_dense2.mk", html)
+        self.assertIn("does not need the deleted ODBs", html)
         self.assertIn("archive audit is clearly separated", html)
 
     def test_ui_exposes_every_fixed_reviewer_task(self):

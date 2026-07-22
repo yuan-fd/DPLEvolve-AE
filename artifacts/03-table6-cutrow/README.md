@@ -19,12 +19,14 @@ Success is reported as:
 ```
 
 The two TSV files are compact extracts of the original fail-search and
-candidate summaries. The cut-row ODB inputs, complete OpenROAD logs, and
-selected binaries are not packaged. This command therefore verifies the
+candidate summaries. The exact cut-row DEF/Verilog/SDC inputs and complete
+evolved source are distributed as separate checksummed paper data. This
+command therefore verifies the
 archived summary; it does not rerun OpenROAD or `check_placement`.
 
 The fresh execution path is `make reproduce-table6`. It executes Diamond,
-Negotiation, and ReviewDSE on every exact ODB with the 7200-second cap and
+Negotiation, and the same ReviewDSE source on every exact DEF/V/SDC dataset
+with the 7200-second cap and
 derives outcomes from new flow status and legality reports. It exits `BLOCKED`
 until the external data in `docs/paper-data-layout.md` is installed.
 

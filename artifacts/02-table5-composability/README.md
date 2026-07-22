@@ -27,9 +27,10 @@ verification rather than a fresh OpenROAD execution.
 
 The fresh execution path is `make reproduce-table5`. It builds and executes
 both complete candidates for each row and derives `H_lg` and `H_f` from new
-metrics. It exits `BLOCKED` until the exact ODBs and source trees described in
-`docs/paper-data-layout.md` are installed; it never uses this TSV as a fresh
-result.
+metrics. `make prepare-table5-inputs` has retained AES/JPEG recipes but exits
+`BLOCKED` because SWERV's untracked `config_dense2.mk` was deleted. The full
+command also requires six currently missing exact source commits; it never
+uses this TSV or the standard SWERV config as a fresh result.
 
 - `inputs/counterexamples.tsv`: archived HPWL values.
 - `inputs/provenance.json`: source description and original summary hash.

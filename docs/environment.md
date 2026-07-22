@@ -49,7 +49,8 @@ make check
 
 - ORFS input and experiment products: `$ORFS_ROOT/flow/{results,reports,logs}`
 - builds, DSE rounds, BO sweeps, and summaries: `$DPL_EVOLVE_STATE_ROOT`
-- exact separately distributed Table 5/6 data: `$PAPER_DATA_ROOT`
+- retained Table 6 DEF/V/SDC/source data and any future Table 5 config/source
+  recovery: `$PAPER_DATA_ROOT`
 - compact immutable archive inputs/expected values: `artifacts/`
 
 Fresh reproduction never overwrites `artifacts/*/expected/`.

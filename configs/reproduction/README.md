@@ -14,3 +14,10 @@ program manifest.
 The manifest is not an expected-value checker. Public reproduction commands
 must execute OpenROAD and produce new `metrics.json` records. Archived expected
 values remain under `artifacts/` and are used only by `make audit-archive`.
+
+`table6-replay.tsv` records the retained cut-row data identifiers, design names,
+macro LEF/Liberty dependencies, and 7200-second caps. `table5-sources.tsv`
+records the six paper commit IDs and their current missing recovery status.
+`table5-inputs.tsv` distinguishes the regenerable AES/JPEG inputs from the
+missing untracked SWERV `config_dense2.mk`; the standard SWERV config is not
+silently treated as equivalent.

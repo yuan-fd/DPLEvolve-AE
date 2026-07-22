@@ -25,9 +25,10 @@ export DPL_EVOLVE_PYTHON THREADS
 .PHONY: help doctor bootstrap build-tools setup check prepare-paper-inputs
 .PHONY: validate-evaluator reproduce-default setup-bo reproduce-bo replay-reviewdse
 .PHONY: plan-level1 reproduce-level1
-.PHONY: reproduce-table4 summarize-table4 reproduce-table5 reproduce-table6
+.PHONY: reproduce-table4 summarize-table4 prepare-table5-inputs reproduce-table5 reproduce-table6
 .PHONY: reproduce-paper-results reproduce-paper-search
 .PHONY: run-dse-small plan-dse-paper run-dse-paper paper-data-check
+.PHONY: fetch-table6-data check-table5-data check-table6-data
 .PHONY: audit-archive evidence table4 table5 table6
 .PHONY: toolchain-smoke smoke smoke-check doctor-smoke
 .PHONY: test test-structure test-integration test-unit validate-configs
@@ -53,8 +54,9 @@ help:
 	@echo "  make replay-reviewdse TRACK=ghr   Replay nine runtime-aware programs"
 	@echo "  make reproduce-table4       Default + BO + both ReviewDSE replay tracks"
 	@echo "  make summarize-table4       Build fresh Table 4 TSV from generated metrics"
-	@echo "  make reproduce-table5       Fresh stage-composability counterexamples"
-	@echo "  make reproduce-table6       Fresh hard cut-row repair experiment"
+	@echo "  make prepare-table5-inputs  Rebuild Table 5 inputs after DENSE_2 config recovery"
+	@echo "  make reproduce-table5       Prepare inputs + replay six Table 5 sources"
+	@echo "  make reproduce-table6       Replay 27 runs from exact cut-row DEF/V/SDC"
 	@echo "  make reproduce-paper-results  All non-LLM paper result experiments"
 	@echo ""
 	@echo "3. Exercise or rerun the LLM search itself:"
@@ -66,7 +68,10 @@ help:
 	@echo "  make reproduce-paper-search ACKNOWLEDGE_LLM_COST=yes"
 	@echo ""
 	@echo "Supporting checks (not paper reproduction):"
-	@echo "  make paper-data-check       Report missing exact Table 5/6 assets"
+	@echo "  make fetch-table6-data      Download and verify retained Table 6 data"
+	@echo "  make check-table6-data      Verify Table 6 DEF/V/SDC/source package"
+	@echo "  make check-table5-data      Report Table 5 source/config recovery status"
+	@echo "  make paper-data-check       Run both external-data status checks"
 	@echo "  make audit-archive          Recompute packaged TSV/JSON summaries"
 	@echo "  make toolchain-smoke        Optional AES toolchain exercise"
 	@echo "  make test                   Repository regression tests"
@@ -120,11 +125,17 @@ summarize-table4:
 	  --expected "$(ARTIFACTS_DIR)/01-table4-qor/expected/table4.json" \
 	  --output "$(DPL_EVOLVE_STATE_ROOT)/paper_reproduction/table4/table4-fresh.tsv"
 
+prepare-table5-inputs:
+	@bash "$(REPRO_SCRIPTS)/prepare_table5_inputs.sh" --threads "$(THREADS)"
+
 reproduce-table5:
 	@bash "$(REPRO_SCRIPTS)/reproduce_table5.sh" --threads "$(THREADS)"
 
 reproduce-table6:
-	@bash "$(REPRO_SCRIPTS)/reproduce_table6.sh" --threads "$(THREADS)"
+	@bash "$(REPRO_SCRIPTS)/reproduce_table6.sh" --threads "$(THREADS)" \
+	  $(if $(CASE),--case "$(CASE)",) \
+	  $(if $(PATTERN),--pattern "$(PATTERN)",) \
+	  $(if $(ROLE),--only-role "$(ROLE)",)
 
 # Complete no-LLM result reproduction. Check external data before spending the
 # 3,600-run BO budget so an incomplete package fails early.
@@ -146,6 +157,15 @@ reproduce-paper-search:
 
 paper-data-check:
 	@bash "$(REPRO_SCRIPTS)/check_paper_data.sh"
+
+fetch-table6-data:
+	@bash "$(REPRO_SCRIPTS)/fetch_table6_data.sh"
+
+check-table5-data:
+	@bash "$(REPRO_SCRIPTS)/reproduce_table5.sh" --check-paper-data
+
+check-table6-data:
+	@bash "$(REPRO_SCRIPTS)/reproduce_table6.sh" --check-paper-data
 
 plan-level1:
 	@bash "$(REPRO_SCRIPTS)/run_level1.sh" --threads "$(THREADS)" --children "$(or $(LEVEL1_CHILDREN),50)" --dry-run

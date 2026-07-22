@@ -35,8 +35,10 @@ The fresh output contains three rows. A reproduced counterexample has both:
 - selected final `H_f` higher than the reference `H_f`.
 
 The paper reports final-HPWL degradations of +1.48%, +20.96%, and +0.02% for
-AES dense N45, JPEG dense N45, and SWERV dense N45, respectively. Missing exact
-inputs are reported as `BLOCKED`; an archive-audit pass is not a replacement.
+AES dense N45, JPEG dense N45, and SWERV dense N45, respectively. AES/JPEG
+input recipes survive; the SWERV `config_dense2.mk` and all six exact source
+commits are missing and reported as `BLOCKED`. An archive-audit pass is not a
+replacement.
 
 ## Table 6
 
@@ -51,7 +53,9 @@ The expected status counts are:
 
 `pass` means both OpenROAD and `check_placement` pass. `timeout` means the
 detailed-placement flow reaches the 7200-second cap. Table 6 focuses on legality
-recovery; BPQUAD has no legal fixed-source reference for a QoR comparison.
+recovery; BPQUAD has no legal fixed-source reference for a QoR comparison. All
+nine ReviewDSE rows use one frozen evolved-negotiation source and the retained
+exact DEF/Verilog/SDC inputs.
 
 ## Search process
 

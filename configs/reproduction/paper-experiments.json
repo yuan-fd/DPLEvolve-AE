@@ -2,7 +2,7 @@
   "schema_version": 1,
   "paper": {
     "title": "From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA",
-    "pdf_sha256": "e5b08018cb4ef7cf634e2ba9ad048e42b5aad0686dea3f88ef5664b1ac49e2c5",
+    "pdf_sha256": "81e66dd3a1192b517d7090ac15b2b23a8f768957e0579df1fe98a0b2dbf8b25b",
     "primary_metric": "final post-DPL HPWL H_f",
     "runtime_gate": 2.0
   },
@@ -62,26 +62,29 @@
   "table5": {
     "purpose": "Run the selected stage-local legalizer and its fixed full-flow reference through the same downstream DPO and final mirroring flow.",
     "requires_external_paper_data": true,
+    "input_policy": "Regenerate AES DENSE and JPEG DENSE from retained recipes. SWERV DENSE_2 requires the deleted untracked config_dense2.mk (or an independently validated exact input); exact candidate source commits must come from the external paper-data package.",
     "rows": [
-      {"id": "aes_dense_n45", "case": "aes_dense_nangate45", "core_utilization": 70, "selected": "legalm_i18", "reference": "diamond_i12"},
-      {"id": "jpeg_dense_n45", "case": "jpeg_util90_nangate45", "core_utilization": 90, "selected": "negotiation", "reference": "negotiation"},
-      {"id": "swerv_dense_n45", "case": "swerv_wrapper_nangate45", "core_utilization": 60, "selected": "diamond", "reference": "negotiation"}
+      {"id": "aes_dense_n45", "case": "aes_dense_nangate45", "flow_variant": "DENSE", "input_recovery": "regenerable_tracked_fixed_floorplan", "selected": "legalm_i18", "reference": "diamond_i12"},
+      {"id": "jpeg_dense_n45", "case": "jpeg_util90_nangate45", "flow_variant": "DENSE", "core_utilization": 90, "input_recovery": "regenerable_tracked_config_and_override", "selected": "negotiation", "reference": "negotiation"},
+      {"id": "swerv_dense_n45", "case": "swerv_wrapper_nangate45", "flow_variant": "DENSE_2", "input_recovery": "blocked_missing_config_dense2", "selected": "diamond", "reference": "negotiation"}
     ]
   },
   "table6": {
-    "purpose": "Replay Diamond, Negotiation, and the selected ReviewDSE source on each exact cut-row ODB under a 7200-second timeout.",
+    "purpose": "Replay Diamond, Negotiation, and one frozen evolved-negotiation source on each retained exact cut-row DEF/Verilog/SDC dataset under a 7200-second timeout.",
     "requires_external_paper_data": true,
+    "input_format": "gzip-compressed cutrows.def and cutrows.v per pattern, plus one handoff.sdc per case; no paper-time ODB is required",
+    "reviewdse_program": "evolved_negotiation",
     "timeout_seconds": 7200,
     "rows": [
-      {"case": "ariane133_nangate45", "pattern": "center-8um", "program": "evolved_negotiation_selected", "expected": {"diamond": "fail", "negotiation": "pass", "reviewdse": "pass"}},
-      {"case": "ariane133_nangate45", "pattern": "center-9um", "program": "evolved_negotiation_default_fail_probe8", "expected": {"diamond": "fail", "negotiation": "fail", "reviewdse": "pass"}},
-      {"case": "ariane133_nangate45", "pattern": "center-10um", "program": "evolved_negotiation_default_fail_probe8", "expected": {"diamond": "fail", "negotiation": "timeout", "reviewdse": "pass"}},
-      {"case": "swerv_wrapper_nangate45", "pattern": "center-5.25um", "program": "evolved_negotiation_selected", "expected": {"diamond": "pass", "negotiation": "fail", "reviewdse": "pass"}},
-      {"case": "swerv_wrapper_nangate45", "pattern": "center-5.5um", "program": "evolved_negotiation_default_fail_probe8", "expected": {"diamond": "fail", "negotiation": "fail", "reviewdse": "pass"}},
-      {"case": "swerv_wrapper_nangate45", "pattern": "center-6um", "program": "evolved_negotiation_default_fail_probe8", "expected": {"diamond": "fail", "negotiation": "fail", "reviewdse": "pass"}},
-      {"case": "bp_quad_nangate45", "pattern": "center-5um", "program": "evolved_negotiation_bpquad_center_probe", "expected": {"diamond": "fail", "negotiation": "timeout", "reviewdse": "pass"}},
-      {"case": "bp_quad_nangate45", "pattern": "center-6um", "program": "evolved_negotiation_bpquad_center_probe", "expected": {"diamond": "fail", "negotiation": "timeout", "reviewdse": "pass"}},
-      {"case": "bp_quad_nangate45", "pattern": "center-8um", "program": "evolved_negotiation_bpquad_center_probe", "expected": {"diamond": "fail", "negotiation": "timeout", "reviewdse": "pass"}}
+      {"case": "ariane133_placebatch", "paper_case": "ariane133_nangate45", "pattern": "center_band_8", "paper_pattern": "center-8um", "program": "evolved_negotiation", "expected": {"diamond": "fail", "negotiation": "pass", "reviewdse": "pass"}},
+      {"case": "ariane133_placebatch", "paper_case": "ariane133_nangate45", "pattern": "center_band_9", "paper_pattern": "center-9um", "program": "evolved_negotiation", "expected": {"diamond": "fail", "negotiation": "fail", "reviewdse": "pass"}},
+      {"case": "ariane133_placebatch", "paper_case": "ariane133_nangate45", "pattern": "center_band_10", "paper_pattern": "center-10um", "program": "evolved_negotiation", "expected": {"diamond": "fail", "negotiation": "timeout", "reviewdse": "pass"}},
+      {"case": "swerv_wrapper_dense2", "paper_case": "swerv_wrapper_nangate45", "pattern": "center_band_5p25", "paper_pattern": "center-5.25um", "program": "evolved_negotiation", "expected": {"diamond": "pass", "negotiation": "fail", "reviewdse": "pass"}},
+      {"case": "swerv_wrapper_dense2", "paper_case": "swerv_wrapper_nangate45", "pattern": "center_band_5p5", "paper_pattern": "center-5.5um", "program": "evolved_negotiation", "expected": {"diamond": "fail", "negotiation": "fail", "reviewdse": "pass"}},
+      {"case": "swerv_wrapper_dense2", "paper_case": "swerv_wrapper_nangate45", "pattern": "center_band_6", "paper_pattern": "center-6um", "program": "evolved_negotiation", "expected": {"diamond": "fail", "negotiation": "fail", "reviewdse": "pass"}},
+      {"case": "bp_quad_placebatch", "paper_case": "bp_quad_nangate45", "pattern": "center_band_5", "paper_pattern": "center-5um", "program": "evolved_negotiation", "expected": {"diamond": "fail", "negotiation": "timeout", "reviewdse": "pass"}},
+      {"case": "bp_quad_placebatch", "paper_case": "bp_quad_nangate45", "pattern": "center_band_6", "paper_pattern": "center-6um", "program": "evolved_negotiation", "expected": {"diamond": "fail", "negotiation": "timeout", "reviewdse": "pass"}},
+      {"case": "bp_quad_placebatch", "paper_case": "bp_quad_nangate45", "pattern": "center_band_8", "paper_pattern": "center-8um", "program": "evolved_negotiation", "expected": {"diamond": "fail", "negotiation": "timeout", "reviewdse": "pass"}}
     ]
   },
   "author_reference_machine": {

@@ -19,7 +19,7 @@ provenance/               pinned source revisions
 The primary public interface is the root `Makefile`, which delegates to
 `scripts/reproduce/`. A fresh experiment must:
 
-1. start from a recorded or checksummed ODB;
+1. start from a recorded/checksummed design state (ODB or cut-row DEF/V/SDC);
 2. build the required fixed or edited OpenROAD source;
 3. run the protected detailed-placement evaluator;
 4. emit status, `H_g/H_lg/H_ip/H_f`, legality, displacement, runtime, and
@@ -53,7 +53,8 @@ Git checkout:
 
 - `$ORFS_ROOT/flow/{results,reports,logs}` for EDA products;
 - `$DPL_EVOLVE_STATE_ROOT` for builds, matrices, DSE rounds, and summaries;
-- `$PAPER_DATA_ROOT` for separately distributed exact Table 5/6 inputs.
+- `$PAPER_DATA_ROOT` for the retained Table 6 DEF/V/SDC/source package and any
+  future recovery of the missing Table 5 SWERV config and six source trees.
 
 This keeps a clone small without pretending that compact JSON/TSV files are the
 experiment.

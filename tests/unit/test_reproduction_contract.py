@@ -82,6 +82,44 @@ class ReproductionContractTests(unittest.TestCase):
             self.assertEqual(result.returncode, 3)
             self.assertIn("[BLOCKED]", result.stdout)
 
+    def test_table6_contract_uses_retained_def_data_and_one_source(self):
+        manifest = json.loads(
+            (ROOT / "configs/reproduction/paper-experiments.json").read_text()
+        )
+        table6 = manifest["table6"]
+        self.assertIn("cutrows.def", table6["input_format"])
+        self.assertIn("no paper-time ODB", table6["input_format"])
+        self.assertEqual(table6["reviewdse_program"], "evolved_negotiation")
+        self.assertEqual(
+            {row["program"] for row in table6["rows"]},
+            {"evolved_negotiation"},
+        )
+        runner = (ROOT / "scripts/reproduce/reproduce_table6.sh").read_text()
+        self.assertIn("cutrows.def.gz", runner)
+        self.assertIn("cutrows.v.gz", runner)
+        self.assertNotIn("3_4_place_resized.odb", runner)
+        self.assertIn("--pattern requires --case", runner)
+        fetcher = (ROOT / "scripts/reproduce/fetch_table6_data.sh").read_text()
+        self.assertIn("releases/download/paper-data-v1", fetcher)
+        self.assertIn(
+            "c73f84c6008ddf578bce9c2708dbe1eff55b2a8e96dada95376369afe9008b63",
+            fetcher,
+        )
+
+    def test_table5_uses_retained_recipes_and_refuses_a_fake_swerv_substitute(self):
+        prepare = (ROOT / "scripts/reproduce/prepare_table5_inputs.sh").read_text()
+        for fragment in (
+            "aes_dense_nangate45 DENSE default",
+            "jpeg_util90_nangate45 DENSE 90",
+            "config_dense2.mk",
+            "DESIGN_CONFIG=\"${SWERV_DESIGN_CONFIG}\" FLOW_VARIANT=DENSE_2",
+        ):
+            self.assertIn(fragment, prepare)
+        self.assertNotIn("swerv_wrapper_nangate45 DENSE_2 60", prepare)
+        runner = (ROOT / "scripts/reproduce/reproduce_table5.sh").read_text()
+        self.assertIn("prepare_table5_inputs.sh", runner)
+        self.assertNotIn("PAPER_DATA_ROOT}/table5/${row_id}/input/3_4", runner)
+
     def test_external_paper_data_must_be_fully_checksummed(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -266,52 +304,29 @@ class ReproductionContractTests(unittest.TestCase):
     def test_table6_summary_classifies_fresh_status_and_legality(self):
         contract_path = ROOT / "configs/reproduction/paper-experiments.json"
         contract = json.loads(contract_path.read_text())
-        programs = {
-            "diamond": contract["table6"]["rows"],
-            "negotiation": contract["table6"]["rows"],
-        }
-        for spec in contract["table6"]["rows"]:
-            programs.setdefault(spec["program"], []).append(spec)
-
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            matrix_root = root / "matrices"
-            fields = [
-                "case", "flow_variant", "status", "candidate_metrics",
-                "hpwl_global_micron", "hpwl_legalized_micron",
-                "hpwl_after_improve_micron", "hpwl_after_micron", "runtime_seconds",
-            ]
-            for program, specs in programs.items():
-                results = matrix_root / f"table6_{program}/results.tsv"
-                results.parent.mkdir(parents=True, exist_ok=True)
-                with results.open("w", newline="") as stream:
-                    writer = csv.DictWriter(stream, fieldnames=fields, delimiter="\t")
-                    writer.writeheader()
-                    for index, spec in enumerate(specs):
-                        expected_key = program if program in ("diamond", "negotiation") else "reviewdse"
-                        observed = spec["expected"][expected_key]
-                        illegal_success = observed == "fail" and program == "diamond" and index == 0
-                        metrics = results.parent / f"metrics-{index}.json"
-                        metrics.write_text(json.dumps({
-                            "status": "ok" if observed == "pass" or illegal_success else f"flow_{observed}ed" if observed == "fail" else "flow_timeout",
-                            "legality": {"placement_violations": 0 if observed == "pass" else 1},
-                        }))
-                        flow = f"paper_table6_{spec['case']}_{spec['pattern'].replace('.', '_')}"
+            results = root / "results.tsv"
+            fields = ["case", "pattern", "role", "status", "exit_code", "runtime_seconds", "metrics_json", "log"]
+            with results.open("w", newline="") as stream:
+                writer = csv.DictWriter(stream, fieldnames=fields, delimiter="\t")
+                writer.writeheader()
+                for spec in contract["table6"]["rows"]:
+                    for role in ("diamond", "negotiation", "reviewdse"):
                         writer.writerow({
                             "case": spec["case"],
-                            "flow_variant": flow,
-                            "status": "PASS" if observed == "pass" or illegal_success else "FAIL_CANDIDATE",
-                            "candidate_metrics": metrics,
-                            "hpwl_global_micron": 100,
-                            "hpwl_legalized_micron": 90,
-                            "hpwl_after_improve_micron": 89,
-                            "hpwl_after_micron": 88,
+                            "pattern": spec["pattern"],
+                            "role": role,
+                            "status": spec["expected"][role],
+                            "exit_code": 0 if spec["expected"][role] == "pass" else 1,
                             "runtime_seconds": 1,
+                            "metrics_json": root / f"{spec['case']}-{spec['pattern']}-{role}.json",
+                            "log": root / "run.log",
                         })
             output = root / "table6-fresh.tsv"
             self.run_python(
                 "summarize_table6.py",
-                "--matrix-root", matrix_root,
+                "--results", results,
                 "--experiment-manifest", contract_path,
                 "--output", output,
             )

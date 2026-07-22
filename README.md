@@ -21,23 +21,27 @@ only a toolchain diagnostic and is not a paper experiment.
 | Table 4 BO | `make reproduce-bo` | 400 Optuna-TPE trials per target, four trials in parallel |
 | Table 4 ReviewDSE-HPWL | `make replay-reviewdse TRACK=hpwl` | Builds nine frozen selected source trees and runs their complete DPL trajectories |
 | Table 4 ReviewDSE-GHR | `make replay-reviewdse TRACK=ghr` | Builds and runs the nine runtime-aware selected source trees |
-| Table 5 | `make reproduce-table5` | Replays both complete source candidates for each stage-composability counterexample |
-| Table 6 | `make reproduce-table6` | Replays Diamond, Negotiation, and ReviewDSE on nine exact cut-row ODBs with a 7200 s cap |
+| Table 5 | `make reproduce-table5` | Rebuilds AES/JPEG inputs and replays six candidates after the missing sources and SWERV DENSE_2 config are recovered |
+| Table 6 | `make reproduce-table6` | Replays Diamond, Negotiation, and one frozen ReviewDSE source on nine exact cut-row DEF/V/SDC inputs |
 | ReviewDSE Level 1 | `make reproduce-level1` | Runs the three calibration instances and freezes reviewed mechanism/source-start evidence |
 | ReviewDSE Level 2 | `make run-dse-small` / `make run-dse-paper` | Runs the target Teacher/Student source-edit, build, evaluate, and review loop |
 
-`make reproduce-paper-results` is the complete no-LLM result path: it checks
-the external data first, then executes Table 4, Table 5, and Table 6. It is not
-a shortcut to archived numbers. `make reproduce-paper-search
+`make reproduce-paper-results` is the complete no-LLM result orchestrator: it
+checks external data first, then executes Table 4, Table 5, and Table 6. It is
+not a shortcut to archived numbers. At present it stops at the documented
+Table 5 recovery gate; run Table 4 and Table 6 independently. `make reproduce-paper-search
 ACKNOWLEDGE_LLM_COST=yes` executes Level 1 followed by the full Level 2 search.
 
-Important current data status: the Table 4 selected source trees are included,
-and its nine input ODBs can be regenerated from the pinned flow. The exact
-paper-time Table 5/6 ODB/SDC pairs and complete source candidates have not yet been
-recovered into the public artifact. Their fresh commands are complete but stop
-with an explicit missing-file report until those assets are installed. See
-[Exact paper-data layout](docs/paper-data-layout.md). The artifact must not be
-called a complete Table 5/6 reproduction package before that recovery is done.
+Important current data status: Table 4 selected sources are included and its
+inputs are regenerated from the pinned flow. Table 6's exact DEF/Verilog/SDC
+inputs and its single evolved source survived; a validated 200 MB external data
+archive can drive all 27 fresh OpenROAD runs. For Table 5, the AES and JPEG
+dense inputs have retained generation recipes, but the untracked SWERV
+`config_dense2.mk` and all six paper-time source commits are absent from both
+the original workspace and retained backup. `make reproduce-table5` therefore
+blocks honestly until another backup is found. A retained SWERV handoff ODB is
+not presented as an exact substitute because it was rewritten with a later SDC.
+See [paper-data status and layout](docs/paper-data-layout.md).
 
 ## Paper experiment being reproduced
 
@@ -173,18 +177,46 @@ however, contain the runnable full-search path and all non-LLM replay paths.
 
 ## 4. Reproduce Tables 5 and 6
 
-Check whether the separately distributed, checksummed exact assets are installed:
+Download and verify the retained Table 6 package:
 
 ```bash
-make paper-data-check
+make fetch-table6-data
+make check-table6-data
 ```
 
-Once the check reports complete inputs:
+The fixed asset URL is
+`https://github.com/yuan-fd/DPLEvolve-AE/releases/download/paper-data-v1/dplevolve-table6-paper-data-20260722.tar.gz`;
+its SHA-256 is
+`c73f84c6008ddf578bce9c2708dbe1eff55b2a8e96dada95376369afe9008b63`.
+Then run:
 
 ```bash
-PAPER_DATA_ROOT=/path/to/paper-data make reproduce-table5 THREADS=10
-PAPER_DATA_ROOT=/path/to/paper-data make reproduce-table6 THREADS=10
+make reproduce-table6 THREADS=10
 ```
+
+This executes 27 OpenROAD jobs from the retained cut-row DEF/Verilog/SDC data,
+with the paper's 7200-second cap on every legalizer. The same single evolved
+source is rebuilt once and replayed on all nine patterns. Reviewers do not need
+Innovus: the exact `cutRow` products are inputs, while all replay execution is
+OpenROAD.
+
+Run one real row first if desired:
+
+```bash
+make reproduce-table6 CASE=ariane133_placebatch PATTERN=center_band_8 ROLE=reviewdse THREADS=10
+```
+
+Table 5's recoverable placement inputs are prepared separately:
+
+```bash
+make prepare-table5-inputs THREADS=10
+make reproduce-table5 THREADS=10
+```
+
+Both commands currently report `BLOCKED` before EDA execution because the
+paper-time SWERV `config_dense2.mk` is missing; the full replay additionally
+needs the six missing source commits. They become executable without code
+changes if those files are recovered into the documented layout.
 
 To execute every non-LLM result experiment in order:
 
@@ -192,11 +224,16 @@ To execute every non-LLM result experiment in order:
 PAPER_DATA_ROOT=/path/to/paper-data make reproduce-paper-results THREADS=10
 ```
 
+This aggregate command intentionally exits before the expensive Table 4 BO
+campaign while Table 5 recovery data is missing. Today, use `make reproduce-table4`
+and `make reproduce-table6` as the complete runnable result paths and report
+Table 5 as the known artifact gap.
+
 Table 5 reruns the legalization-selected candidate and its full-flow reference,
-then compares `H_lg` with downstream `H_ip`/`H_f`. Table 6 stages each exact
-cut-row ODB and executes fixed Diamond, fixed Negotiation, and the reported
-ReviewDSE repair source using the same legality checker and timeout. Neither
-command reads the archived expected JSON as an experimental result.
+then compares `H_lg` with downstream `H_ip`/`H_f`. Table 6 loads each exact
+cut-row DEF/Verilog/SDC and executes fixed Diamond, fixed Negotiation, and the
+reported ReviewDSE repair source using the same legality checker and timeout.
+Neither command reads archived expected JSON as an experimental result.
 
 ## Supporting audit and diagnostic commands
 

@@ -42,23 +42,35 @@ The small run uses real model calls and source edits. `plan-dse-paper` prints
 the full nine-case protocol without spending tokens. A complete search requires
 `ACKNOWLEDGE_LLM_COST=yes`; see the root README for reported token budgets.
 
-## Table 5/6 inputs
+## Table 5/6 data
+
+Table 6 uses a separately published, checksummed 200 MB archive containing
+retained cut-row DEF/V/SDC inputs and one evolved source:
 
 ```bash
-make paper-data-check
+make fetch-table6-data
+make check-table6-data
+make reproduce-table6 THREADS=10
 ```
 
-Fresh Table 5/6 replay is allowed only after the checksummed exact ODB/SDC pairs and source programs
-in [paper-data-layout.md](paper-data-layout.md) are installed. Missing data is
-reported as `BLOCKED` and is never replaced by the archived summaries.
+Table 5's ODBs were deleted. AES/JPEG generation recipes survive, but the
+untracked SWERV `config_dense2.mk` and all six exact source commits are
+currently missing. `make prepare-table5-inputs` and `make reproduce-table5`
+therefore report `BLOCKED` until another backup is found. See
+[paper-data-layout.md](paper-data-layout.md); no standard config or archived
+TSV is substituted.
 
-With all exact data installed, the complete no-LLM result path is:
+`make paper-data-check` reports both statuses together and therefore exits
+nonzero while the Table 5 config/source recovery remains incomplete.
+
+If the Table 5 config and sources are later recovered, the complete no-LLM result path is:
 
 ```bash
 make reproduce-paper-results THREADS=10
 ```
 
-It runs fresh Table 4/5/6 experiments. The separate full discovery rerun is
+It runs fresh Table 4/5/6 experiments. Today Table 4 and Table 6 are runnable
+independently, while Table 5 is a disclosed gap. The separate full discovery rerun is
 `make reproduce-paper-search ACKNOWLEDGE_LLM_COST=yes`.
 
 ## Optional archive audit

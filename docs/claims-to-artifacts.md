@@ -31,19 +31,23 @@ the other eight cannot yet be described as bit-identical paper inputs.
 
 ## Table 5: downstream composability counterexamples
 
-`make reproduce-table5` stages each exact dense N45 ODB, builds both complete
+`make reproduce-table5` prepares each dense N45 input, builds both complete
 source candidates, and executes the same legalization, DPO, and final mirroring
 trajectory. The fresh summarizer checks that the selected candidate improves
 `H_lg` but degrades `H_f` against its full-flow reference.
 
-This command requires the exact ODB/SDC pairs and complete source candidates described
-in `docs/paper-data-layout.md`. Missing assets produce `BLOCKED` and a nonzero
-exit; the command never substitutes the Table 5 transcription.
+The paper-time ODBs were deleted. AES DENSE and JPEG DENSE have retained
+recipes, but SWERV's untracked `config_dense2.mk` is missing and the retained
+handoff ODB is not an exact constraint-stage substitute. The six complete
+source candidates are also missing. The known identities are recorded,
+missing assets produce `BLOCKED`, and the command never substitutes the Table
+5 transcription or the standard SWERV config.
 
 ## Table 6: hard cut-row legality recovery
 
-`make reproduce-table6` stages nine exact cut-row ODBs and executes Diamond,
-Negotiation, and the row's selected ReviewDSE repair program under the paper's
+`make reproduce-table6` decompresses nine retained cut-row DEF/Verilog pairs,
+loads three retained SDC files, and executes Diamond, Negotiation, and one
+frozen evolved-negotiation source under the paper's
 7200-second cap. This creates 27 fresh runs. Outcomes are derived from the
 OpenROAD status and `check_placement`, then compared with the paper pattern:
 
@@ -51,9 +55,11 @@ OpenROAD status and `check_placement`, then compared with the paper pattern:
 - fixed Diamond has one legal result and eight failures;
 - fixed Negotiation has one legal result, four failures, and four timeouts.
 
-The exact ODB/SDC pairs and three ReviewDSE repair sources are external paper data. As
-with Table 5, the command blocks when they are missing instead of reading the
-archived JSON as an experimental result.
+The paper-time ODBs are neither present nor needed by this replay. The exact
+Innovus `cutRow` products and one evolved source form a checksummed external
+package. The public runner and package were validated with a fresh Ariane
+`center_band_8` pass. Missing data blocks execution instead of reading archived
+JSON as an experimental result.
 
 ## ReviewDSE search process
 
@@ -84,6 +90,8 @@ These commands are useful diagnostics, but none proves the experimental claims
 without the fresh commands above.
 
 The aggregate `make reproduce-paper-results` target runs all no-LLM fresh
-result paths and fails before BO if the exact external paper data is incomplete.
+result paths only when both external scopes pass. It remains blocked while the
+Table 5 config/source recovery is incomplete; Table 4 and Table 6 can run
+independently.
 `make reproduce-paper-search ACKNOWLEDGE_LLM_COST=yes` runs Level 1 and then the
 full paper Level 2 search.

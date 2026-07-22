@@ -89,9 +89,11 @@ This is intentional when exact paper data is missing:
 make paper-data-check
 ```
 
-Install the exact ODBs and source trees using `docs/paper-data-layout.md` and
-set `PAPER_DATA_ROOT` if they live outside the checkout. The reproduction
-commands never fall back to packaged TSV/JSON transcriptions.
+For Table 6, run `make fetch-table6-data` to install the retained
+DEF/V/SDC + evolved-source archive. Table 5 has a known recovery gap: the
+untracked SWERV `config_dense2.mk` and six paper source commits are absent from
+the retained author workspace. The commands never fall back to the standard
+SWERV config or packaged TSV/JSON.
 
 ## ReviewDSE search failures
 
