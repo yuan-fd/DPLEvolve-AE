@@ -1,67 +1,72 @@
-# Expected Results & Tolerances
+# Expected fresh results and interpretation
 
-This document records the expected values and acceptable tolerances for
-each paper claim verified by this artifact. The JSON files under
-`artifacts/*/expected/` are the authoritative reference; this document
-provides context and interpretation guidance.
+The values under `artifacts/*/expected/` are paper transcriptions used as
+reference targets. Fresh reproduction commands calculate their outputs from
+new EDA runs; they do not copy those reference files into the result.
 
-## Table 4: QoR Comparison
+## Table 4
 
-**Reference:** `artifacts/01-table4-qor/expected/table4.json`
-**Paper claims:** `artifacts/01-table4-qor/expected/paper_claims.json`
+After all nine default, BO, HPWL-selected, and runtime-aware runs complete,
+`make summarize-table4` writes a ten-row TSV (nine cases plus mean) under
+`$DPL_EVOLVE_STATE_ROOT/paper_reproduction/table4/`.
 
-| Metric | BO-DSE (Baseline) | ReviewDSE-HPWL | ReviewDSE-GHR |
-|--------|-------------------|----------------|---------------|
-| Mean HPWL reduction | ~0.38% | ~1.78% | N/A |
-| Global route overflow reduction | N/A | N/A | ~1.68% |
-| Runtime ratio vs baseline | 1.0× | ~1.34× | ~1.11× |
+The paper's mean results relative to default are:
 
-Tolerance: ±0.05 percentage points for HPWL/GHR metrics.
-Smaller deviations are expected across different hardware due to
-floating-point variations in OpenROAD's internal calculations.
+| Method | Mean final HPWL change | Mean runtime ratio |
+|---|---:|---:|
+| BO-DSE | -0.38% | 1.17x |
+| ReviewDSE-HPWL | -1.78% | 1.34x |
+| ReviewDSE-GHR | -1.68% | 1.11x |
 
-## Table 5: Composability
+The selected-source runner requires the ODB and companion SDC, a successful build, `PASS` evaluator
+status, complete `H_g/H_lg/H_ip/H_f`, and strict legality. Input ODB hashes are
+recorded for each regenerated run. AES Nangate45 has a paper-time input hash;
+the other eight currently have revision provenance but no paper-time checksum.
 
-**Reference:** `artifacts/02-table5-composability/expected/`
+Small floating-point/runtime differences can occur across compilers and hosts.
+A mismatch should be reported with the new metrics, input hash, tool revision,
+and host configuration; the reference file must not be edited to make it pass.
 
-Three counterexamples are verified. Each produces a pass/fail verdict
-against the expected composability property. All three must pass.
+## Table 5
 
-## Table 6: Cut-Row Repair Patterns
+The fresh output contains three rows. A reproduced counterexample has both:
 
-**Reference:** `artifacts/03-table6-cutrow/expected/`
+- selected `H_lg` lower than the reference `H_lg`;
+- selected final `H_f` higher than the reference `H_f`.
 
-Nine pattern verification results. Each is a boolean pass/fail check.
-All nine must pass.
+The paper reports final-HPWL degradations of +1.48%, +20.96%, and +0.02% for
+AES dense N45, JPEG dense N45, and SWERV dense N45, respectively. Missing exact
+inputs are reported as `BLOCKED`; an archive-audit pass is not a replacement.
 
-## AES Smoke Flow
+## Table 6
 
-**Reference:** `artifacts/04-aes-smoke/expected/ae_reproduction_lock.json`
+The fresh output contains 27 rows: three programs on each of nine patterns.
+The expected status counts are:
 
-The lock file contains exact expected values for:
+| Program | Pass | Fail | Timeout |
+|---|---:|---:|---:|
+| Diamond | 1 | 8 | 0 |
+| Negotiation | 1 | 4 | 4 |
+| ReviewDSE repair | 9 | 0 | 0 |
 
-- Final WNS (worst negative slack)
-- Final TNS (total negative slack)
-- Die area
-- Design area
-- Total wirelength
+`pass` means both OpenROAD and `check_placement` pass. `timeout` means the
+detailed-placement flow reaches the 7200-second cap. Table 6 focuses on legality
+recovery; BPQUAD has no legal fixed-source reference for a QoR comparison.
 
-Tolerances are specified per-metric in the lock file. Values are
-generally expected to match within 1% on identical tool commits.
-Larger deviations indicate either a different tool version or a
-build configuration mismatch.
+## Search process
 
-## Interpreting Deviations
+A small Level 2 run should create a private Student source tree, a private
+OpenROAD binary, protected evaluator metrics, a Student knowledge card, and a
+Teacher review. The full profile uses one GPT-5.5 xhigh Teacher, four GPT-5.4
+xhigh Students, ten iterations per target, and the 2x runtime gate.
 
-Small deviations are normal and expected because:
+Search is stochastic. Reproduction means executing the disclosed method and
+reporting its newly observed trajectory, not requiring an identical sequence of
+LLM proposals. Exact reconstruction of the author process additionally depends
+on the unrecovered author-time Level 1 breadth and frozen evidence.
 
-1. **Compiler differences** between machines can produce slightly
-   different binaries from the same source.
-2. **Floating-point non-determinism** in EDA tools.
-3. **System library version differences** (glibc, etc.).
+## Diagnostic-only AES run
 
-If a deviation exceeds the stated tolerance:
-
-1. Verify the tool commits match `provenance/source-commits.json`.
-2. Run `make check` to confirm your environment.
-3. Check `docs/troubleshooting.md` for known issues.
+`make toolchain-smoke` expects 14,676 instances and approximately
+`188569.2 -> 176845.1` micron HPWL with strict legality on its pinned case. This
+validates one toolchain path only and is not evidence for Tables 4-6.

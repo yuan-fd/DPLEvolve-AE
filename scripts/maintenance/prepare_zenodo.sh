@@ -6,13 +6,19 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AE_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 ALLOW_PLACEHOLDER_AUTHORS=0
+ALLOW_INCOMPLETE_PAPER_DATA=0
 
-if [[ "${1:-}" == "--allow-placeholder-authors" ]]; then
-  ALLOW_PLACEHOLDER_AUTHORS=1
-elif [[ $# -gt 0 ]]; then
-  echo "Usage: $0 [--allow-placeholder-authors]" >&2
-  exit 2
-fi
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --allow-placeholder-authors) ALLOW_PLACEHOLDER_AUTHORS=1 ;;
+    --allow-incomplete-paper-data) ALLOW_INCOMPLETE_PAPER_DATA=1 ;;
+    *)
+      echo "Usage: $0 [--allow-placeholder-authors] [--allow-incomplete-paper-data]" >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
 
 for command in rg rsync tar sha256sum; do
   if ! command -v "${command}" >/dev/null 2>&1; then
@@ -25,7 +31,7 @@ required_paths=(
   README.md
   CITATION.cff
   .zenodo.json
-  paper/OpenROAD_Evolve.pdf
+  configs/reproduction/paper-experiments.json
   artifacts/01-table4-qor/inputs/bo_paper
   artifacts/01-table4-qor/selected-programs/manifest.json
   artifacts/02-table5-composability/inputs/provenance.json
@@ -56,12 +62,23 @@ if [[ "${metadata_has_placeholders}" -ne 0 && "${ALLOW_PLACEHOLDER_AUTHORS}" -ne
   exit 2
 fi
 
+paper_data_complete=1
+if ! make -C "${AE_ROOT}" paper-data-check; then
+  paper_data_complete=0
+  if [[ "${ALLOW_INCOMPLETE_PAPER_DATA}" -ne 1 ]]; then
+    echo "[ERROR] Formal release refused: exact Table 5/6 paper data is incomplete." >&2
+    echo "        Install the data described in docs/paper-data-layout.md." >&2
+    echo "        Use --allow-incomplete-paper-data only for an audit-only package." >&2
+    exit 3
+  fi
+fi
+
 echo "============================================"
 echo " DPLEvolve AE - Zenodo Archive Preparation"
 echo "============================================"
 echo ""
-echo "[1/5] Running no-LLM evidence gates..."
-make -C "${AE_ROOT}" evidence
+echo "[1/5] Running archive-audit gates..."
+make -C "${AE_ROOT}" audit-archive
 
 STAMP="$(date +%Y%m%d-%H%M%S)"
 STAGING="$(mktemp -d /tmp/dplevolve-zenodo.XXXXXX)"
@@ -114,38 +131,38 @@ Artifact for the MLCAD 2026 short paper:
 
 > **From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA**
 
-## Recommended Review
+## Recommended Fresh Review
 
 ```bash
 cd DPLEvolve-AE
-make evidence
+make bootstrap
+make build-tools
+make prepare-paper-inputs CASE=aes_nangate45
+make validate-evaluator CASE=aes_nangate45
 ```
 
-This regenerates the Table 4 BO summary from normalized trial records,
-regenerates the two ReviewDSE columns from selected-candidate records, verifies
-the compact archived summaries behind Tables 5 and 6, and integrity-checks 18
-selected source programs. It takes seconds and makes no EDA or LLM call.
+This builds the pinned environment, generates one paper input, and runs the
+actual protected detailed-placement evaluator. Use the root README for the
+nine-case default, BO, selected-source replay, and cost-gated DSE commands.
 
-For the optional real OpenROAD smoke flow on a clean machine:
+For the optional compact archived-record audit:
 
 ```bash
-make bootstrap
-make setup
-make smoke
+make audit-archive
 ```
 
 ## Contents
 
 - `DPLEvolve-AE/`: complete AE repository and bundled ReviewDSE framework
-- `DPLEvolve-AE/paper/`: reviewed paper PDF
+- `DPLEvolve-AE/configs/reproduction/`: paper experiment contract
 - `QUICKSTART.md`: detailed clean-machine instructions
 - `MANIFEST.sha256`: archive file-integrity manifest
 
 ## Known Limitation
 
-The original nine Table 4 ODB inputs were not retained, so exact nine-case
-frozen-program numerical replay is unavailable. Archived-record verification,
-source integrity checking, and the AES OpenROAD smoke flow remain executable.
+Table 4 ODBs can be regenerated, but only AES Nangate45 currently has an
+archived input checksum. Exact Table 5/6 assets remain external and their fresh
+commands block until the data layout in `docs/paper-data-layout.md` is filled.
 
 All versions are pinned in `DPLEvolve-AE/provenance/source-commits.json`.
 ZENODOEOF
@@ -164,7 +181,7 @@ LISTING="${STAGING}/archive-list.txt"
 tar -tzf "${ARCHIVE_PATH}" > "${LISTING}"
 for required in \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/README.md" \
-  "${ARCHIVE_ROOT}/DPLEvolve-AE/paper/OpenROAD_Evolve.pdf" \
+  "${ARCHIVE_ROOT}/DPLEvolve-AE/configs/reproduction/paper-experiments.json" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/01-table4-qor/inputs/bo_paper/aes_asap7.trials.tsv" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/01-table4-qor/selected-programs/manifest.json" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/02-table5-composability/inputs/counterexamples.tsv" \
@@ -191,4 +208,7 @@ echo "Size:    ${SIZE}"
 echo "SHA-256: ${SHA256}"
 if [[ "${metadata_has_placeholders}" -ne 0 ]]; then
   echo "[WARN] Audit-only archive: author metadata is still incomplete."
+fi
+if [[ "${paper_data_complete}" -ne 1 ]]; then
+  echo "[WARN] Audit-only archive: exact Table 5/6 paper data is still incomplete."
 fi

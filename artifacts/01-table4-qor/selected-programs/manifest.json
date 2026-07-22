@@ -3,6 +3,7 @@
   "release_normalization": "Developer workspace prefixes in non-functional messages.txt path annotations were replaced with <ORIGINAL_WORKSPACE>; source code was not changed.",
   "flow_variant": "place_batch_20260421_220319",
   "input_stage": "3_4_place_resized.odb",
+  "constraint_stage": "2_floorplan.sdc",
   "default_objective": "hpwl",
   "programs": [
     {

@@ -4,10 +4,11 @@ This directory is the stable source catalog for papers used by the DPL-Evolve
 notes.  Default Agent knowledge should cite paper ids and reusable mechanisms,
 not machine-specific artifact paths.
 
-## Committed Reference
+## Cataloged Reference
 
 - OpenDP-named reference: fence-region-aware mixed-height legalization paper,
-  not OpenROAD DPL engine documentation.
+  not OpenROAD DPL engine documentation. Its DOI is cataloged in
+  `paper_sources.yaml`; the generated PDF is not tracked.
 
 ## Optional Source-Text Verification
 
@@ -33,7 +34,7 @@ Do not commit the resulting cache.
 
 ## Paper Roles
 
-- OpenDP-named committed reference: fence/fragmented-row legalization ideas.
+- OpenDP-named cataloged reference: fence/fragmented-row legalization ideas.
 - NBLG: negotiation-based legalization mechanism reference.
 - LEGALM / LEGALM 2.0: ALM-style legalization and partition/refinement
   mechanism reference.

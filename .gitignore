@@ -87,3 +87,5 @@ src/dpl_evolve_agent/checkpoints/
 src/dpl_evolve_agent/knowledge/packets/current_run_packet.md
 src/dpl_evolve_agent/knowledge/packets/current_run_packet.json
 src/dpl_evolve_agent/knowledge/reference/papers/pdf_cache/
+# Large/external exact paper inputs are distributed separately.
+paper-data/

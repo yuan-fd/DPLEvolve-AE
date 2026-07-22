@@ -118,7 +118,7 @@ dpl_ae_resolve_env() {
     errors=1
   fi
   if [[ "${errors}" -ne 0 ]]; then
-    echo "[ERROR] Environment resolution failed. Run 'make bootstrap' if ORFS is absent, then 'make setup'." >&2
+    echo "[ERROR] Environment resolution failed. Run 'make bootstrap' if ORFS is absent, then 'make build-tools'." >&2
     return 1
   fi
 

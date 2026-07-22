@@ -3,60 +3,98 @@
 This artifact accompanies the MLCAD 2026 paper *From Tool Invocation to
 Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA*.
 
-## Artifact summary
+## Artifact purpose
 
-The archive provides four independent reviewer bundles: archived Table 4 QoR
-records and selected programs, compact Table 5 composability evidence, compact
-Table 6 cut-row evidence, and a fresh one-case AES Nangate45 OpenROAD flow.
+The artifact exposes runnable experiment paths for OpenROAD detailed placement:
+
+- regenerate the nine target ODBs with pinned sources;
+- rerun the default and 400-trial BO baselines;
+- rebuild and replay the 18 selected ReviewDSE source trees;
+- rerun the Level 1 calibration and Level 2 Teacher/Student search;
+- rerun the Table 5 composability and Table 6 cut-row experiments when their
+  separately distributed exact inputs are installed.
+
+The compact archived records are supplied for provenance and fast inspection.
+They are not the primary evaluation path.
 
 | Property | Value |
 |---|---|
-| Platforms | Linux x86-64 |
+| Tested author OS | Rocky Linux 8.10, x86-64 |
+| Author machine | 64 physical / 128 logical CPU cores, 314 GiB RAM, 22 TiB `/home` |
+| GPU / commercial license | Not required |
 | Languages | Bash, Python, C++, Tcl |
-| Framework | OpenROAD-flow-scripts |
-| Hardware | CPU only; 4+ cores and 16 GB RAM recommended for smoke |
-| Evidence-only runtime | Seconds |
-| Fresh smoke runtime | About 2-5 minutes after setup |
+| EDA framework | OpenROAD-flow-scripts and OpenROAD at pinned revisions |
+| Evaluation scope | Detailed placement from `3_4_place_resized.odb` |
 | License | BSD 3-Clause |
 
-## Access and installation
+The author machine is a reference configuration, not a universal minimum.
+Large cases, four concurrent BO trials, and parallel agent evaluations require
+server-class memory and storage. Reproduce one case at a time and lower
+parallelism when using a smaller host.
 
-Obtain the GitHub release or Zenodo archive, then run:
+## Installation and evaluator validation
 
 ```bash
+git clone https://github.com/yuan-fd/DPLEvolve-AE.git
 cd DPLEvolve-AE
-make evidence
+make doctor
+make bootstrap
+make build-tools THREADS=16
+make prepare-paper-inputs CASE=aes_nangate45 THREADS=8
+make validate-evaluator CASE=aes_nangate45 THREADS=8
 ```
 
-This path uses packaged records and Python's standard library. For the optional
-fresh EDA run:
+The final two commands generate a real input ODB and execute the protected
+trajectory `H_g -> H_lg -> H_ip -> H_f`, including strict legality,
+displacement, runtime, liveness, and consistency checks.
+
+## Paper experiment commands
 
 ```bash
-make bootstrap
-make setup
-make smoke
+# Table 4, all nine cases
+make setup-bo
+make reproduce-table4 THREADS=10
+
+# Two-level search (real model use and substantial cost)
+make reproduce-level1 ACKNOWLEDGE_LLM_COST=yes
+make plan-dse-paper
+make run-dse-paper ACKNOWLEDGE_LLM_COST=yes
+
+# Tables 5/6 after exact paper data is installed
+make paper-data-check
+make reproduce-table5 THREADS=10
+make reproduce-table6 THREADS=10
 ```
 
-Exact source revisions are recorded in `provenance/source-commits.json`.
+Fresh products are written outside the Git checkout under
+`$DPL_EVOLVE_STATE_ROOT` and ORFS `flow/{results,reports,logs}`. They never
+overwrite packaged expected values.
 
-## Evaluation
+## Reviewer cost boundary
 
-The main reviewer command verifies the three paper-facing table bundles and
-the integrity of 18 selected source programs. Expected headline values and
-success messages are listed in `docs/expected-results.md`; the evidence level
-for every item is listed in `docs/claims-to-artifacts.md`.
+A reviewer is not expected to fund the entire LLM discovery search. The paper
+reports a mean 2.15B logged and 0.10B active tokens per target over ten target
+iterations. The artifact therefore provides three independent levels:
 
-The AES flow checks its generated input digest, instance count and area, HPWL,
-tool status, and strict placement legality. It is a fresh default OpenROAD
-execution, not a selected ReviewDSE-program replay.
+1. no-LLM fresh EDA baselines and frozen-source replay;
+2. a small real Teacher/Student method run;
+3. the exact cost-gated nine-case launch for an author or reviewer with budget.
 
-## Limitations
+The runnable launch is part of reproducibility even when the evaluator elects
+not to spend that budget.
 
-The nine paper-time ODB inputs were not retained because they occupied several
-terabytes, so exact numerical replay of the selected programs is unavailable.
-The archive also does not repeat the full Teacher/Student discovery search.
-That search needs authenticated model access, the original search state, many
-persistent sessions, and a very large token and EDA budget.
+## Current completeness boundary
 
-These boundaries are enforced in the public commands and described in every
-bundle README.
+Table 4 execution code, selected source trees, and regenerable inputs are
+present. The exact Table 5/6 ODB/SDC pairs and complete candidate sources have not yet
+been recovered into the public package. Their commands intentionally exit
+`BLOCKED` until the layout in `docs/paper-data-layout.md` is complete.
+
+The main paper also omits the exact Level 1 Student breadth. The public
+50-Student calibration profile is explicitly marked as a reconstruction.
+These limitations must be resolved before claiming bit-exact reproduction of
+every paper experiment and search decision.
+
+For an audit of packaged records only, run `make audit-archive`. The optional
+`make toolchain-smoke` command is a one-case toolchain diagnostic; neither is a
+paper experiment.

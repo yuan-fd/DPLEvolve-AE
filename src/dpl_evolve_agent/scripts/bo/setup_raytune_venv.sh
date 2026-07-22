@@ -3,13 +3,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AGENT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-PYTHON_BIN="${PYTHON_BIN:-python3.11}"
+PYTHON_BIN="${PYTHON_BIN:-${DPL_EVOLVE_PYTHON:-python3}}"
 VENV_DIR="${RAYTUNE_VENV_DIR:-${AGENT_ROOT}/.venv_raytune}"
 REQ_FILE="${AGENT_ROOT}/configs/raytune_requirements.txt"
 
 if ! command -v "${PYTHON_BIN}" >/dev/null 2>&1; then
   echo "[ERROR] Python interpreter not found: ${PYTHON_BIN}" >&2
-  echo "        Set PYTHON_BIN=python3.11 or another Ray-compatible Python." >&2
+  echo "        Set PYTHON_BIN to a Ray-compatible Python interpreter." >&2
   exit 1
 fi
 

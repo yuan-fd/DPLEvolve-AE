@@ -108,7 +108,7 @@ if [[ -x "${YOSYS_BIN}" ]]; then
   echo "  SHA-256: $(sha256sum "${YOSYS_BIN}" | awk '{print $1}')"
 else
   dpl_ae_warn "Yosys binary not found at: ${YOSYS_BIN}"
-  dpl_ae_warn "Run 'make setup' to build it."
+  dpl_ae_warn "Run 'make build-tools' to build it."
 fi
 echo ""
 
@@ -121,7 +121,7 @@ if [[ -x "${OR_BIN}" ]]; then
   echo "  SHA-256: $(sha256sum "${OR_BIN}" | awk '{print $1}')"
 else
   dpl_ae_warn "OpenROAD binary not found at: ${OR_BIN}"
-  dpl_ae_warn "Run 'make setup' to build it."
+  dpl_ae_warn "Run 'make build-tools' to build it."
 fi
 echo ""
 
@@ -142,6 +142,6 @@ echo ""
 
 echo "=============================================="
 echo " Environment check complete."
-echo " Run 'make setup' if any warnings above."
-echo " Run 'make smoke' to validate with AES test."
+echo " Run 'make build-tools' if an EDA binary is missing."
+echo " Run 'make prepare-paper-inputs' and 'make validate-evaluator' next."
 echo "=============================================="

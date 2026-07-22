@@ -5,10 +5,12 @@ artifacts/
   01-table4-qor/          Table 4 records and 18 selected source programs
   02-table5-composability/ Table 5 compact counterexamples
   03-table6-cutrow/       Table 6 compact cut-row outcomes
-  04-aes-smoke/           Fresh pinned AES EDA flow
-framework/
+  04-aes-smoke/           Optional one-case toolchain diagnostic
+configs/reproduction/     Paper experiment contract and case plan
+src/
   dpl_evolve_agent/       Bundled research implementation
 scripts/
+  reproduce/              Fresh paper experiment entry points
   human/                  Environment preparation for reviewers
   agent/                  Stable machine dispatcher and validation
   shared/                 Cross-path runtime utilities
@@ -17,23 +19,23 @@ docs/                      Human-facing guides
 agent/                     Machine-facing instructions and schemas
 schemas/                   Public experiment-config schema
 provenance/                Source locks and integrity records
-paper/                     Reviewed paper
+paper/                     Paper metadata (PDF not tracked)
 ```
 
 ## Entry points
 
 | Intent | Entry point |
 |---|---|
-| All packaged evidence | `make evidence` |
-| One supported artifact | `scripts/agent/run_artifact.sh --artifact ID` |
-| Fresh AES EDA run | artifact ID `smoke` plus `--run-smoke` |
+| Prepare paper inputs | `make prepare-paper-inputs` |
+| Table 4 default/BO/replay | `make reproduce-table4` |
+| Small real DSE | `make run-dse-small` |
+| Archived records | `make audit-archive` |
 | Environment inspection | `scripts/agent/inspect_environment.sh` |
 | Repository validation | `make test` |
 | Archive audit | `make zenodo-audit` |
 
 ## Dependency direction
 
-Artifact evidence scripts may read only their own bundle and Python's standard
-library. The smoke artifact may call `scripts/shared/`, the bundled framework,
-and the sibling ORFS workspace. Human and agent wrappers may call artifact
-entry points; artifact verifiers must not call human or agent wrappers.
+Archive verifiers read only their own bundles. Fresh reproduction wrappers call
+the bundled framework and sibling ORFS workspace and write generated state only
+outside immutable expected-value directories.

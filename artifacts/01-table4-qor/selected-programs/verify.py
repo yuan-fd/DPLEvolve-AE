@@ -35,6 +35,7 @@ def main() -> int:
     parser.add_argument("--require-inputs", action="store_true")
     parser.add_argument("--case")
     parser.add_argument("--objective", choices=["hpwl", "ghr"], default="hpwl")
+    parser.add_argument("--flow-variant")
     parser.add_argument("--results", type=Path)
     args = parser.parse_args()
 
@@ -72,10 +73,14 @@ def main() -> int:
             odb = (
                 args.orfs_root
                 / "flow" / "results" / item["platform"] / item["design"]
-                / manifest["flow_variant"] / manifest["input_stage"]
+                / (args.flow_variant or manifest["flow_variant"]) / manifest["input_stage"]
             )
+            constraint = odb.with_name(manifest.get("constraint_stage", "2_floorplan.sdc"))
             if not odb.is_file():
                 missing.append(f"{item['case']}: {odb}")
+                continue
+            if not constraint.is_file():
+                missing.append(f"{item['case']}: {constraint}")
                 continue
             expected_hash = item.get("input_odb_sha256")
             if expected_hash and sha256(odb) != expected_hash:
@@ -88,7 +93,8 @@ def main() -> int:
             for entry in missing:
                 print(f"  {entry}")
         else:
-            print("[PASS] all nine paper-path ODB inputs are present")
+            label = args.case if args.case else "all nine cases"
+            print(f"[PASS] paper-path ODB input is present for {label}")
         if unpinned:
             print("[WARN] present but no archived checksum: " + ", ".join(unpinned))
 

@@ -1,11 +1,11 @@
 # Table 4: QoR comparison
 
-This bundle checks the paper's nine-case comparison among the OpenROAD
+This archived bundle checks the paper's retained nine-case records among the OpenROAD
 default, black-box BO-DSE, ReviewDSE-HPWL, and runtime-aware ReviewDSE-GHR
 columns. It also verifies the integrity of the 18 selected HPWL/GHR source
 programs.
 
-Run only this artifact from the repository root:
+Run this compact audit from the repository root:
 
 ```bash
 bash artifacts/01-table4-qor/run.sh
@@ -48,10 +48,17 @@ runs themselves are not repeated. The ReviewDSE columns are regenerated from
 the records for the selected candidates, not from the complete search
 populations.
 
-The selected source programs are integrity-checked but are not compiled by the
-default command. Exact numerical replay is unavailable because the nine
-paper-time `3_4_place_resized.odb` inputs were not retained. The optional
-single-program launcher is documented in
+The selected source programs are integrity-checked but are not compiled by this
+command. For fresh execution, regenerate the nine ODBs and run:
+
+```bash
+make reproduce-table4
+```
+
+That command reruns the default, all 3,600 BO trials, and both selected-source
+tracks. Only AES Nangate45 currently has a retained paper-time ODB checksum;
+the other eight regenerated inputs are revision-recorded but cannot yet be
+claimed bit-identical to the paper-time inputs. Single-program details are in
 [`selected-programs/README.md`](selected-programs/README.md).
 
 ## Directory guide

@@ -12,11 +12,11 @@ RUN_STAMP="$(date +%Y%m%d_%H%M%S)"
 RUN_PREFIX="${EVOLVE_RUN_PREFIX:-evolve_9case_place_batch_${RUN_STAMP}}"
 START_KIND="${EVOLVE_START_KIND:-framework}"
 CHILDREN="${EVOLVE_CHILDREN:-4}"
-ITERATIONS="${EVOLVE_ITERATIONS:-15}"
+ITERATIONS="${EVOLVE_ITERATIONS:-10}"
 MAX_PARALLEL="${EVOLVE_MAX_PARALLEL:-4}"
 THREADS="${EVOLVE_THREADS:-10}"
 MAX_CONCURRENT_CASES="${EVOLVE_MAX_CONCURRENT_CASES:-3}"
-TEACHER_MODEL="${EVOLVE_TEACHER_MODEL:-gpt-5.4}"
+TEACHER_MODEL="${EVOLVE_TEACHER_MODEL:-gpt-5.5}"
 TEACHER_REASONING_EFFORT="${EVOLVE_TEACHER_REASONING_EFFORT:-xhigh}"
 STUDENT_MODEL="${EVOLVE_STUDENT_MODEL:-gpt-5.4}"
 STUDENT_REASONING_EFFORT="${EVOLVE_STUDENT_REASONING_EFFORT:-xhigh}"
@@ -27,6 +27,7 @@ SKIP_CORE_BUILD=0
 REFRESH_BASELINES=0
 TEACHER_ONLY=0
 DRY_RUN=0
+LEVEL1_EVIDENCE="${EVOLVE_LEVEL1_EVIDENCE:-}"
 CASES=()
 
 usage() {
@@ -39,8 +40,8 @@ place_batch_20260421_220319 snapshots.
 Defaults:
   case set:        evolve_9case
   children:        4
-  iterations:      15
-  teacher:         gpt-5.4 / xhigh
+  iterations:      10
+  teacher:         gpt-5.5 / xhigh
   student:         gpt-5.4 / xhigh
   start kind:      framework
   case concurrency 3
@@ -53,15 +54,16 @@ Options:
   --start-kind KIND            framework, diamond, default_negotiation,
                                evolved_diamond, evolved_negotiation, prepared.
   --children N                 Student count per iteration. Default: 4.
-  --iterations N               Iterations per case. Default: 15.
+  --iterations N               Iterations per case. Default: 10.
   --max-parallel N             Parallel students inside one case. Default: 4.
   --threads N                  OpenROAD threads. Default: 10.
   --max-concurrent-cases N     Concurrent Teacher rounds. Default: 3.
-  --teacher-model NAME         Default: gpt-5.4.
+  --teacher-model NAME         Default: gpt-5.5.
   --teacher-reasoning-effort E Default: xhigh.
   --student-model NAME         Default: gpt-5.4.
   --student-reasoning-effort E Default: xhigh.
   --runtime-multiplier X       Student flow timeout multiplier. Default: 2.0.
+  --level1-evidence PATH       Frozen paper-level calibration evidence packet.
   --prepare-workspace          Run prepare_workspace.sh before launch.
   --prepare-force              Pass --force to prepare_workspace.sh.
   --skip-core-build            Do not configure/build common OpenROAD core.
@@ -96,6 +98,7 @@ while [[ $# -gt 0 ]]; do
     --student-model) STUDENT_MODEL="$2"; shift 2 ;;
     --student-reasoning-effort) STUDENT_REASONING_EFFORT="$2"; shift 2 ;;
     --runtime-multiplier) STUDENT_RUNTIME_MULTIPLIER="$2"; shift 2 ;;
+    --level1-evidence) LEVEL1_EVIDENCE="$2"; shift 2 ;;
     --prepare-workspace) PREPARE_WORKSPACE=1; shift ;;
     --prepare-force) PREPARE_FORCE=1; shift ;;
     --skip-core-build) SKIP_CORE_BUILD=1; shift ;;
@@ -178,11 +181,12 @@ BATCH_ROOT="${DPL_EVOLVE_STATE_ROOT}/experiment_batches/${RUN_PREFIX}_${FLOW_VAR
 LOG_DIR="${BATCH_ROOT}/logs"
 STATUS_FILE="${BATCH_ROOT}/status.tsv"
 EXPERIMENTS_FILE="${BATCH_ROOT}/experiments.tsv"
-mkdir -p "${LOG_DIR}"
-printf "case\tstatus\tstart\tend\tlog\tround_id\n" > "${STATUS_FILE}"
-printf "case\tflow_variant\tround_id\tstart_kind\tchildren\titerations\tteacher\tstudent\n" > "${EXPERIMENTS_FILE}"
-
-require_snapshots
+if [[ "${DRY_RUN}" -eq 0 ]]; then
+  mkdir -p "${LOG_DIR}"
+  printf "case\tstatus\tstart\tend\tlog\tround_id\n" > "${STATUS_FILE}"
+  printf "case\tflow_variant\tround_id\tstart_kind\tchildren\titerations\tteacher\tstudent\n" > "${EXPERIMENTS_FILE}"
+  require_snapshots
+fi
 
 if [[ "${PREPARE_WORKSPACE}" -eq 1 ]]; then
   prepare_cmd=("${AGENT_ROOT}/scripts/workspace/prepare_workspace.sh" --workspace-root "${ORFS_ROOT}")
@@ -212,14 +216,9 @@ run_case() {
   local round_id round_tag log start_ts end_ts rc
   local -a cmd
   round_tag="t$(round_model_tag "${TEACHER_MODEL}" "${TEACHER_REASONING_EFFORT}")_s$(round_model_tag "${STUDENT_MODEL}" "${STUDENT_REASONING_EFFORT}")"
-  round_id="${RUN_PREFIX}_${FLOW_VARIANT}_${case_id}_4x${ITERATIONS}_${round_tag}"
+  round_id="${RUN_PREFIX}_${FLOW_VARIANT}_${case_id}_${CHILDREN}x${ITERATIONS}_${round_tag}"
   log="${LOG_DIR}/${case_id}.log"
   start_ts="$(date '+%F %T')"
-  printf "%s\t%s\t%s\t%s\t%s\t%s\t%s/%s\t%s/%s\n" \
-    "${case_id}" "${FLOW_VARIANT}" "${round_id}" "${START_KIND}" "${CHILDREN}" "${ITERATIONS}" \
-    "${TEACHER_MODEL}" "${TEACHER_REASONING_EFFORT}" "${STUDENT_MODEL}" "${STUDENT_REASONING_EFFORT}" \
-    >> "${EXPERIMENTS_FILE}"
-
   cmd=(
     "${DPL_EVOLVE_PYTHON}" "${AGENT_ROOT}/scripts/optimize_case_with_codex.py"
     --case "${case_id}"
@@ -240,12 +239,24 @@ run_case() {
     --skip-core-build
     --launch
   )
+  if [[ -n "${LEVEL1_EVIDENCE}" ]]; then
+    cmd+=(--level1-evidence "${LEVEL1_EVIDENCE}")
+  fi
   if [[ "${TEACHER_ONLY}" -eq 1 ]]; then
     cmd+=(--teacher-only)
   fi
   if [[ "${DRY_RUN}" -eq 1 ]]; then
     cmd+=(--dry-run)
+    printf '[DRY-RUN] case=%s command:' "${case_id}"
+    printf ' %q' "${cmd[@]}"
+    printf '\n'
+    return 0
   fi
+
+  printf "%s\t%s\t%s\t%s\t%s\t%s\t%s/%s\t%s/%s\n" \
+    "${case_id}" "${FLOW_VARIANT}" "${round_id}" "${START_KIND}" "${CHILDREN}" "${ITERATIONS}" \
+    "${TEACHER_MODEL}" "${TEACHER_REASONING_EFFORT}" "${STUDENT_MODEL}" "${STUDENT_REASONING_EFFORT}" \
+    >> "${EXPERIMENTS_FILE}"
 
   set +e
   {
@@ -302,5 +313,9 @@ done
 
 echo
 echo "Evolve launch finished. Status:"
-cat "${STATUS_FILE}"
+if [[ "${DRY_RUN}" -eq 1 ]]; then
+  echo "Dry run only; no snapshots, API calls, or output directories were required."
+else
+  cat "${STATUS_FILE}"
+fi
 exit "${overall_rc}"

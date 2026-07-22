@@ -208,6 +208,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "continuation. Requires --iterations 1."
         ),
     )
+    parser.add_argument(
+        "--level1-evidence",
+        type=Path,
+        help=(
+            "Frozen paper-level Level 1 method/source-start evidence packet. "
+            "Level 2 target search copies this immutable packet into every "
+            "iteration context; it never updates the packet."
+        ),
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
         "--audit-prompts",

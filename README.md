@@ -1,409 +1,229 @@
-# DPLEvolve: Artifact Evaluation
+# DPLEvolve Artifact Evaluation
 
-[![MLCAD 2026](https://img.shields.io/badge/MLCAD-2026-blue)](https://mlcad.org/)
-[![License: BSD 3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE)
+Artifact for **“From Tool Invocation to Source-Mechanism Exploration:
+Protected White-Box DSE for Open-Source EDA.”**
 
-**Paper:** "From Tool Invocation to Source-Mechanism Exploration:
-Protected White-Box DSE for Open-Source EDA"
+This repository is organized around the paper experiments. Its primary job is
+to let a reviewer execute the protected detailed-placement evaluator, reproduce
+the default and BO baselines, rebuild and replay the selected ReviewDSE source
+programs, and—when API access and budget are available—rerun the Teacher/Student
+search itself.
 
-**Artifact version:** v1.0.0 &nbsp;|&nbsp; **DOI:** [TO BE FILLED]
+`make audit-archive` is only a quick integrity check of packaged records. It is
+not presented as experimental reproduction. The optional AES smoke command is
+only a toolchain diagnostic and is not a paper experiment.
 
----
+## What is reproducible
 
-## Authors & Contact
+| Paper result | Fresh command | What the command actually executes |
+|---|---|---|
+| Table 4 default | `make reproduce-default` | OpenROAD default DPL on all nine target ODBs |
+| Table 4 BO | `make reproduce-bo` | 400 Optuna-TPE trials per target, four trials in parallel |
+| Table 4 ReviewDSE-HPWL | `make replay-reviewdse TRACK=hpwl` | Builds nine frozen selected source trees and runs their complete DPL trajectories |
+| Table 4 ReviewDSE-GHR | `make replay-reviewdse TRACK=ghr` | Builds and runs the nine runtime-aware selected source trees |
+| Table 5 | `make reproduce-table5` | Replays both complete source candidates for each stage-composability counterexample |
+| Table 6 | `make reproduce-table6` | Replays Diamond, Negotiation, and ReviewDSE on nine exact cut-row ODBs with a 7200 s cap |
+| ReviewDSE Level 1 | `make reproduce-level1` | Runs the three calibration instances and freezes reviewed mechanism/source-start evidence |
+| ReviewDSE Level 2 | `make run-dse-small` / `make run-dse-paper` | Runs the target Teacher/Student source-edit, build, evaluate, and review loop |
 
-[TO BE FILLED]
+`make reproduce-paper-results` is the complete no-LLM result path: it checks
+the external data first, then executes Table 4, Table 5, and Table 6. It is not
+a shortcut to archived numbers. `make reproduce-paper-search
+ACKNOWLEDGE_LLM_COST=yes` executes Level 1 followed by the full Level 2 search.
 
-**Project Lead:** [TO BE FILLED]
-**Contact:** [TO BE FILLED]
+Important current data status: the Table 4 selected source trees are included,
+and its nine input ODBs can be regenerated from the pinned flow. The exact
+paper-time Table 5/6 ODB/SDC pairs and complete source candidates have not yet been
+recovered into the public artifact. Their fresh commands are complete but stop
+with an explicit missing-file report until those assets are installed. See
+[Exact paper-data layout](docs/paper-data-layout.md). The artifact must not be
+called a complete Table 5/6 reproduction package before that recovery is done.
 
----
+## Paper experiment being reproduced
 
-## Overview
+![ReviewDSE architecture](images/dplevolve-architecture.png)
 
-Traditional Design Space Exploration treats the EDA tool as a black box:
-parameters go in, QoR numbers come out, and you never learn *why* one
-configuration outperforms another.
+The evaluation target is OpenROAD **detailed placement**, starting from
+`3_4_place_resized.odb`; it is not an RTL-to-GDS experiment. Every candidate is
+rebuilt and run through the protected evaluator, which records:
 
-DPLEvolve takes a different approach. It reads OpenROAD's source code,
-instruments individual optimization passes, and traces the causal chain
-from each transformation to its PPA impact. The result is white-box DSE:
-you understand not only that "parameter X works better," but that it
-works better *because* it reduces wirelength in post-CTS buffering.
+- incoming global-placement HPWL, `H_g`;
+- post-legalization HPWL, `H_lg`;
+- post-DPO HPWL, `H_ip`;
+- final post-DPL HPWL after final processing, `H_f`;
+- strict legality, average/maximum displacement, runtime, liveness, and
+  source/binary/metric consistency.
 
-This artifact contains:
+The machine-readable experiment contract is
+[`configs/reproduction/paper-experiments.json`](configs/reproduction/paper-experiments.json).
+It records the nine targets, Level 1 calibration cases, BO budget, model
+profiles, iteration count, selection tracks, and Table 5/6 stress patterns.
 
-- **Source code** for the ReviewDSE framework
-- **Pre-computed experiment traces** for all paper tables and figures
-- **Web Demo** — a visual reviewer console for evidence checks, reproduction, live logs, and project slides
-- **AES smoke flow** — a fresh RTL-to-GDS run you can execute on your own machine
-- **SHA-256 integrity checks** on every evidence bundle
+## 1. Prepare the environment
 
-Packaged results can be verified in seconds. Running the full AES smoke
-flow from source takes approximately half an hour.
+The authors ran the experiments on Rocky Linux 8.10 x86-64 with two Intel Xeon
+Platinum 8462Y+ CPUs (64 physical/128 logical cores total), 314 GiB RAM, and a
+22 TiB `/home` filesystem. No GPU or commercial EDA license is required.
 
----
-
-## Architecture
-
-![DPLEvolve Architecture](dplevolve-architecture.png)
-
-The pipeline operates in six stages:
-
-1. ORFS synthesizes and floorplans each design, producing ODB snapshots.
-2. BO-DSE (baseline) searches the tool's exposed parameter space blindly.
-3. ReviewDSE (our method) instruments OpenROAD source, traces each
-   optimization's mechanism, and selects candidates with causal reasoning.
-4. The LLM advisor attributes each QoR change to a specific code path.
-   All analyses are archived as readable text — no API calls are needed
-   during evaluation.
-5. Evidence bundles cross-check every paper claim against archived
-   expected values. No GPU or EDA license is required.
-6. The AES smoke flow validates the complete toolchain from source to GDS.
-
----
-
-## Verification Flow
-
-![Verification Flow](dplevolve-verification-flow.png)
-
-**Step 1 — Reviewer Doctor** (< 1 second): Checks Python, GNU Make, Bash,
-web-console support, build commands, memory, disk, repository inputs, ORFS, and
-EDA binaries. It never installs packages; missing items produce copyable,
-OS-specific commands for the reviewer to run manually.
-
-**Step 2 — Evidence verification** (< 5 seconds): Cross-checks every
-pre-computed result against its expected value. This is the primary
-verification path — it confirms that the packaged evidence matches the
-paper's claims.
-
-**Step 3 — Prepared environment inspection** (< 1 second, after setup): Checks
-pinned source revisions, Yosys/OpenROAD binaries, hashes, and shared libraries.
-
-**Step 4 — Smoke flow** (~20–35 minutes including setup, optional): Builds Yosys and
-OpenROAD from pinned source revisions, then runs synthesis → floorplan →
-place → route on the AES (Nangate45) design. Run this to verify that the
-entire toolchain functions end-to-end on your hardware.
-
----
-
-## Repository Structure
-
-```
-DPLEvolve-AE/
-├── README.md                          # Primary reviewer guide
-├── README.pdf                         # PDF copy of the reviewer guide
-├── Makefile                           # All command-line entry points
-├── dplevolve-architecture.png         # Architecture diagram
-├── dplevolve-verification-flow.png    # Verification flow diagram
-│
-├── web-demo/                          # Visual artifact reviewer console
-│   ├── server.py                      # FastAPI task queue and SSH backend
-│   ├── start.sh                       # Isolated web environment launcher
-│   ├── requirements.txt               # Pinned-compatible web dependencies
-│   ├── templates/                     # English UI, guide, and project slides
-│   ├── static/                        # Local visual assets
-│   └── tests/                         # Web backend regression tests
-│
-├── artifacts/                         # Experiment results and evidence
-│   ├── 01-table4-qor/                 # Table 4: QoR comparison
-│   │   ├── expected/                  # Authoritative expected values
-│   │   ├── traces/                    # Readable archived reasoning traces
-│   │   ├── selected-programs/         # 18 source trees and SHA-256 manifests
-│   │   └── output/                    # Generated verification output
-│   ├── 02-table5-composability/       # Table 5: composability
-│   ├── 03-table6-cutrow/              # Table 6: cut-row patterns
-│   └── 04-aes-smoke/                  # Fresh and archived AES smoke checks
-│
-├── src/dpl_evolve_agent/              # ReviewDSE implementation
-├── docs/                              # Reviewer and technical documentation
-│   ├── quickstart.md                  # Detailed execution instructions
-│   ├── environment.md                 # Pinned tools and machine setup
-│   ├── expected-results.md            # Expected values and tolerances
-│   ├── troubleshooting.md             # Diagnosis and remediation guidance
-│   └── claims-to-artifacts.md         # Paper-claim-to-command mapping
-├── scripts/                           # Human, agent, and shared scripts
-├── provenance/                        # Pinned revisions and checksums
-│   └── source-commits.json            # Exact tool commit hashes
-├── tests/                             # Structure, integration, and unit tests
-├── paper/                             # Paper PDF and notes
-└── agent/                             # Agent task definitions and schemas
-```
-
----
-
-## Paper-to-Artifact Mapping
-
-Each claim in the paper that this artifact supports is listed below.
-All seven pass `make evidence` on a clean checkout. Only C5 requires
-EDA tools; the remaining claims run on Python standard library alone.
-
-| ID / Paper | Claim | Command | Input | Expected Result / Time |
-|------------|-------|---------|-------|------------------------|
-| C1 / Table 4 | ReviewDSE-HPWL reduces wirelength by 1.78% vs BO-DSE baseline | `make table4` | Table 4 bundle | Table 4 QoR CSV; < 5 sec |
-| C2 / Table 4 | ReviewDSE-GHR reduces global route overflow by 1.68%, 1.11× runtime | `make table4` | Table 4 bundle | Table 4 GHR values; < 5 sec |
-| C3 / Table 5 | 3 counterexamples demonstrate ReviewDSE composability | `make table5` | Table 5 bundle | 3 matching verdicts; < 1 sec |
-| C4 / Table 6 | 9 cut-row repair patterns verified across designs | `make table6` | Table 6 bundle | 9 matching cases; < 1 sec |
-| C5 / Sec. V-C | AES smoke flow: full RTL-to-GDS runs on Nangate45 | `make bootstrap && make setup && make smoke` | 10 GB; network during setup | `[OK] AES smoke test PASSED`; setup 10–30 min plus smoke 2–5 min |
-| C6 / Table 4 | 18 selected program source trees for audit | `make table4` | Table 4 selected programs | 18 trees with SHA-256 manifests; < 5 sec |
-| C7 / Sec. IV | ReviewDSE source code | Source inspection | `src/` | Documented Python source |
-
----
-
-## Hardware & Software Requirements
-
-### Hardware
-
-- **OS:** Linux x86-64 (Ubuntu 20.04 or 22.04 tested)
-- **CPU:** Any for evidence checks; 2+ cores (4 recommended) for smoke flow
-- **GPU:** Not required
-- **RAM:** < 1 GB for evidence; 8 GB (16 GB recommended) for smoke
-- **Disk:** ~1 GB for evidence; ~10 GB for smoke
-- **Network:** Required only during setup (cloning repositories, ~2 GB download)
-- **Expected total runtime:** Seconds for evidence; ~10–30 minutes (setup) + ~2–5 minutes (smoke)
-
-### Software
-
-**Evidence verification:**
-
-- Python >= 3.11
-- GNU Make >= 4.0
-- Bash >= 4.0
-
-No pip packages, EDA tools, or API keys are required for evidence checking.
-
-**Smoke flow (auto-installed):**
-
-- Yosys 0.41 (built from pinned commit in `provenance/source-commits.json`)
-- OpenROAD v2.0 (built from pinned commit)
-- All remaining dependencies are fetched and built by `make bootstrap && make setup`.
-
-### Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DPL_EVOLVE_PYTHON` | `python3` | Override Python interpreter path |
-| `SMOKE_THREADS` | `nproc` | Thread count for smoke build |
-| `DPL_EVOLVE_THREADS` | `4` | Thread count for agent-dispatched runs |
-| `ORFS_ROOT` | `../OpenROAD-flow-scripts` | Override ORFS workspace path |
-| `DPL_EVOLVE_STATE_ROOT` | `../dpl_evolve_state` | State directory (auto-detected) |
-| `DPL_EVOLVE_AGENT_ROOT` | `src/dpl_evolve_agent` | Agent root (auto-detected) |
-
----
-
-## Web Demo (Recommended)
-
-The artifact includes an English visual reviewer console under `web-demo/`.
-It moves the fixed command-line workflow into a browser while preserving the
-same Make targets, working directory, live output, and exit codes. It also
-includes a project Slides view covering the proposed DPLEvolve architecture,
-the AE repository architecture, the verification workflow, and the reported
-DSE effects.
-
-Using the Web Demo is sufficient for review: it can replace both the
-command-line **Quick Start** and **Full Reproduction** sections below. Those
-sections remain as equivalent references for reviewers who prefer a terminal
-or need automation.
-
-Clone the artifact and start the console from the repository root:
+That is the measured reference machine, not a claim that every command consumes
+all 314 GiB. OpenROAD alone can exceed 2 GiB even on modest cases; compilation,
+parallel BO, large Ariane/SWERV/BPQUAD cases, and concurrent agent evaluations
+need substantially more headroom. We therefore do not advertise the previous
+8/16 GiB RAM or 10 GiB disk configuration as sufficient for full reproduction.
+For planning, use a server-class Linux host, start with at least tens of GiB of
+RAM and ample local disk, reduce parallelism on smaller machines, and monitor
+actual peak memory on the selected cases.
 
 ```bash
 git clone https://github.com/yuan-fd/DPLEvolve-AE.git
 cd DPLEvolve-AE
-bash web-demo/start.sh
+
+make doctor
+make bootstrap
+make build-tools THREADS=16
+make prepare-paper-inputs THREADS=16
+make validate-evaluator CASE=aes_nangate45 THREADS=8
 ```
 
-If the GitHub repository is private, accept the maintainer's collaborator
-invitation and authenticate Git before cloning. GitHub private repositories do
-not support anonymous clone access.
+`bootstrap` checks out the recorded ORFS/OpenROAD revisions and applies the
+tracked DPLEvolve patches. `build-tools` builds pinned Yosys/OpenROAD. Input
+preparation runs the real ORFS place target for the nine designs. The evaluator
+validation then runs the canonical DPL lines and emits new `metrics.json`
+records containing the full stage trajectory.
 
-Then open:
+The setup scripts never invoke `sudo`. On Rocky Linux, run `make doctor` and
+ask the system administrator to install only the missing build packages it
+reports. Exact repository revisions are in
+[`provenance/source-commits.json`](provenance/source-commits.json).
 
-- Review console: `http://127.0.0.1:8080/#review`
-- Project slides: `http://127.0.0.1:8080/#slides`
-- Reviewer guide: `http://127.0.0.1:8080/#guide`
+## 2. Reproduce Table 4
 
-The recommended browser workflow is:
-
-1. Run **make doctor** and follow any Suggested commands in a normal terminal.
-2. Run **make evidence**, or inspect Tables 4–6 individually.
-3. Optionally run **make doctor-smoke**, **bootstrap**, **setup**, **check**, and
-   **smoke**; the **full reproduction** button runs bootstrap, setup, check,
-   and the fresh smoke path in sequence.
-4. Read the live terminal output and confirm a zero exit code in Run history.
-
-If the repository is on a remote Linux server, keep the console bound to
-loopback and create a tunnel from the reviewer's computer:
+Run one target first:
 
 ```bash
-ssh -N -L 8080:127.0.0.1:8080 USER@SERVER
+make reproduce-default CASE=aes_nangate45 THREADS=8
+make setup-bo
+make reproduce-bo CASE=aes_nangate45 THREADS=8
+make replay-reviewdse CASE=aes_nangate45 TRACK=hpwl THREADS=8
+make replay-reviewdse CASE=aes_nangate45 TRACK=ghr THREADS=8
 ```
 
-Run this command on the reviewer's computer and keep it open; `-N` creates the
-tunnel without opening a remote shell. Then open the same
-`http://127.0.0.1:8080/` address locally. The launcher
-creates an isolated `web-demo/.venv` and installs only the web application's
-Python dependencies. It does not install system packages or EDA tools. Because
-the console can launch builds, do not expose it directly to the public
-Internet. See `web-demo/README.md` for connection modes and troubleshooting.
-
----
-
-## Quick Start (Command Line)
+Then run all nine cases:
 
 ```bash
-make doctor          # Read-only diagnosis; prints exact commands for missing prerequisites
-make evidence        # Verify all packaged results against expected values
+make reproduce-table4 THREADS=10
 ```
 
-Doctor works before ORFS exists and never installs packages. Review and run any
-suggested remediation command manually, then repeat Doctor. If both commands
-pass, the packaged artifact evidence is verified. `make evidence` should produce:
+`setup-bo` creates the isolated Ray Tune/Optuna environment used only by the BO
+baseline. This is a large run: BO alone executes 9 × 400 fresh placements. Outputs go
+under `DPL_EVOLVE_STATE_ROOT` and ORFS `flow/reports/`; they are not written
+over the archived expected values. The frozen-source replay does not call an
+LLM, but it does compile and execute each selected C++ source program. After
+all nine cases finish, `summarize-table4` writes
+`$DPL_EVOLVE_STATE_ROOT/paper_reproduction/table4/table4-fresh.tsv` directly
+from the new default `metrics.json`, BO `best.json`, and replay `results.tsv`.
 
-```
-[PASS] All packaged paper-evidence bundles passed
-```
+Regenerated ODBs are used with the stable `paper9_place` flow variant. Exact
+paper-time ODBs can instead be installed under the variant in the selected
+program manifest. The AES Nangate45 input is checksum-pinned; input checksums
+for the other eight cases still need to be added before claiming bit-exact
+paper-input identity.
 
-Individual tables can also be verified:
+## 3. Run the ReviewDSE method
+
+The paper method first constructs frozen global evidence on three calibration
+instances (JPEG N45 UTIL=90, AES N45 UTIL=70, and SWERV N45 UTIL=60):
 
 ```bash
-make table4          # Table 4: QoR comparison
-make table5          # Table 5: Composability
-make table6          # Table 6: Cut-row patterns
+make plan-level1
+make reproduce-level1 ACKNOWLEDGE_LLM_COST=yes LEVEL1_CHILDREN=50 THREADS=10
 ```
 
----
+This generates a read-only Level 1 packet that the Level 2 launcher copies into
+every target context. The main paper does not disclose Level 1 Student breadth;
+50 is the framework's documented public breadth-calibration profile, not an
+assertion about the unrecovered author run. The author-time value must be added
+to the AE appendix/configuration before claiming exact search-process
+reproduction.
 
-## Full Reproduction: Smoke Flow (Command Line)
-
-The smoke flow rebuilds Yosys and OpenROAD from source and runs a fresh
-AES design through synthesis, floorplanning, placement, and routing.
+A small run exercises the actual method rather than inspecting a final binary:
 
 ```bash
-make doctor-smoke    # Strictly check full-reproduction readiness
-make bootstrap       # Clone pinned Yosys and OpenROAD revisions (~2 min)
-make setup           # Build from source (~10–30 min, one-time)
-make check           # Inspect prepared commits, binaries, hashes, and libraries
-make smoke           # Run AES RTL-to-GDS (~2–5 min after build)
+make run-dse-small CASE=aes_nangate45 STUDENTS=1 ITERATIONS=1 THREADS=8
 ```
 
-Expected output: `[OK] AES smoke test PASSED`
+It creates a Teacher, gives a Student a private source workspace, applies a
+source edit, builds a private OpenROAD variant, evaluates the complete flow,
+and returns the evidence to Teacher review. It requires a working Codex/API
+configuration and incurs model usage.
 
-- `bootstrap` clones the exact commits recorded in `provenance/source-commits.json`.
-- `setup` compiles both tools from those commits. This takes 10–30 minutes
-  on a typical machine.
-- `smoke` runs the full flow on AES (Nangate45) and compares the output
-  against the lock file at `artifacts/04-aes-smoke/expected/ae_reproduction_lock.json`.
-
-To inspect the reference smoke result when it is already present in a prepared
-sibling ORFS workspace:
+The exact paper launch is deliberately cost-gated:
 
 ```bash
-make smoke-check
+make plan-dse-paper
+make run-dse-paper ACKNOWLEDGE_LLM_COST=yes THREADS=10
 ```
 
-The large ODB and metrics tree is intentionally not stored in this Git
-repository. On a clean clone, `make smoke-check` therefore reports `[SKIP]`
-and exits successfully. This is normal and does not affect the packaged
-Table 4–6 evidence checks. Use `make bootstrap && make setup && make smoke`
-to create and validate a fresh smoke result.
+The paper protocol is one GPT-5.5 xhigh Teacher, four GPT-5.4 xhigh Students,
+10 iterations per target, and a 2× runtime gate. The paper reports a mean of
+2.15 billion logged tokens and 0.10 billion active tokens per target; over nine
+targets that is about 19.35 billion logged and 0.90 billion active tokens. A
+reviewer is **not required** to pay for this full search. The artifact must,
+however, contain the runnable full-search path and all non-LLM replay paths.
 
-### Output Locations
+## 4. Reproduce Tables 5 and 6
 
-| Command | Output |
-|---------|--------|
-| `make evidence` | Read-only check; no output files |
-| `make table4/5/6` | `artifacts/0X-*/output/` |
-| `make smoke` | `artifacts/04-aes-smoke/output/` |
-| `make clean` | Deletes outputs; preserves evidence |
+Check whether the separately distributed, checksummed exact assets are installed:
 
----
-
-## Expected Results
-
-The authoritative reference is the JSON files under `artifacts/*/expected/`.
-Approximate values are provided below for orientation.
-
-| Bundle | Approximate Value | Reference File |
-|--------|------------------|----------------|
-| BO-DSE | ~0.38% mean HPWL reduction | `artifacts/01-table4-qor/expected/table4.json` |
-| ReviewDSE-HPWL | ~1.78% reduction, ~1.34× runtime | `artifacts/01-table4-qor/expected/paper_claims.json` |
-| ReviewDSE-GHR | ~1.68% reduction, ~1.11× runtime | `artifacts/01-table4-qor/expected/paper_claims.json` |
-| AES smoke | Exact values in lock file | `artifacts/04-aes-smoke/expected/ae_reproduction_lock.json` |
-
-Small deviations within the stated tolerances are normal.
-
----
-
-## Reproducibility Notes
-
-### Included
-
-All results in Tables 4–6 are backed by archived data with SHA-256 integrity
-checks. The AES smoke flow is fully reproducible from source.
-
-### Not Included (and why)
-
-**ODB input files (~3 TB).** The nine design databases from the paper's
-experimental runs are too large to distribute. Exact OpenROAD and Yosys
-commit hashes are documented in `provenance/source-commits.json`, along with
-RTL sources. Rebuilding from the same commits produces functionally identical ODBs.
-
-**Full LLM trace re-generation (~2B tokens per design).** The ReviewDSE
-traces in Table 4 were generated via a proprietary LLM API. Re-running from
-scratch costs approximately $30–50 per design and requires live API access.
-All 18 candidate traces are archived as readable text in
-`artifacts/01-table4-qor/traces/` and validated by SHA-256 checks. The
-reasoning can be audited without API calls.
-
-**Per-run EDA logs for Tables 5/6.** Compact summaries are provided instead.
-Provenance hashes are recorded in each bundle's `inputs/provenance.json`.
-
----
-
-## Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| `python3: command not found` | Install Python 3.11+, or set `DPL_EVOLVE_PYTHON=/path/to/python3` |
-| `make: command not found` | `apt-get install build-essential` (Ubuntu) |
-| `Permission denied` on scripts | `bash artifacts/.../run.sh` (executable bit not required) |
-| Evidence digest mismatch | Do not edit files under `expected/`. Run `git status` to inspect changes. |
-| `make check` fails | See `docs/environment.md` for required tool versions. |
-| Smoke cannot find ORFS | Run `make bootstrap` first, or set `ORFS_ROOT` to your ORFS checkout. |
-| Smoke hash mismatch | Verify commits in `provenance/source-commits.json` match your checkout. |
-| OOM during smoke | Reduce threads: `SMOKE_THREADS=2 make smoke` |
-| Smoke build is slow | Normal. Compiling Yosys and OpenROAD from source takes 10–30 minutes. |
-
-Further detail: `docs/troubleshooting.md`
-
----
-
-## Current Limitations
-
-- **Research framework.** DPLEvolve is academic work on DSE methodology. It
-  does not provide signoff-quality timing closure.
-- **Pre-computed LLM traces.** Traces can be read and audited, but
-  generating new ones requires proprietary API access.
-- **Linux x86-64 only for smoke flow.** Evidence checks run on any operating
-  system with Python 3.11+. The smoke flow requires Linux.
-- **ODB regeneration requires compilation.** Functionally identical ODBs can
-  be rebuilt from pinned commits, but a full compile cycle is necessary.
-
----
-
-## License & Citation
-
-BSD 3-Clause. See [LICENSE](LICENSE). Machine-readable: [CITATION.cff](CITATION.cff)
-
-```bibtex
-@inproceedings{dplevolve2026,
-  title     = {From Tool Invocation to Source-Mechanism Exploration:
-               Protected White-Box DSE for Open-Source EDA},
-  author    = {[TO BE FILLED]},
-  booktitle = {MLCAD},
-  year      = {2026}
-}
+```bash
+make paper-data-check
 ```
 
-**Questions:** [GitHub Issues](https://github.com/.../issues) or email [TO BE FILLED]
+Once the check reports complete inputs:
+
+```bash
+PAPER_DATA_ROOT=/path/to/paper-data make reproduce-table5 THREADS=10
+PAPER_DATA_ROOT=/path/to/paper-data make reproduce-table6 THREADS=10
+```
+
+To execute every non-LLM result experiment in order:
+
+```bash
+PAPER_DATA_ROOT=/path/to/paper-data make reproduce-paper-results THREADS=10
+```
+
+Table 5 reruns the legalization-selected candidate and its full-flow reference,
+then compares `H_lg` with downstream `H_ip`/`H_f`. Table 6 stages each exact
+cut-row ODB and executes fixed Diamond, fixed Negotiation, and the reported
+ReviewDSE repair source using the same legality checker and timeout. Neither
+command reads the archived expected JSON as an experimental result.
+
+## Supporting audit and diagnostic commands
+
+```bash
+make audit-archive       # seconds; recomputes packaged Table 4/5/6 records
+make toolchain-smoke     # optional AES toolchain diagnostic
+make test
+```
+
+`make evidence` remains only as a compatibility alias for
+`make audit-archive` and prints that limitation. Archived records are useful
+for provenance and quick review, but agreement between a TSV and the paper is
+not reproduction.
+
+## Repository layout
+
+```text
+DPLEvolve-AE/
+├── configs/reproduction/     # paper-derived execution manifest and case plans
+├── scripts/reproduce/        # public fresh-experiment entry points
+├── src/dpl_evolve_agent/     # protected evaluator and Teacher/Student framework
+├── artifacts/                # archived records and 18 frozen Table 4 source trees
+├── docs/                     # environment, data, and reviewer guidance
+├── images/                   # repository figures
+├── provenance/               # pinned source revisions
+├── tests/                    # command/manifest/evaluator regression tests
+└── web-demo/                 # optional browser frontend to the same Make targets
+```
+
+The command overview is always available with `make help`.

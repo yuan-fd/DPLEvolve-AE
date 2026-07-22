@@ -73,4 +73,4 @@ if [[ "${actual_openroad_tree}" != "${openroad_tree}" ]]; then
 fi
 
 echo "[PASS] clean ORFS/OpenROAD workspace matches both recorded source trees"
-echo "Next: make setup"
+echo "Next: make build-tools THREADS=16"

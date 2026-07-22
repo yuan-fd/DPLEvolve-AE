@@ -1,131 +1,130 @@
 # Troubleshooting
 
-Common issues encountered during artifact evaluation and their solutions.
-
-## Start With Doctor
+## Start with the read-only preflight
 
 ```bash
 make doctor
 ```
 
-If GNU Make itself is missing, invoke the same check directly:
+Doctor works before ORFS or the EDA binaries exist. It never installs packages.
+On Rocky/RHEL-family systems it prints commands for missing dependencies; review
+them with the system administrator before running `sudo`.
+
+## Environment preparation
+
+### ORFS is missing
 
 ```bash
-bash scripts/human/doctor.sh
+make bootstrap
 ```
 
-Doctor is read-only. It works on a fresh checkout before ORFS exists and groups
-the result into evidence, web-console, rebuild-tool, and prepared-smoke
-readiness. When a command is missing it prints a distro-specific command but
-does not run it. Review that command in a normal terminal, run it manually if
-permitted, and repeat Doctor.
+This needs network access to fetch pinned upstream repositories. Configure the
+site Git proxy first when working behind a firewall.
 
-For the complete source-rebuild path:
+### A pinned binary is missing or compilation fails
 
 ```bash
-make doctor-smoke
+make build-tools THREADS=16
 ```
 
-## Environment Issues
+Check `docs/environment.md` and the first compiler error. On a memory-constrained
+host, reduce `THREADS`; do not rely on the obsolete 8/16 GiB smoke estimate.
+The authors used Rocky Linux 8.10 with 314 GiB RAM.
 
-### `python3: command not found`
+### A non-default workspace layout is used
 
-Install Python 3.11 or later, or override the interpreter:
+Set paths on the command or in an untracked `env.local.sh`:
 
 ```bash
-DPL_EVOLVE_PYTHON=/path/to/python3 make evidence
+ORFS_ROOT=/path/to/OpenROAD-flow-scripts \
+DPL_EVOLVE_STATE_ROOT=/path/to/dpl_evolve_state \
+make check
 ```
 
-### `make: command not found`
+`make check` is for an already prepared environment. On a clean checkout use
+`make doctor` first.
 
-On Ubuntu:
+## Fresh Table 4 failures
+
+### Input ODB not found
 
 ```bash
-sudo apt-get install build-essential
+make prepare-paper-inputs CASE=aes_nangate45 THREADS=8
 ```
 
-On CentOS/RHEL:
+Remove `CASE=...` to generate all nine. Products are under the stable
+`paper9_place` flow variant. The preparation command records ODB hashes and
+ORFS/OpenROAD revisions.
+
+### BO environment is missing
 
 ```bash
-sudo yum install make
+make setup-bo
+make reproduce-bo CASE=aes_nangate45 THREADS=8
 ```
 
-### `make check` reports missing tools
+BO is large: the complete run performs 3,600 placements. Reduce
+`MAX_CONCURRENT_CASES` or run one `CASE=` at a time if memory is tight.
 
-`make check` inspects an environment that has already been prepared. On a fresh
-checkout, use `make doctor` instead. See `docs/environment.md` for minimum
-versions, install only the missing tools reported by Doctor, then proceed.
+### Frozen-source replay reports an input checksum mismatch
 
-## Evidence Verification Issues
+Do not bypass the check. Confirm the flow variant and pinned revisions, rerun
+`make prepare-paper-inputs`, and compare the hash record under
+`$DPL_EVOLVE_STATE_ROOT/paper_reproduction/inputs/`. Only AES Nangate45 has a
+retained paper-time input hash; report the other eight generated hashes with the
+revision record.
 
-### Digest or claim mismatch
+### Fresh Table 4 differs from the reference
 
-This indicates the expected values in `artifacts/*/expected/` have been
-modified or the evidence bundles are corrupted.
+Keep the fresh TSV and all underlying metrics. Record the compiler, host,
+thread count, input ODB hash, ORFS/OpenROAD revisions, and exact per-case delta.
+Do not modify `artifacts/*/expected/` or substitute `make audit-archive` for the
+failed execution.
 
-1. Run `git status` to see which files changed.
-2. Do **not** manually edit files under `expected/` — these are the
-   authoritative reference values.
-3. If evidence bundles were corrupted, re-extract them from the original
-   archive or re-clone the repository.
+## Table 5/6 reports `BLOCKED`
 
-### `Permission denied` on verification scripts
-
-Scripts do not require executable permissions. Run them via Bash:
+This is intentional when exact paper data is missing:
 
 ```bash
-bash artifacts/01-table4-qor/run.sh
+make paper-data-check
 ```
 
-## Smoke Flow Issues
+Install the exact ODBs and source trees using `docs/paper-data-layout.md` and
+set `PAPER_DATA_ROOT` if they live outside the checkout. The reproduction
+commands never fall back to packaged TSV/JSON transcriptions.
 
-### `make bootstrap` fails
+## ReviewDSE search failures
 
-Check your internet connection. `bootstrap` clones Yosys and OpenROAD
-from their upstream repositories. If behind a firewall, configure your
-Git proxy settings before running.
+### Paper profile refuses to start
 
-### `make setup` fails during compilation
-
-1. Verify you have the build dependencies installed (see `docs/environment.md`).
-2. Check that your system has at least 8 GB of free RAM.
-3. Try reducing build parallelism: `JOBS=2 make setup`
-
-### `make smoke` reports hash mismatch
-
-The smoke output does not match the expected values. Verify:
-
-1. Tool commits match `provenance/source-commits.json`:
-   ```bash
-   git -C ../OpenROAD-flow-scripts log --oneline -1
-   git -C ../OpenROAD-flow-scripts/tools/OpenROAD log --oneline -1
-   git -C ../OpenROAD-flow-scripts/tools/yosys log --oneline -1
-   ```
-2. If commits differ, re-run `make bootstrap` to fetch the correct versions.
-
-### OOM (Out of Memory) during smoke
-
-Reduce thread count:
+Run Level 1 first:
 
 ```bash
-SMOKE_THREADS=1 make smoke
+make reproduce-level1 ACKNOWLEDGE_LLM_COST=yes
 ```
 
-If the issue persists, ensure your machine meets the minimum requirement
-of 8 GB RAM.
+The paper Level 2 profile requires an immutable Level 1 evidence packet. Use
+`make plan-level1` and `make plan-dse-paper` to inspect commands without model
+calls.
 
-### Smoke cannot find ORFS
+### API authentication or budget failure
 
-The ORFS directory is expected at `../OpenROAD-flow-scripts` relative to
-the repository root. If your ORFS checkout is elsewhere:
+Verify the model provider configuration outside the repository and start with
+`make run-dse-small`. Never commit API keys. The full paper profile is
+deliberately gated by `ACKNOWLEDGE_LLM_COST=yes` because it is extremely costly.
+
+## Archive audit failures
+
+`make audit-archive` checks the integrity of packaged records. A digest mismatch
+usually means the checkout is modified or corrupt. Inspect `git status` and
+restore from a clean clone; do not edit expected values to silence the check.
+
+## Optional toolchain diagnostic
 
 ```bash
-ORFS_ROOT=/path/to/your/OpenROAD-flow-scripts make smoke
+make toolchain-smoke THREADS=8
 ```
 
-Or run `make bootstrap` to let the build system handle this automatically.
-
-## Still Stuck?
-
-File an issue at the project's GitHub repository or contact the authors
-listed in the README.
+Use this only to diagnose one AES default flow. It does not run BO, selected
+ReviewDSE programs, or the paper search and therefore cannot replace a paper
+experiment.

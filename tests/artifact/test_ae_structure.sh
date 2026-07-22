@@ -7,7 +7,7 @@ failures=0
 pass() { printf '[PASS] %s\n' "$1"; }
 fail() { printf '[FAIL] %s\n' "$1" >&2; failures=$((failures + 1)); }
 
-required_root=(README.md LICENSE CITATION.cff Makefile artifacts docs agent scripts src schemas provenance paper)
+required_root=(README.md LICENSE CITATION.cff Makefile artifacts configs docs images agent scripts src schemas provenance paper)
 for path in "${required_root[@]}"; do
   [[ -e "${ROOT}/${path}" ]] && pass "root path: ${path}" || fail "missing root path: ${path}"
 done
@@ -49,17 +49,45 @@ required_files=(
   schemas/experiment_config.schema.json
   agent/README.md
   agent/schemas/run-manifest.schema.json
+  configs/reproduction/paper-experiments.json
+  configs/reproduction/paper9.tsv
+  scripts/reproduce/prepare_paper_inputs.sh
+  scripts/reproduce/run_baselines.sh
+  scripts/reproduce/run_bo.sh
+  scripts/reproduce/run_level1.sh
+  scripts/reproduce/run_dse.sh
+  scripts/reproduce/replay_selected.sh
+  scripts/reproduce/reproduce_table5.sh
+  scripts/reproduce/reproduce_table6.sh
+  scripts/reproduce/record_table4_inputs.py
+  scripts/reproduce/summarize_table4.py
+  scripts/reproduce/summarize_table5.py
+  scripts/reproduce/summarize_table6.py
+  scripts/reproduce/verify_data_manifest.py
+  images/dplevolve-architecture.png
 )
 for path in "${required_files[@]}"; do
   [[ -f "${ROOT}/${path}" ]] && pass "file: ${path}" || fail "missing file: ${path}"
 done
 
+for path in "${ROOT}"/scripts/reproduce/*.sh "${ROOT}"/scripts/reproduce/*.py; do
+  [[ -x "${path}" ]] \
+    && pass "executable: ${path#${ROOT}/}" \
+    || fail "not executable: ${path#${ROOT}/}"
+done
+
 for path in \
-  experiments results configs scripts/internal scripts/lib; do
+  experiments results scripts/internal scripts/lib; do
   [[ ! -e "${ROOT}/${path}" ]] \
     && pass "not public: ${path}" \
     || fail "legacy or local-only path is visible: ${path}"
 done
+
+if find "${ROOT}" -path "${ROOT}/.git" -prune -o -type f -iname '*.pdf' -print -quit | grep -q .; then
+  fail "generated/reference PDF is tracked in the repository tree"
+else
+  pass "repository tree contains no PDF copies"
+fi
 
 if grep -Fxq 'extras/unsupported/' "${ROOT}/.gitignore"; then
   pass "local unsupported material is ignored"

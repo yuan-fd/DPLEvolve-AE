@@ -312,8 +312,8 @@
       <section class="view active" id="view-review">
         <header class="page-head">
           <p class="eyebrow">Artifact evaluation · MLCAD 2026</p>
-          <h1>Reproduce the evidence, one deliberate step at a time.</h1>
-          <p class="lead">Connect to the evaluation machine, run the packaged checks, and keep a complete record of every command. No GPU, EDA license, or model API is required for the primary evidence path.</p>
+          <h1>Run the paper experiments, not just the archived arithmetic.</h1>
+          <p class="lead">Prepare the pinned detailed-placement environment, execute the protected evaluator, reproduce baselines, and rebuild the selected ReviewDSE programs. The archive audit is clearly separated from fresh EDA work.</p>
         </header>
 
         <div class="card connection-card">
@@ -336,7 +336,7 @@
               <div class="field"><label for="sshHost">Host</label><input id="sshHost" placeholder="review-machine.example.edu" autocomplete="off"></div>
               <div class="field"><label for="sshUser">User</label><input id="sshUser" placeholder="reviewer" autocomplete="username"></div>
               <div class="field"><label for="sshPort">Port</label><input id="sshPort" type="number" value="22" min="1" max="65535"></div>
-              <div class="field wide"><label for="sshRoot">Repository path on remote host</label><input id="sshRoot" placeholder="/home/reviewer/DPLEvolve-AE" autocomplete="off"></div>
+              <div class="field wide"><label for="sshRoot">Repository path on remote host</label><input id="sshRoot" placeholder="/path/to/DPLEvolve-AE" autocomplete="off"></div>
               <div class="field"><label for="sshKey">Private key path on web server</label><input id="sshKey" placeholder="~/.ssh/id_ed25519" autocomplete="off"></div>
               <div class="field"><label for="sshPassword">Password (optional)</label><input id="sshPassword" type="password" autocomplete="current-password"></div>
             </div>
@@ -349,25 +349,25 @@
         </div>
 
         <aside class="card fresh-clone-note" aria-labelledby="freshCloneTitle">
-          <h2 id="freshCloneTitle">Using a fresh Git clone? Start with the primary review.</h2>
-          <p>Git contains the packaged Table 4–6 evidence, but it intentionally does not contain the roughly 10 GB EDA workspace, compiled tools, or large ODB result tree.</p>
+          <h2 id="freshCloneTitle">Fresh clone: prepare the experiment before judging results.</h2>
+          <p>Git contains the framework, launchers, pinned revisions, and 18 Table 4 selected source trees. ORFS builds and large ODB/result trees are generated outside the repository.</p>
           <div class="clone-paths">
             <div class="clone-path">
-              <strong>Recommended primary review</strong>
-              <code>make doctor → make evidence</code>
-              <span>Works directly after cloning. No EDA build, GPU, license, or model API key is required.</span>
+              <strong>One-target fresh validation</strong>
+              <code>doctor → bootstrap → build-tools → prepare-paper-inputs → validate-evaluator</code>
+              <span>Runs the real protected detailed-placement measurement path. Start with one CASE from a terminal if machine capacity is limited.</span>
             </div>
             <div class="clone-path">
-              <strong>Optional full EDA reproduction</strong>
-              <code>make bootstrap → make setup → make check → make smoke</code>
-              <span>Requires network access, build tools, about 10 GB of disk, and typically 15–35 minutes.</span>
+              <strong>Table 4 reproduction</strong>
+              <code>reproduce-default → reproduce-bo → replay HPWL/GHR programs</code>
+              <span>BO executes 3,600 placements. No model API is needed for frozen-source replay; rerunning the search itself is separately cost-gated.</span>
             </div>
           </div>
-          <p class="skip-explanation"><code>make smoke-check</code> only inspects a reference result already present on this machine. Seeing <code>[SKIP]</code> on a clean clone is expected and does not mean the packaged evidence failed.</p>
+          <p class="skip-explanation">The exact Table 5/6 ODB/SDC pairs and candidate sources are separately checksummed paper-data assets. Run <code>make paper-data-check</code>; missing or mismatched files block fresh replay instead of silently falling back to archived TSV/JSON.</p>
         </aside>
 
         <div class="section-head">
-          <div><h2>Recommended review path</h2><p>Complete Steps 1–2 first. Step 3 is an optional, resource-intensive reproduction.</p></div>
+          <div><h2>Recommended experiment path</h2><p>Each step advances from host diagnosis to newly generated evaluator metrics.</p></div>
           <div class="section-note">Tasks are serialized. You may add more checks while another task is running.</div>
         </div>
         <div class="path-grid">
@@ -378,30 +378,38 @@
             <button class="button primary run-task" data-task="doctor">Run make doctor</button>
           </article>
           <article class="path-card">
-            <div class="path-step">STEP 02</div><h3>Verify packaged evidence</h3>
-            <p>Checks Tables 4, 5, and 6 against authoritative expected values and integrity manifests.</p>
-            <div class="path-meta"><span class="tag">&lt; 5 seconds</span><span class="tag">No network</span><span class="tag">Primary</span></div>
-            <button class="button run-task" data-task="evidence">Run make evidence</button>
+            <div class="path-step">STEP 02</div><h3>Prepare the pinned tools and inputs</h3>
+            <p>Checkout patched ORFS/OpenROAD, build the toolchain, then generate the nine incoming placement snapshots.</p>
+            <div class="path-meta"><span class="tag">Network + compilation</span><span class="tag">Server resources</span></div>
+            <button class="button run-task" data-task="full" data-confirm="Build the pinned tools and generate all nine placement inputs? This is a substantial server job.">Prepare and validate</button>
           </article>
           <article class="path-card">
-            <div class="path-step">STEP 03 · OPTIONAL</div><h3>Prepare and run full EDA reproduction</h3>
-            <p>Downloads pinned sources, builds Yosys and OpenROAD, checks the environment, then runs a fresh AES RTL-to-GDS validation.</p>
-            <div class="path-meta"><span class="tag">15–35 minutes</span><span class="tag">Network + 10 GB</span></div>
-            <button class="button run-task" data-task="full" data-confirm="Start the optional full reproduction? This downloads and builds tools, uses about 10 GB, and may run for over 30 minutes.">Run full reproduction</button>
+            <div class="path-step">STEP 03</div><h3>Reproduce a reported result</h3>
+            <p>Run the default reference, public-knob BO, or rebuild and replay one of the two ReviewDSE selection tracks.</p>
+            <div class="path-meta"><span class="tag">Fresh OpenROAD</span><span class="tag">Machine dependent</span></div>
+            <button class="button run-task" data-task="replay-hpwl" data-confirm="Build and replay all nine HPWL-selected source programs?">Replay HPWL programs</button>
           </article>
         </div>
 
         <div class="section-head"><div><h2>All reviewer commands</h2><p>Fixed commands only; arbitrary shell input is not accepted.</p></div></div>
         <div class="card command-list">
-          <div class="command-row"><code class="command-name">make doctor-smoke</code><span class="command-description">Strictly require all rebuild tools, the prepared ORFS workspace, and pinned EDA binaries.</span><button class="button subtle run-task" data-task="doctor-smoke">Queue</button></div>
           <div class="command-row"><code class="command-name">make check</code><span class="command-description">Inspect revisions, binaries, hashes, and shared libraries after setup.</span><button class="button subtle run-task" data-task="check">Queue</button></div>
-          <div class="command-row"><code class="command-name">make table4</code><span class="command-description">Verify QoR values and the 18 selected-program source trees.</span><button class="button subtle run-task" data-task="table4">Queue</button></div>
-          <div class="command-row"><code class="command-name">make table5</code><span class="command-description">Verify the three composability counterexamples.</span><button class="button subtle run-task" data-task="table5">Queue</button></div>
-          <div class="command-row"><code class="command-name">make table6</code><span class="command-description">Verify nine cut-row repair cases across three designs.</span><button class="button subtle run-task" data-task="table6">Queue</button></div>
-          <div class="command-row"><code class="command-name">make smoke-check</code><span class="command-description">Inspect a locally prepared reference result; clean clones report a normal skip.</span><button class="button subtle run-task" data-task="smoke-check">Queue</button></div>
           <div class="command-row"><code class="command-name">make bootstrap</code><span class="command-description">Create the pinned sibling ORFS/OpenROAD workspace; requires network access.</span><button class="button subtle run-task" data-task="bootstrap" data-confirm="Bootstrap downloads the pinned ORFS workspace. Continue?">Queue</button></div>
-          <div class="command-row"><code class="command-name">make setup</code><span class="command-description">Build pinned Yosys and OpenROAD binaries; typically takes 10–30 minutes.</span><button class="button subtle run-task" data-task="setup" data-confirm="Setup compiles the EDA toolchain and may take 10–30 minutes. Continue?">Queue</button></div>
-          <div class="command-row"><code class="command-name">make smoke</code><span class="command-description">Run a fresh AES flow after bootstrap, setup, and check have succeeded.</span><button class="button subtle run-task" data-task="smoke" data-confirm="Run the AES smoke flow now? The pinned toolchain must already be built and checked.">Queue</button></div>
+          <div class="command-row"><code class="command-name">make build-tools</code><span class="command-description">Build the pinned Yosys and OpenROAD binaries.</span><button class="button subtle run-task" data-task="build-tools" data-confirm="Compile the pinned EDA toolchain?">Queue</button></div>
+          <div class="command-row"><code class="command-name">make prepare-paper-inputs</code><span class="command-description">Generate all nine incoming placement ODBs from pinned RTL/flow inputs.</span><button class="button subtle run-task" data-task="prepare-inputs" data-confirm="Generate all nine placement inputs?">Queue</button></div>
+          <div class="command-row"><code class="command-name">make validate-evaluator</code><span class="command-description">Produce a new four-stage trajectory, legality, displacement, and runtime record.</span><button class="button subtle run-task" data-task="validate-evaluator">Queue</button></div>
+          <div class="command-row"><code class="command-name">make reproduce-default</code><span class="command-description">Run the nine fresh OpenROAD default references.</span><button class="button subtle run-task" data-task="default" data-confirm="Run all nine default references?">Queue</button></div>
+          <div class="command-row"><code class="command-name">make setup-bo</code><span class="command-description">Create the isolated pinned Ray Tune/Optuna environment.</span><button class="button subtle run-task" data-task="setup-bo" data-confirm="Download and install the BO Python dependencies?">Queue</button></div>
+          <div class="command-row"><code class="command-name">make reproduce-bo</code><span class="command-description">Run 400 Optuna-TPE trials per case (3,600 placements total).</span><button class="button subtle run-task" data-task="bo" data-confirm="Start all 3,600 BO trials? Check server capacity first.">Queue</button></div>
+          <div class="command-row"><code class="command-name">make replay-reviewdse TRACK=hpwl</code><span class="command-description">Build and execute nine frozen HPWL-selected C++ programs.</span><button class="button subtle run-task" data-task="replay-hpwl">Queue</button></div>
+          <div class="command-row"><code class="command-name">make replay-reviewdse TRACK=ghr</code><span class="command-description">Build and execute nine runtime-aware selected C++ programs.</span><button class="button subtle run-task" data-task="replay-ghr">Queue</button></div>
+          <div class="command-row"><code class="command-name">make paper-data-check</code><span class="command-description">Report whether exact Table 5/6 ODB/source assets are installed.</span><button class="button subtle run-task" data-task="paper-data-check">Queue</button></div>
+          <div class="command-row"><code class="command-name">make reproduce-table5</code><span class="command-description">Fresh full-flow composability replay; blocks if exact assets are absent.</span><button class="button subtle run-task" data-task="table5-fresh">Queue</button></div>
+          <div class="command-row"><code class="command-name">make reproduce-table6</code><span class="command-description">Fresh cut-row legality replay; blocks if exact assets are absent.</span><button class="button subtle run-task" data-task="table6-fresh">Queue</button></div>
+          <div class="command-row"><code class="command-name">make plan-level1</code><span class="command-description">Print the three calibration-design mechanism-evidence launch without model calls.</span><button class="button subtle run-task" data-task="level1-plan">Queue</button></div>
+          <div class="command-row"><code class="command-name">make plan-dse-paper</code><span class="command-description">Print the full nine-case, high-token search configuration without API calls.</span><button class="button subtle run-task" data-task="dse-plan">Queue</button></div>
+          <div class="command-row"><code class="command-name">make audit-archive</code><span class="command-description">Secondary no-EDA audit of packaged records; not reproduction.</span><button class="button subtle run-task" data-task="audit-archive">Queue</button></div>
+          <div class="command-row"><code class="command-name">make toolchain-smoke</code><span class="command-description">Optional AES toolchain diagnostic; not a reported paper experiment.</span><button class="button subtle run-task" data-task="toolchain-smoke">Queue</button></div>
         </div>
 
         <div class="card queue-panel" id="queuePanel"><p class="queue-title">Waiting queue</p><div id="queueList"></div></div>
@@ -438,8 +446,8 @@
 
       <section class="view" id="view-guide">
         <header class="page-head">
-          <p class="eyebrow">Reviewer guide</p><h1>Connect safely, then verify from fast to complete.</h1>
-          <p class="lead">The primary evidence path takes seconds. Building the EDA toolchain and running a fresh smoke flow are optional deeper checks.</p>
+          <p class="eyebrow">Reviewer guide</p><h1>Connect safely, then run a real paper case.</h1>
+          <p class="lead">A seconds-long archive comparison is useful provenance, but the core AE path builds OpenROAD and produces fresh detailed-placement metrics.</p>
         </header>
         <div class="guide-layout">
           <div class="guide-stack">
@@ -467,11 +475,10 @@ bash start.sh</div>
 
             <article class="card guide-card">
               <h2>3. Diagnose without changing the host</h2>
-              <p>Run Doctor before the evidence check. It never installs packages or changes files.</p>
+              <p>Run Doctor before building the experiment. It never installs packages or changes files.</p>
               <div class="code-block"><button class="copy-code">Copy</button>cd DPLEvolve-AE
 make doctor</div>
-              <p>If Doctor reports a missing command, copy the suggested Ubuntu/Debian or Rocky/RHEL command into a normal SSH terminal, review it, run it manually if your administrator permits, and then run Doctor again. Do not run interactive <code>sudo</code> installation through the browser console.</p>
-              <p>Use <code>make doctor-smoke</code> only when checking whether the complete source-rebuild and fresh AES flow are ready.</p>
+              <p>If Doctor reports a missing command, use the Rocky/RHEL-family suggestion on the authors' reference OS, review it in a normal SSH terminal, and ask the administrator before using <code>sudo</code>. The reference server has 314 GiB RAM; the console does not claim that 8/16 GiB is enough for full parallel experiments.</p>
             </article>
 
             <article class="card guide-card">
@@ -480,16 +487,17 @@ make doctor</div>
                 <thead><tr><th>Target</th><th>Purpose</th><th>Typical cost</th><th>Writes / network</th></tr></thead>
                 <tbody>
                   <tr><td><code>make doctor</code></td><td>Read-only first-run diagnosis. Reports missing prerequisites and exact OS-specific commands without installing.</td><td>&lt; 1 sec</td><td>No changes</td></tr>
-                  <tr><td><code>make doctor-smoke</code></td><td>Strictly checks rebuild tools, resources, ORFS, and pinned EDA binaries.</td><td>&lt; 1 sec</td><td>No changes</td></tr>
-                  <tr><td><code>make evidence</code></td><td>Runs Table 4, 5, and 6 verification and checks packaged claims against expected values.</td><td>&lt; 5 sec</td><td>No network; read-only checks</td></tr>
-                  <tr><td><code>make table4</code></td><td>Checks QoR comparisons, tolerances, manifests, and 18 selected source trees.</td><td>&lt; 5 sec</td><td>No network</td></tr>
-                  <tr><td><code>make table5</code></td><td>Checks three non-composable counterexamples and expected verdicts.</td><td>&lt; 1 sec</td><td>No network</td></tr>
-                  <tr><td><code>make table6</code></td><td>Checks nine cut-row repair cases for Ariane133, SWERV, and BPQUAD.</td><td>&lt; 1 sec</td><td>No network</td></tr>
                   <tr><td><code>make check</code></td><td>Reports system tools, repository paths, revisions, EDA binaries, hashes, and libraries.</td><td>&lt; 1 sec</td><td>Read-only</td></tr>
-                  <tr><td><code>make bootstrap</code></td><td>Creates a sibling ORFS workspace at the pinned prepared source trees.</td><td>About 2 min</td><td>Downloads sources; writes outside repo</td></tr>
-                  <tr><td><code>make setup</code></td><td>Creates the Python environment and builds pinned Yosys and OpenROAD binaries.</td><td>10–30 min</td><td>Build output; may install Python packages</td></tr>
-                  <tr><td><code>make smoke</code></td><td>Runs a fresh AES/Nangate45 flow and checks hashes, legality, instance count, and HPWL.</td><td>2–5 min</td><td>Writes ORFS results/logs</td></tr>
-                  <tr><td><code>make smoke-check</code></td><td>Validates a locally prepared reference smoke run, or reports a normal skip when its large ORFS result tree is absent.</td><td>Seconds</td><td>Read-only</td></tr>
+                  <tr><td><code>make bootstrap</code></td><td>Creates a sibling ORFS workspace at the pinned prepared source trees.</td><td>Machine/network dependent</td><td>Downloads sources; writes outside repo</td></tr>
+                  <tr><td><code>make build-tools</code></td><td>Builds pinned Yosys/OpenROAD and the framework Python environment.</td><td>Machine dependent</td><td>Build output</td></tr>
+                  <tr><td><code>make prepare-paper-inputs</code></td><td>Runs ORFS placement to create nine incoming ODBs.</td><td>Nine physical-design jobs</td><td>ORFS results/logs</td></tr>
+                  <tr><td><code>make validate-evaluator</code></td><td>Runs a fresh protected DPL trajectory and produces canonical metrics.</td><td>One case</td><td>ORFS reports/logs</td></tr>
+                  <tr><td><code>make reproduce-default</code></td><td>Runs the nine default Table 4 references.</td><td>Nine EDA runs</td><td>ORFS reports/logs</td></tr>
+                  <tr><td><code>make reproduce-bo</code></td><td>Runs the paper's 400-trial/case Optuna TPE baseline.</td><td>3,600 EDA runs</td><td>Large state/report tree</td></tr>
+                  <tr><td><code>make replay-reviewdse TRACK=hpwl|ghr</code></td><td>Builds complete frozen selected sources and executes their full trajectories.</td><td>Nine builds/runs per track</td><td>State and ORFS outputs</td></tr>
+                  <tr><td><code>make run-dse-small</code></td><td>Runs a real bounded Teacher/Student source exploration.</td><td>Model tokens + EDA</td><td>API and state output</td></tr>
+                  <tr><td><code>make plan-dse-paper</code></td><td>Prints the exact 1-Teacher/4-Student/10-iteration protocol.</td><td>No model calls</td><td>No experiment output</td></tr>
+                  <tr><td><code>make audit-archive</code></td><td>Audits compact packaged records; explicitly not fresh reproduction.</td><td>Seconds</td><td>Compact local output</td></tr>
                   <tr><td><code>make test</code></td><td>Runs artifact structure, integration, and Python unit tests for maintainers.</td><td>Varies</td><td>May create test output</td></tr>
                   <tr><td><code>make clean</code></td><td>Removes generated artifact-bundle output while preserving archived inputs and expected values.</td><td>Seconds</td><td>Destructive to generated output</td></tr>
                 </tbody>
@@ -498,21 +506,22 @@ make doctor</div>
           </div>
 
           <aside class="card guide-card sticky-guide">
-            <p class="eyebrow">Suggested checklist</p><h2>Minimum defensible review</h2>
+            <p class="eyebrow">Suggested checklist</p><h2>Minimum fresh review</h2>
             <ol class="checklist">
               <li>Test the This machine or SSH connection.</li>
               <li>Run <code>make doctor</code>; copy any suggested install command into a normal SSH terminal.</li>
-              <li>Run <code>make evidence</code> and save the terminal log.</li>
-              <li>Compare the summary with Tables 4, 5, and 6.</li>
-              <li>Inspect the archived traces and selected source trees.</li>
-              <li>If a prepared reference ORFS result is available, inspect it with <code>make smoke-check</code>.</li>
-              <li>If resources permit, run bootstrap, setup, check, then smoke.</li>
+              <li>Bootstrap and build the pinned ORFS/OpenROAD environment.</li>
+              <li>Prepare one paper target and run <code>make validate-evaluator</code>.</li>
+              <li>Replay one frozen ReviewDSE source and inspect its new <code>metrics.json</code>.</li>
+              <li>If resources permit, run all default, BO, and selected-program Table 4 paths.</li>
+              <li>Run <code>make paper-data-check</code> before attempting Tables 5/6.</li>
+              <li>Use <code>make audit-archive</code> only as a supporting provenance check.</li>
               <li>Export the session JSON for the review record.</li>
             </ol>
-            <h3>Expected headline</h3>
-            <div class="code-block">[PASS] All packaged paper-evidence bundles passed</div>
-            <h3>Full-flow headline</h3>
-            <div class="code-block">[OK] AES smoke test PASSED</div>
+            <h3>Expected evaluator artifacts</h3>
+            <div class="code-block">H_g · H_lg · H_ip · H_f · legality · displacement · runtime</div>
+            <h3>Search cost boundary</h3>
+            <div class="code-block">Full paper DSE: about 19.35B logged / 0.90B active tokens across nine targets</div>
           </aside>
         </div>
       </section>
@@ -781,7 +790,7 @@ make doctor</div>
       {
         kicker: '02 · Proposed architecture',
         title: 'An advisor, a source-aware exploration engine, and the physical-design flow',
-        lead: 'The architecture connects archived LLM reasoning to OpenROAD instrumentation, DSE candidate selection, and reproducible verification.',
+        lead: 'The architecture connects reviewed mechanism evidence to protected OpenROAD evaluation, source-level search, and fresh replay.',
         body: `<img class="slide-image" src="/static/dplevolve-architecture.png" alt="DPLEvolve proposed architecture">`,
       },
       {
@@ -792,33 +801,33 @@ make doctor</div>
       },
       {
         kicker: '04 · AE project architecture',
-        title: 'The artifact separates the interface, evidence, implementation, and fresh EDA execution',
-        lead: 'A reviewer can audit paper claims quickly, inspect the source mechanisms, and optionally rebuild the complete toolchain.',
-        body: `<div class="architecture-layers"><div class="architecture-layer"><span class="layer-name">Reviewer interface</span><span class="layer-detail">web-demo/ · Makefile · doctor · logs and session export</span></div><div class="architecture-layer"><span class="layer-name">Claim evidence</span><span class="layer-detail">Table 4 QoR · Table 5 composability · Table 6 cut-row bundles · authoritative expected JSON</span></div><div class="architecture-layer"><span class="layer-name">Method source</span><span class="layer-detail">ReviewDSE framework · archived reasoning traces · 18 selected program trees · SHA-256 manifests</span></div><div class="architecture-layer"><span class="layer-name">Reproducibility locks</span><span class="layer-detail">Pinned ORFS, OpenROAD, Yosys commits · configuration and provenance records</span></div><div class="architecture-layer"><span class="layer-name">Optional fresh flow</span><span class="layer-detail">AES/Nangate45 synthesis → floorplan → placement → routing → legality and QoR checks</span></div></div>`,
+        title: 'The artifact exposes the real experiment implementations through stable commands',
+        lead: 'A reviewer can prepare pinned tools, execute the paper baselines, and rebuild selected source mechanisms through the protected evaluator.',
+        body: `<div class="architecture-layers"><div class="architecture-layer"><span class="layer-name">Reviewer interface</span><span class="layer-detail">web-demo/ · Makefile · scripts/reproduce/ · live logs</span></div><div class="architecture-layer"><span class="layer-name">Paper experiment contract</span><span class="layer-detail">Nine Table 4 targets · Level 1 calibration · Table 5/6 patterns · exact model and BO budgets</span></div><div class="architecture-layer"><span class="layer-name">Execution engines</span><span class="layer-detail">Protected evaluator · Optuna TPE · Teacher/Student loop · fixed-source matrix replay</span></div><div class="architecture-layer"><span class="layer-name">Reproducibility locks</span><span class="layer-detail">Pinned ORFS, OpenROAD, Yosys revisions · source and input checksums</span></div><div class="architecture-layer"><span class="layer-name">Fresh outputs</span><span class="layer-detail">H_g → H_lg → H_ip → H_f · legality · displacement · runtime · liveness</span></div></div>`,
       },
       {
         kicker: '05 · Verification architecture',
-        title: 'Diagnosis, paper evidence, and source reproduction are deliberately separate',
-        lead: 'The reviewer receives useful results even when the host is not yet prepared for a long EDA build.',
-        body: `<div class="verification-flow"><div class="verification-node accent"><h3>1. Doctor</h3><p>Read-only host diagnosis. Reports missing commands, versions, memory, disk, repository state, and exact OS-specific remediation commands.</p></div><div class="verification-arrow">→</div><div class="verification-node"><h3>2. Evidence</h3><p>Recompute Tables 4–6 summaries from packaged inputs, compare authoritative values, and audit traces and manifests in seconds.</p></div><div class="verification-arrow">→</div><div class="verification-node"><h3>3. Optional reproduction</h3><p>Bootstrap pinned sources, build Yosys/OpenROAD, inspect the prepared environment, then run a fresh AES end-to-end smoke flow.</p></div></div>`,
+        title: 'Preparation, baseline search, and source replay form one reproducible path',
+        lead: 'Each stage produces new inputs or metrics; missing tools and exact paper data are reported as preparation blockers.',
+        body: `<div class="verification-flow"><div class="verification-node accent"><h3>1. Prepare</h3><p>Diagnose Rocky/Linux, checkout pinned sources, build tools, and generate the incoming placement ODBs.</p></div><div class="verification-arrow">→</div><div class="verification-node"><h3>2. Execute</h3><p>Run default DPL, 400-trial TPE, or rebuild a complete selected ReviewDSE source through the protected evaluator.</p></div><div class="verification-arrow">→</div><div class="verification-node"><h3>3. Review</h3><p>Compare newly produced H_g/H_lg/H_ip/H_f, legality, displacement, runtime, and liveness records.</p></div></div>`,
       },
       {
         kicker: '06 · DSE effect',
         title: 'Source-mechanism exploration improves QoR with modest runtime overhead',
         lead: 'Table 4 compares the black-box BO-DSE baseline with objective-specific ReviewDSE programs.',
-        body: `<div class="effect-list"><div class="effect-row"><span class="effect-label">BO-DSE · HPWL</span><div class="effect-track"><div class="effect-fill" style="width:21%;opacity:.42"></div></div><span class="effect-value">0.38%</span></div><div class="effect-row"><span class="effect-label">ReviewDSE · HPWL</span><div class="effect-track"><div class="effect-fill" style="width:100%"></div></div><span class="effect-value">1.78%</span></div><div class="effect-row"><span class="effect-label">ReviewDSE · GHR</span><div class="effect-track"><div class="effect-fill" style="width:94%"></div></div><span class="effect-value">1.68%</span></div></div><table class="result-table" style="margin-top:28px"><thead><tr><th>Program objective</th><th>Observed effect</th><th>Runtime relative to BO-DSE</th></tr></thead><tbody><tr><td>ReviewDSE-HPWL</td><td>1.78% mean HPWL reduction</td><td>1.34×</td></tr><tr><td>ReviewDSE-GHR</td><td>1.68% global-routing overflow reduction</td><td>1.11×</td></tr></tbody></table>`,
+        body: `<div class="effect-list"><div class="effect-row"><span class="effect-label">BO-DSE · HPWL</span><div class="effect-track"><div class="effect-fill" style="width:21%;opacity:.42"></div></div><span class="effect-value">0.38%</span></div><div class="effect-row"><span class="effect-label">ReviewDSE · HPWL</span><div class="effect-track"><div class="effect-fill" style="width:100%"></div></div><span class="effect-value">1.78%</span></div><div class="effect-row"><span class="effect-label">ReviewDSE · GHR</span><div class="effect-track"><div class="effect-fill" style="width:94%"></div></div><span class="effect-value">1.68%</span></div></div><table class="result-table" style="margin-top:28px"><thead><tr><th>Program objective</th><th>Observed effect</th><th>Runtime vs. default</th></tr></thead><tbody><tr><td>ReviewDSE-HPWL</td><td>1.78% mean final-HPWL reduction</td><td>1.34×</td></tr><tr><td>ReviewDSE-GHR</td><td>1.68% mean final-HPWL reduction</td><td>1.11×</td></tr></tbody></table>`,
       },
       {
         kicker: '07 · Mechanism evidence',
         title: 'The artifact tests whether source-level programs compose and repair hard placement cases',
         lead: 'Tables 5 and 6 focus on behavior that a parameter-only result table cannot explain.',
-        body: `<div class="slide-grid"><div class="metric"><div class="metric-value">3</div><div class="metric-label">Composability counterexamples expose when individually useful steps cannot be safely combined.</div></div><div class="metric"><div class="metric-value">9</div><div class="metric-label">Cut-row cases across Ariane133, SWERV, and BPQUAD exercise mechanism-level repair.</div></div><div class="metric"><div class="metric-value">18</div><div class="metric-label">Selected source-program trees preserve the concrete transformations used for audit.</div></div></div><ul class="slide-list" style="margin-top:22px"><li>ReviewDSE finds legal placements in cases where fixed Diamond or Negotiation strategies fail or time out.</li><li>The archived programs make each claimed mechanism inspectable instead of presenting only a final score.</li></ul>`,
+        body: `<div class="slide-grid"><div class="metric"><div class="metric-value">3</div><div class="metric-label">Composability counterexamples expose when individually useful steps cannot be safely combined.</div></div><div class="metric"><div class="metric-value">9</div><div class="metric-label">Cut-row cases across Ariane133, SWERV, and BPQUAD exercise mechanism-level repair.</div></div><div class="metric"><div class="metric-value">18</div><div class="metric-label">Selected source-program trees preserve transformations that can be rebuilt and replayed.</div></div></div><ul class="slide-list" style="margin-top:22px"><li>ReviewDSE finds legal placements in cases where fixed Diamond or Negotiation strategies fail or time out.</li><li>Fresh Table 5/6 replay requires the separately distributed exact ODB and source assets; the console blocks if they are absent.</li></ul>`,
       },
       {
         kicker: '08 · Reproducibility boundary',
-        title: 'The AE package distinguishes auditable evidence from expensive regeneration',
-        lead: 'This boundary keeps the primary review fast without pretending that multi-terabyte inputs or proprietary LLM calls are cheap to repeat.',
-        body: `<div class="boundary-grid"><div class="boundary-card"><h3>Packaged for direct audit</h3><ul><li>Tables 4–6 inputs and expected values</li><li>Archived LLM reasoning traces</li><li>18 selected source-program trees</li><li>Pinned revisions and integrity manifests</li><li>AES reference and fresh smoke path</li></ul></div><div class="boundary-card"><h3>Not required for primary review</h3><ul><li>Regenerating roughly 3 TB of full experiment ODBs</li><li>Repeating proprietary multi-billion-token LLM traces</li><li>Re-running every paper design point</li><li>Building EDA tools before checking packaged claims</li><li>Any GPU or commercial EDA license</li></ul></div></div>`,
+        title: 'Replay and search are separate cost tiers, but both have real launchers',
+        lead: 'Reviewers need not buy a multi-billion-token rerun; they should still be able to rebuild selected programs and run the evaluator.',
+        body: `<div class="boundary-grid"><div class="boundary-card"><h3>No-LLM fresh reproduction</h3><ul><li>Generate nine target ODBs</li><li>Run default and 400-trial BO baselines</li><li>Build 18 selected source-program trees</li><li>Execute protected four-stage trajectories</li><li>Check exact Table 5/6 assets</li></ul></div><div class="boundary-card"><h3>Cost-gated search rerun</h3><ul><li>One GPT-5.5 xhigh Teacher</li><li>Four GPT-5.4 xhigh Students</li><li>10 iterations on each of nine targets</li><li>About 19.35B logged / 0.90B active tokens total</li><li>Explicit acknowledgement required</li></ul></div></div>`,
       },
     ];
 

@@ -707,22 +707,26 @@ TASKS: dict[str, tuple[str, list[str]]] = {
         "Reviewer Environment Doctor",
         ["bash", "scripts/human/doctor.sh"],
     ),
-    "doctor-smoke": (
-        "Strict Smoke Environment Doctor",
-        ["bash", "scripts/human/doctor.sh", "--strict-smoke"],
-    ),
     "check": ("Environment Check", ["make", "check"]),
     "bootstrap": ("Bootstrap Pinned Workspace", ["make", "bootstrap"]),
-    "setup": ("Build Pinned Toolchain", ["make", "setup"]),
-    "evidence": ("Verify All Packaged Evidence", ["make", "evidence"]),
-    "table4": ("Verify Table 4", ["make", "table4"]),
-    "table5": ("Verify Table 5", ["make", "table5"]),
-    "table6": ("Verify Table 6", ["make", "table6"]),
-    "smoke": ("Run AES Smoke Flow", ["make", "smoke"]),
-    "smoke-check": ("Inspect Optional Prepared Smoke Result", ["make", "smoke-check"]),
+    "build-tools": ("Build Pinned EDA Tools", ["make", "build-tools"]),
+    "prepare-inputs": ("Prepare Nine Paper Inputs", ["make", "prepare-paper-inputs"]),
+    "validate-evaluator": ("Validate Protected Evaluator", ["make", "validate-evaluator"]),
+    "default": ("Reproduce Table 4 Defaults", ["make", "reproduce-default"]),
+    "setup-bo": ("Install BO Python Environment", ["make", "setup-bo"]),
+    "bo": ("Reproduce Table 4 BO", ["make", "reproduce-bo"]),
+    "replay-hpwl": ("Replay ReviewDSE HPWL Programs", ["make", "replay-reviewdse", "TRACK=hpwl"]),
+    "replay-ghr": ("Replay ReviewDSE GHR Programs", ["make", "replay-reviewdse", "TRACK=ghr"]),
+    "paper-data-check": ("Check Table 5/6 Exact Inputs", ["make", "paper-data-check"]),
+    "table5-fresh": ("Reproduce Table 5", ["make", "reproduce-table5"]),
+    "table6-fresh": ("Reproduce Table 6", ["make", "reproduce-table6"]),
+    "level1-plan": ("Print Level 1 Calibration Plan", ["make", "plan-level1"]),
+    "dse-plan": ("Print Full Paper DSE Plan", ["make", "plan-dse-paper"]),
+    "audit-archive": ("Audit Packaged Records", ["make", "audit-archive"]),
+    "toolchain-smoke": ("Run Optional AES Toolchain Diagnostic", ["make", "toolchain-smoke"]),
     "full": (
-        "Prepare and Run Full Reproduction",
-        ["bash", "-c", "make bootstrap && make setup && make check && make smoke"],
+        "Prepare and Validate Paper Evaluator",
+        ["bash", "-c", "make bootstrap && make build-tools && make prepare-paper-inputs && make validate-evaluator"],
     ),
 }
 
@@ -749,22 +753,22 @@ async def run_env_check(req: RunRequest):
 async def run_install(req: RunRequest):
     return await _enqueue(
         "Install Dependencies",
-        ["bash", "-c", "make bootstrap && make setup"],
+        ["bash", "-c", "make bootstrap && make build-tools"],
         req.ssh,
     )
 
 
 @app.post("/api/run/minimal")
 async def run_minimal(req: RunRequest):
-    label, command = TASKS["evidence"]
+    label, command = TASKS["validate-evaluator"]
     return await _enqueue(label, command, req.ssh)
 
 
 @app.post("/api/run/full")
 async def run_full(req: RunRequest):
     return await _enqueue(
-        "Full Reproduction",
-        ["bash", "-c", "make bootstrap && make setup && make check && make smoke"],
+        "Prepare and Validate Paper Evaluator",
+        ["bash", "-c", "make bootstrap && make build-tools && make prepare-paper-inputs && make validate-evaluator"],
         req.ssh,
     )
 

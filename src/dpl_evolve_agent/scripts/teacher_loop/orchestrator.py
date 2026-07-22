@@ -212,6 +212,9 @@ def main(argv: list[str] | None = None) -> int:
     runtime = runtime_with_round_outputs(runtime, round_root)
     round_dir = round_root / "teacher_rounds"
     round_dir.mkdir(parents=True, exist_ok=True)
+    level1_evidence_source = args.level1_evidence.resolve() if args.level1_evidence else None
+    if level1_evidence_source is not None and not level1_evidence_source.is_file():
+        raise SystemExit(f"--level1-evidence file is missing: {level1_evidence_source}")
     logger = RoundLogger(round_dir)
     teacher_session = teacher_session_paths(round_dir=round_dir, round_id=round_id)
     run_codex = runtime.agent_root / "scripts" / "run_codex_exec.py"
@@ -456,6 +459,18 @@ def main(argv: list[str] | None = None) -> int:
                 "No start-kind calibration matrix was requested or completed for this round.\n",
                 encoding="utf-8",
             )
+        level1_evidence_packet = packet_dir / "level1_evidence.md"
+        if level1_evidence_source is not None:
+            level1_evidence_packet.write_text(
+                level1_evidence_source.read_text(encoding="utf-8", errors="replace"),
+                encoding="utf-8",
+            )
+        else:
+            level1_evidence_packet.write_text(
+                "# Frozen Level 1 Evidence\n\n"
+                "No paper-level Level 1 evidence packet was supplied.\n",
+                encoding="utf-8",
+            )
         design_characteristics_path = write_design_characteristics_packet(
             path=packet_dir / "design_characteristics.md",
             case_id=args.case,
@@ -550,6 +565,7 @@ def main(argv: list[str] | None = None) -> int:
             case_feature_route_insight_packet_path=case_feature_route_insight_packet,
             baseline_artifacts_path=baseline_artifacts_path,
             start_seed_calibration_path=start_seed_calibration_packet,
+            level1_evidence_path=level1_evidence_packet,
             design_characteristics_path=design_characteristics_path,
             peer_learning_path=peer_learning_path,
             round_id=round_id,

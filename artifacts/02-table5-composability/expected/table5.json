@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source": "paper/OpenROAD_Evolve.pdf, Table 5",
+  "source": "paper Table 5 (paper hash recorded in paper/README.md)",
   "evidence_kind": "paper_transcription_only",
   "title": "Stage-local legalization counterexamples",
   "rows": [

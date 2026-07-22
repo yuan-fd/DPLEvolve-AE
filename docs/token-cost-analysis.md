@@ -58,8 +58,9 @@ validation of several scientific claims:
   1.78% mean improvement is typical or a selected run.
 - **Variance:** multi-seed confidence intervals multiply an already large
   experiment budget; the current launcher has no deterministic seed input.
-- **Ablations:** Level-1 and Teacher/Student necessity require several full
-  counterfactual searches, but those launchers are not implemented.
+- **Ablations:** Level 1 and Teacher/Student necessity require several full
+  counterfactual searches. The main Level 1/2 launchers exist, but dedicated
+  ablation profiles and their budgets are not part of the reported protocol.
 - **Model drift:** the launcher depends on a remotely served model name. A later
   reviewer may receive a different model or lose access to the recorded one.
 - **Failure recovery:** the archived rerun contains failed operations; retries
@@ -74,16 +75,16 @@ the only validation path:
 
 | Tier | Purpose | LLM calls |
 |---|---|---:|
-| T0 | Replay archived metrics, patches, prompts, and usage summaries | 0 |
+| T0 | Audit archived metrics, patches, prompts, and usage summaries | 0 |
 | T1 | Rebuild and evaluate the paper's selected source patches on 9 cases | 0 |
-| T2 | One-design, 1-iteration, 1-student end-to-end agent smoke | Small |
+| T2 | One-design, 1-iteration, 1-Student end-to-end method run | Small |
 | T3 | Full paper search: 9 cases, 4 Students, 10 review iterations | Very large |
 
-T1 is the most important missing tier: it validates that the discovered source
-mechanisms really produce the reported placement results without paying the
-search cost again. T2 validates orchestration. T3 should remain optional and
-must have a preflight that prints the maximum operation/token budget and asks
-for explicit confirmation.
+T1 is implemented by `make replay-reviewdse TRACK=hpwl|ghr`; it validates the
+selected source mechanisms without paying the search cost again. T2 is
+implemented by `make run-dse-small`. T3 is implemented but remains optional
+and requires `ACKNOWLEDGE_LLM_COST=yes`; `make plan-dse-paper` prints the full
+launch without API calls.
 
 ## Camera-ready requirements
 

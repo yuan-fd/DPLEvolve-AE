@@ -18,6 +18,7 @@ LOG_DIR="${SWEEP_ROOT}/logs"
 STATUS_FILE="${SWEEP_ROOT}/status.tsv"
 SUMMARY_FILE="${SWEEP_ROOT}/summary.tsv"
 CASES=()
+DRY_RUN=0
 
 usage() {
   cat <<'EOF'
@@ -33,6 +34,7 @@ Options:
   --run-prefix NAME    Default: bo9_openroad_dpl_flow.
   --threads N          OpenROAD threads per run. Default: 10.
   --max-parallel N     Concurrent cases. Default: 3.
+  --dry-run            Print the per-case commands without executing OpenROAD.
   --help               Show this message.
 
 Environment aliases use BASELINE_* names matching the option names.
@@ -50,6 +52,7 @@ while [[ $# -gt 0 ]]; do
     --run-prefix) RUN_PREFIX="$2"; shift 2 ;;
     --threads) THREADS="$2"; shift 2 ;;
     --max-parallel) MAX_PARALLEL="$2"; shift 2 ;;
+    --dry-run) DRY_RUN=1; shift ;;
     --help|-h) usage; exit 0 ;;
     *) echo "[ERROR] Unknown argument: $1" >&2; usage >&2; exit 1 ;;
   esac
@@ -88,13 +91,15 @@ metrics_path_for_case() {
   printf '%s\n' "${ORFS_ROOT}/flow/reports/${platform}/${design}/${FLOW_VARIANT}/dpl_evolve_baseline/${RUN_PREFIX}_${case_id}/metrics.json"
 }
 
-for case_id in "${CASES[@]}"; do
-  snapshot="$(snapshot_path "${case_id}")"
-  if [[ ! -f "${snapshot}" ]]; then
-    echo "[ERROR] Missing input snapshot for ${case_id}: ${snapshot}" >&2
-    exit 3
-  fi
-done
+if [[ "${DRY_RUN}" -eq 0 ]]; then
+  for case_id in "${CASES[@]}"; do
+    snapshot="$(snapshot_path "${case_id}")"
+    if [[ ! -f "${snapshot}" ]]; then
+      echo "[ERROR] Missing input snapshot for ${case_id}: ${snapshot}" >&2
+      exit 3
+    fi
+  done
+fi
 
 mkdir -p "${LOG_DIR}"
 printf "case\tstatus\tstart\tend\tlog\tmetrics_json\n" > "${STATUS_FILE}"
@@ -106,14 +111,23 @@ run_case() {
   log="${LOG_DIR}/${case_id}.log"
   start_ts="$(date '+%F %T')"
 
+  cmd=(
+    "${AGENT_ROOT}/baseline/run_baseline.sh"
+    --line "${LINE}"
+    --case "${case_id}"
+    --flow-variant "${FLOW_VARIANT}"
+    --run-tag "${run_tag}"
+    --threads "${THREADS}"
+  )
+  if [[ "${DRY_RUN}" -eq 1 ]]; then
+    printf '[DRY-RUN]'
+    printf ' %q' "${cmd[@]}"
+    printf '\n'
+    return 0
+  fi
+
   set +e
-  "${AGENT_ROOT}/baseline/run_baseline.sh" \
-    --line "${LINE}" \
-    --case "${case_id}" \
-    --flow-variant "${FLOW_VARIANT}" \
-    --run-tag "${run_tag}" \
-    --threads "${THREADS}" \
-    > "${log}" 2>&1
+  "${cmd[@]}" > "${log}" 2>&1
   rc=$?
   set -e
   end_ts="$(date '+%F %T')"

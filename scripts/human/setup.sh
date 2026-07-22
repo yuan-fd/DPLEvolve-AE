@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # DPLEvolve AE — Environment Setup (Human Entry Point)
 # Idempotent setup: builds Yosys, OpenROAD, and Python venv if needed.
-# Usage: make setup   OR   ./scripts/human/setup.sh
+# Usage: make build-tools   OR   ./scripts/human/setup.sh
 
 set -euo pipefail
 
@@ -207,5 +207,5 @@ bash "${SCRIPT_DIR}/check_environment.sh"
 echo ""
 dpl_ae_info "=============================================="
 dpl_ae_info " Setup complete!"
-dpl_ae_info " Next step: make smoke"
+dpl_ae_info " Next step: make prepare-paper-inputs"
 dpl_ae_info "=============================================="

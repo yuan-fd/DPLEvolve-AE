@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # DPLEvolve AE — AES Smoke Test (Human Entry Point)
 # Runs the minimal AES smoke test using the pinned environment.
-# Usage: make smoke or artifacts/04-aes-smoke/run.sh --run
+# Usage: make toolchain-smoke or artifacts/04-aes-smoke/run.sh --run
 
 set -euo pipefail
 
@@ -69,14 +69,14 @@ fi
 
 # A clean artifact clone intentionally does not include the large ORFS result
 # tree.  The check-only action is an optional inspection of a locally prepared
-# reference run, so report its absence as a skip rather than making the primary
-# reviewer flow look broken.  Fresh runs remain strict and resolve the complete
+# reference run, so report its absence as a skip. Fresh runs remain strict and
+# resolve the complete
 # environment below.
 requested_orfs_root="${ORFS_ROOT:-$(realpath -m "${AE_ROOT}/../OpenROAD-flow-scripts")}"
 if [[ "${MODE}" == "check-only" && ! -d "${requested_orfs_root}/flow" ]]; then
   echo "[SKIP] Optional prepared AES smoke result is not available."
   echo "       A clean clone does not contain the large ORFS/ODB result tree."
-  echo "       Run 'make bootstrap && make setup && make smoke' for a fresh validation."
+  echo "       Run 'make bootstrap && make build-tools && make toolchain-smoke' for a fresh diagnostic."
   exit 0
 fi
 
@@ -111,7 +111,7 @@ if [[ "${MODE}" == "check-only" && ( ! -f "${INPUT_ODB}" || ! -f "${METRICS}" ) 
   echo "[SKIP] Optional prepared AES smoke result is not available."
   echo "       Expected input:   ${INPUT_ODB}"
   echo "       Expected metrics: ${METRICS}"
-  echo "       Run 'make smoke' to create and validate a fresh timestamped result."
+  echo "       Run 'make toolchain-smoke' to create a fresh diagnostic result."
   exit 0
 fi
 

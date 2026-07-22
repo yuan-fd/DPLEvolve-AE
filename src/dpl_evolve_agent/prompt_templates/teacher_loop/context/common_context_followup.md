@@ -69,6 +69,7 @@ $elite_text
 ## New Or Recently Useful Pointers
 
 - start calibration: `$start_seed_calibration_path`
+- frozen Level 1 evidence: `$level1_evidence_path`
 - peer learning: `$peer_learning_path`
 - case feature route insight packet: `$case_feature_route_insight_packet`
 - secondary feature inspiration only: `$strategy_inspiration_insight`

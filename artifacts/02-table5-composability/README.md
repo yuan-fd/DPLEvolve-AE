@@ -4,7 +4,7 @@ This bundle checks the three examples in which a legalizer improves
 post-legalization HPWL but produces a worse final post-DPL HPWL after the
 downstream optimization stages.
 
-Run only this artifact:
+Run this compact archive audit:
 
 ```bash
 bash artifacts/02-table5-composability/run.sh
@@ -24,6 +24,12 @@ Success is reported as:
 The input TSV is a compact extract of the original article-staging summary.
 The original per-run EDA logs are not packaged, so this is archived-summary
 verification rather than a fresh OpenROAD execution.
+
+The fresh execution path is `make reproduce-table5`. It builds and executes
+both complete candidates for each row and derives `H_lg` and `H_f` from new
+metrics. It exits `BLOCKED` until the exact ODBs and source trees described in
+`docs/paper-data-layout.md` are installed; it never uses this TSV as a fresh
+result.
 
 - `inputs/counterexamples.tsv`: archived HPWL values.
 - `inputs/provenance.json`: source description and original summary hash.

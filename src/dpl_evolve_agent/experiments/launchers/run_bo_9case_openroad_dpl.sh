@@ -7,7 +7,7 @@ source "${AGENT_ROOT}/scripts/runtime_env.sh"
 dpl_init_runtime "run_bo_9case_openroad_dpl.sh"
 
 PYTHON_BIN="${RAYTUNE_PYTHON:-${AGENT_ROOT}/.venv_raytune/bin/python}"
-SPACE="${BO_SPACE:-${AGENT_ROOT}/configs/bo_search_spaces/openroad_dpl_native.yaml}"
+SPACE="${BO_SPACE:-${AGENT_ROOT}/configs/bo_search_spaces/openroad_dpl_native_dpo_frontier.yaml}"
 FLOW_VARIANT="${BO_FLOW_VARIANT:-place_batch_20260421_220319}"
 TRIALS="${BO_TRIALS:-400}"
 MAX_CONCURRENT_CASES="${BO_MAX_CONCURRENT_CASES:-3}"
@@ -18,7 +18,7 @@ SEED="${BO_SEED:-1}"
 STARTUP_TRIALS="${BO_STARTUP_TRIALS:-}"
 TPE_CANDIDATES="${BO_TPE_CANDIDATES:-64}"
 ANCHOR_STRATEGY="${BO_ANCHOR_STRATEGY:-mechanism}"
-RUN_PREFIX="${BO_RUN_PREFIX:-openroad_dpl_native_9case_bo}"
+RUN_PREFIX="${BO_RUN_PREFIX:-openroad_dpl_hpwl_only_9case_bo}"
 LEGALIZE_TIMEOUT="${BO_LEGALIZE_TIMEOUT_SECONDS:-}"
 RUN_STAMP="$(date +%Y%m%d_%H%M%S)"
 SWEEP_ROOT="${DPL_EVOLVE_STATE_ROOT:-${AGENT_ROOT}/.dpl_evolve_state}/bo_sweeps/${RUN_PREFIX}_${FLOW_VARIANT}_${RUN_STAMP}"
@@ -26,10 +26,11 @@ STATUS_FILE="${SWEEP_ROOT}/status.tsv"
 LOG_DIR="${SWEEP_ROOT}/logs"
 CASE_SET="${BO_CASE_SET:-bo_9case}"
 CASES=()
+DRY_RUN=0
 
 usage() {
   cat <<'EOF'
-Usage: run_bo_9case_openroad_dpl.sh
+Usage: run_bo_9case_openroad_dpl.sh [--case-set NAME] [--case ID ...] [--dry-run]
 
 Environment overrides:
   BO_CASE_SET                  Default: bo_9case
@@ -39,14 +40,17 @@ Environment overrides:
   BO_MAX_CONCURRENT_TRIALS     Default: 4
   BO_THREADS_PER_TRIAL         Default: 10
   BO_RAY_CPUS                  Default: BO_MAX_CONCURRENT_TRIALS
-  BO_SPACE                     Default: configs/bo_search_spaces/openroad_dpl_native.yaml
-  BO_RUN_PREFIX                Default: openroad_dpl_native_9case_bo
+  BO_SPACE                     Default: openroad_dpl_native_dpo_frontier.yaml
+  BO_RUN_PREFIX                Default: openroad_dpl_hpwl_only_9case_bo
   BO_SEED                      Default: 1
 
 This launches 9 independent OpenROAD-DPL BO jobs.  At most three cases run at
 once; each case uses Ray Tune to run at most four candidate placements in
 parallel.  The script expects every case to already have the requested
 FLOW_VARIANT/3_4_place_resized.odb prepared.
+
+--dry-run prints the exact per-case Optuna command without requiring snapshots
+or a Ray Tune virtual environment.
 EOF
 }
 
@@ -54,6 +58,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --case-set) CASE_SET="$2"; shift 2 ;;
     --case) CASES+=("$2"); shift 2 ;;
+    --dry-run) DRY_RUN=1; shift ;;
     --help|-h) usage; exit 0 ;;
     *) echo "[ERROR] Unknown argument: $1" >&2; usage >&2; exit 1 ;;
   esac
@@ -63,7 +68,7 @@ if [[ "${#CASES[@]}" -eq 0 ]]; then
   mapfile -t CASES < <("${DPL_EVOLVE_PYTHON}" "${AGENT_ROOT}/scripts/repo/case_registry.py" --case-set "${CASE_SET}" --field case)
 fi
 
-if [[ ! -x "${PYTHON_BIN}" ]]; then
+if [[ "${DRY_RUN}" -eq 0 && ! -x "${PYTHON_BIN}" ]]; then
   echo "[ERROR] Ray Tune Python is not executable: ${PYTHON_BIN}" >&2
   echo "        Run ${AGENT_ROOT}/scripts/bo/setup_raytune_venv.sh first." >&2
   exit 1
@@ -122,6 +127,13 @@ run_case() {
     cmd+=(--legalize-timeout-seconds "${LEGALIZE_TIMEOUT}")
   fi
 
+  if [[ "${DRY_RUN}" -eq 1 ]]; then
+    printf '[DRY-RUN] case=%s command:' "${case_id}"
+    printf ' %q' "${cmd[@]}"
+    printf '\n'
+    return 0
+  fi
+
   set +e
   {
     printf "[START] %s\n" "${start_ts}"
@@ -159,9 +171,11 @@ echo "  cases                : ${CASES[*]}"
 echo "  sweep_root           : ${SWEEP_ROOT}"
 echo
 
-for case_id in "${CASES[@]}"; do
-  check_case_snapshot "${case_id}"
-done
+if [[ "${DRY_RUN}" -eq 0 ]]; then
+  for case_id in "${CASES[@]}"; do
+    check_case_snapshot "${case_id}"
+  done
+fi
 
 declare -a pids=()
 overall_rc=0

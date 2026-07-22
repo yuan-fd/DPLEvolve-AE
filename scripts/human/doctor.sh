@@ -15,9 +15,10 @@ Usage: bash scripts/human/doctor.sh [--strict-smoke]
 
 Checks the host without installing or modifying anything.
 
-  default         Evidence and web-console prerequisites are required.
-                  Smoke-flow preparation is reported as optional.
-  --strict-smoke  Also require the prepared ORFS workspace and EDA binaries.
+  default         Repository/web prerequisites are required. EDA experiment
+                  preparation is reported separately.
+  --strict-smoke  Compatibility name: also require the prepared ORFS workspace
+                  and pinned EDA binaries.
 EOF
     exit 0
     ;;
@@ -139,17 +140,17 @@ printf '\n'
 if [[ "$(uname -s)" == "Linux" ]]; then
   ok 'Linux host detected'
 else
-  warn 'Packaged evidence may work, but the AES smoke flow supports Linux only'
+  warn 'Archive audit may work, but fresh paper experiments support Linux only'
   SMOKE_ERRORS=$((SMOKE_ERRORS + 1))
 fi
 
 if [[ "$(uname -m)" == "x86_64" ]]; then
   ok 'x86-64 architecture detected'
 else
-  missing_smoke "The smoke flow is validated only on x86-64 (found $(uname -m))"
+  missing_smoke "Fresh paper experiments are validated only on x86-64 (found $(uname -m))"
 fi
 
-printf '\n%s\n' '--- Evidence prerequisites ---'
+printf '\n%s\n' '--- Repository command prerequisites ---'
 
 if [[ -n "$(command_path bash)" ]]; then
   bash_version="${BASH_VERSION%%(*}"
@@ -191,7 +192,7 @@ else
   MISSING_EVIDENCE+=(python3)
 fi
 
-for file in Makefile provenance/source-commits.json artifacts/01-table4-qor/run.sh artifacts/02-table5-composability/run.sh artifacts/03-table6-cutrow/run.sh; do
+for file in Makefile provenance/source-commits.json configs/reproduction/paper-experiments.json scripts/reproduce/run_baselines.sh scripts/reproduce/run_bo.sh scripts/reproduce/run_dse.sh scripts/reproduce/replay_selected.sh; do
   if [[ -f "${AE_ROOT}/${file}" ]]; then
     ok "Repository input present: ${file}"
   else
@@ -215,7 +216,7 @@ else
   MISSING_WEB+=(git)
 fi
 
-printf '\n%s\n' '--- Optional smoke-flow prerequisites ---'
+printf '\n%s\n' '--- Fresh paper-experiment build prerequisites ---'
 
 for command in rsync gcc g++ cmake bison flex swig; do
   tool_path="$(resolved_tool_path "${command}" || true)"
@@ -247,18 +248,18 @@ fi
 
 memory_kib="$(awk '/MemTotal:/ {print $2}' /proc/meminfo 2>/dev/null || echo 0)"
 memory_gib=$((memory_kib / 1024 / 1024))
-if (( memory_gib >= 8 )); then
-  ok "Memory: ${memory_gib} GiB (minimum 8 GiB; 16 GiB recommended)"
+if (( memory_gib >= 64 )); then
+  ok "Memory: ${memory_gib} GiB (author reference: 314 GiB; reduce parallelism as needed)"
 else
-  missing_smoke "Memory: ${memory_gib} GiB; at least 8 GiB is required"
+  warn "Memory: ${memory_gib} GiB. No universal minimum is claimed; OpenROAD can exceed 2 GiB and full parallel experiments need server-class headroom (author reference: 314 GiB)."
 fi
 
 disk_kib="$(df -Pk "${AE_ROOT}" 2>/dev/null | awk 'NR==2 {print $4}' || echo 0)"
 disk_gib=$((disk_kib / 1024 / 1024))
-if (( disk_gib >= 10 )); then
-  ok "Free disk near repository: ${disk_gib} GiB (minimum 10 GiB)"
+if (( disk_gib >= 100 )); then
+  ok "Free disk near repository: ${disk_gib} GiB (100+ GiB planning threshold; author filesystem: 22 TiB)"
 else
-  missing_smoke "Free disk near repository: ${disk_gib} GiB; at least 10 GiB is required"
+  warn "Free disk near repository: ${disk_gib} GiB. The prior 10 GiB smoke estimate is not sufficient guidance for builds, ODBs, 3,600 BO trials, and DSE state."
 fi
 
 printf '\n%s\n' '--- Prepared workspace state ---'
@@ -309,7 +310,7 @@ if (( ${#MISSING_EVIDENCE[@]} > 0 || ${#MISSING_WEB[@]} > 0 )); then
       ;;
   esac
 else
-  printf '%s\n' '  Evidence/web prerequisites are present. No system install command is needed.'
+  printf '%s\n' '  Repository/web prerequisites are present. No system install command is needed.'
 fi
 
 if [[ ! -d "${ORFS_ROOT}/flow" ]]; then
@@ -359,14 +360,14 @@ fi
 
 if [[ ! -x "${YOSYS_BIN}" || ! -x "${OPENROAD_BIN}" ]]; then
   printf '%s\n' '  After prerequisites and bootstrap complete:'
-  printf '%s\n' '  JOBS=4 make setup'
+  printf '%s\n' '  make build-tools THREADS=16'
 fi
 
 printf '\n%s\n' '--- Readiness summary ---'
 if (( EVIDENCE_ERRORS == 0 )); then
-  printf '%s\n' '  Evidence verification: READY'
+  printf '%s\n' '  Repository commands:   READY'
 else
-  printf '%s\n' '  Evidence verification: NOT READY'
+  printf '%s\n' '  Repository commands:   NOT READY'
 fi
 if (( WEB_ERRORS == 0 )); then
   printf '%s\n' '  Web console startup:  READY'
@@ -379,9 +380,9 @@ else
   printf '%s\n' '  EDA rebuild tools:    NEEDS ATTENTION (see commands above)'
 fi
 if (( SMOKE_ERRORS == 0 )); then
-  printf '%s\n' '  Prepared smoke run:   READY'
+  printf '%s\n' '  Paper EDA runtime:     READY'
 else
-  printf '%s\n' '  Prepared smoke run:   NOT READY (optional for the primary review)'
+  printf '%s\n' '  Paper EDA runtime:     NOT READY (run bootstrap/build-tools)'
 fi
 if (( STRICT_SMOKE == 1 )); then
   if (( SMOKE_ERRORS == 0 && BUILD_ERRORS == 0 )); then

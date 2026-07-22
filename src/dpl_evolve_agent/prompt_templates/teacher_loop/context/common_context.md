@@ -228,6 +228,13 @@ $metric_table
   results, but do not treat the best initial seed as the only exploration
   parent.  A stage donor can still be useful when its final HPWL is not best.
 
+## Frozen Level 1 Evidence
+
+- frozen method/source-start packet: `$level1_evidence_path`
+- Read this packet before assigning first-iteration target routes. Treat it as
+  immutable calibration-time prior evidence: adapt it to this target, but do
+  not edit it or promote a calibration candidate without a target evaluation.
+
 ## Scoreboard
 
 $scoreboard
@@ -240,6 +247,7 @@ $elite_text
 
 - baseline artifacts: `$baseline_artifacts_path`
 - start seed calibration: `$start_seed_calibration_path`
+- frozen Level 1 evidence: `$level1_evidence_path`
 - peer learning: `$peer_learning_path`
 
 ## Prior Context

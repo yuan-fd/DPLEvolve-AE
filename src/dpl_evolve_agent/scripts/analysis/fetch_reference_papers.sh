@@ -79,8 +79,8 @@ cat <<EOF
 Cache directory:
   ${cache_dir}
 
-Tracked reference already in repo:
-  knowledge/reference/OpenDP.pdf
+OpenDP-named fence-region reference:
+  Cataloged in knowledge/reference/papers/paper_sources.yaml; PDF not tracked.
 
 Link-only or license-check-needed references:
   NBLG exact-title lookup

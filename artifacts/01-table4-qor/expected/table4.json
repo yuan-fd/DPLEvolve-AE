@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source": "paper/OpenROAD_Evolve.pdf, Table 4 and Section 4.1",
+  "source": "paper Table 4 and Section 4.1 (paper hash recorded in paper/README.md)",
   "paper_sha256": "e5b08018cb4ef7cf634e2ba9ad048e42b5aad0686dea3f88ef5664b1ac49e2c5",
   "protocol": {
     "teacher": "GPT-5.5 xhigh",

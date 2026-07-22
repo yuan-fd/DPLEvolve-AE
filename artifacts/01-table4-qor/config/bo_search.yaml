@@ -22,9 +22,8 @@ cases:
     - swerv_wrapper
 
 # The exact parameter bounds live in the bundled framework.
-search_space_file: framework/dpl_evolve_agent/configs/bo_search_spaces/openroad_dpl_native.yaml
+search_space_file: src/dpl_evolve_agent/configs/bo_search_spaces/openroad_dpl_native_dpo_frontier.yaml
 search_space:
-  - legalization controls
   - DPO controls
   - extra-invocation controls
   - global-swap controls
@@ -46,9 +45,9 @@ expected:
   mean_hpwl_improvement_pct: 0.38
 
 notes: >
-  The 3,600 archived seed-1 trials currently bundled in T0 are a different BO
-  campaign and produce 0.2072%, so they must not be labeled as the Table 4 BO
-  evidence. The exact paper BO trial archive remains missing.
+  inputs/bo_paper contains the nine 400-trial HPWL-objective campaigns used for
+  the Table 4 BO column. Their TSV parameter columns match the DPO-frontier
+  search-space file above and recompute to the reported 0.38% mean reduction.
 
 # Script launcher
 launcher: experiments/launchers/run_bo_9case_openroad_dpl.sh

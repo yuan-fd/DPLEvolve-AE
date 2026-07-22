@@ -4,22 +4,22 @@ This directory contains instructions and schemas for automation agents. It is
 not part of the reviewer reading path; human instructions live in `README.md`,
 `artifacts/*/README.md`, and `docs/`.
 
-Use the stable dispatcher from the repository root:
+Use the paper-experiment targets from the repository root:
 
 ```bash
-bash scripts/agent/run_artifact.sh --artifact table4
-bash scripts/agent/run_artifact.sh --artifact table5
-bash scripts/agent/run_artifact.sh --artifact table6
-bash scripts/agent/run_artifact.sh --artifact smoke
+make prepare-paper-inputs CASE=aes_nangate45
+make validate-evaluator CASE=aes_nangate45
+make reproduce-default CASE=aes_nangate45
+make replay-reviewdse TRACK=hpwl CASE=aes_nangate45
+make plan-dse-paper
 ```
 
-The smoke command is check-only by default. Add `--run-smoke` only when the
-pinned OpenROAD environment is prepared and a fresh EDA execution is wanted.
-Use `--dry-run` to inspect the resolved command without executing it.
+The legacy dispatcher remains for compact archive audits and the optional AES
+diagnostic. It is not the primary experiment interface. Use each reproduction
+script's `--dry-run` before expensive commands.
 
-Each invocation writes a timestamped JSON manifest to the selected bundle's
-ignored `output/` directory. Agents must treat `inputs/`, `expected/`,
-`provenance/`, and `paper/` as read-only evidence.
+Fresh executions write to `DPL_EVOLVE_STATE_ROOT` and ORFS. Agents must treat
+archive `inputs/`, `expected/`, and `provenance/` as read-only evidence.
 
 - `AGENTS.md`: operating rules.
 - `context/`: repository map, evidence semantics, and invariants.

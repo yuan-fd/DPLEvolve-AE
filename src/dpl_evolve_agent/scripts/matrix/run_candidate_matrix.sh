@@ -19,6 +19,7 @@ FORCE_PLACE=0
 SKIP_BASELINE=0
 BASELINE_ONLY=0
 DRY_RUN=0
+LEGALIZE_TIMEOUT_SECONDS=""
 
 usage() {
   cat <<'EOF'
@@ -44,6 +45,9 @@ Options:
   --skip-baseline        Do not refresh canonical baselines.
   --baseline-only        Refresh snapshots/baselines but do not build/evaluate candidate.
   --dry-run              Print commands without running them.
+  --legalize-timeout-seconds N
+                         Hard timeout for each candidate detailed-placement
+                         flow. Metrics collection still runs after a timeout.
   --help                 Show this message.
 
 Plan columns:
@@ -68,6 +72,7 @@ while [[ $# -gt 0 ]]; do
     --skip-baseline) SKIP_BASELINE=1; shift ;;
     --baseline-only) BASELINE_ONLY=1; shift ;;
     --dry-run) DRY_RUN=1; shift ;;
+    --legalize-timeout-seconds) LEGALIZE_TIMEOUT_SECONDS="$2"; shift 2 ;;
     --help|-h) usage; exit 0 ;;
     *) echo "[ERROR] Unknown argument: $1" >&2; usage >&2; exit 1 ;;
   esac
@@ -77,6 +82,11 @@ if [[ -z "${MATRIX_ID}" ]]; then
   echo "[ERROR] Missing --matrix-id" >&2
   usage >&2
   exit 1
+fi
+
+if [[ -n "${LEGALIZE_TIMEOUT_SECONDS}" ]] && { ! [[ "${LEGALIZE_TIMEOUT_SECONDS}" =~ ^[1-9][0-9]*$ ]]; }; then
+  echo "[ERROR] --legalize-timeout-seconds must be a positive integer" >&2
+  exit 2
 fi
 
 if [[ "${BASELINE_ONLY}" -ne 1 ]]; then
@@ -440,13 +450,20 @@ run_plan_row() {
     return 0
   fi
 
-  if run_cmd "${DPL_EVOLVE_AGENT_ROOT}/baseline/run_baseline.sh" \
-    --line evolve_default \
-    --case "${case_id}" \
-    --flow-variant "${flow_variant}" \
-    --threads "${THREADS}" \
-    --openroad-binary "${PRIVATE_BINARY}" \
-    --run-tag "${candidate_tag}"; then
+  candidate_cmd=(
+    "${DPL_EVOLVE_AGENT_ROOT}/baseline/run_baseline.sh"
+    --line evolve_default
+    --case "${case_id}"
+    --flow-variant "${flow_variant}"
+    --threads "${THREADS}"
+    --openroad-binary "${PRIVATE_BINARY}"
+    --run-tag "${candidate_tag}"
+  )
+  if [[ -n "${LEGALIZE_TIMEOUT_SECONDS}" ]]; then
+    candidate_cmd+=(--legalize-timeout-seconds "${LEGALIZE_TIMEOUT_SECONDS}")
+  fi
+
+  if run_cmd "${candidate_cmd[@]}"; then
     :
   else
     exit_code="$?"

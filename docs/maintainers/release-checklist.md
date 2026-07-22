@@ -23,14 +23,30 @@ make zenodo-audit
 make zenodo
 ```
 
-The packaging script runs `make evidence`, includes the paper, raw Table 4 BO
-campaigns, Table 5/6 evidence, 18 frozen programs, framework, documentation,
-and provenance, then creates `MANIFEST.sha256` and checks excluded state.
+`make zenodo` refuses missing author metadata and missing exact Table 5/6
+paper data. `make zenodo-audit` permits both only so maintainers can inspect
+archive composition before the release is complete.
+
+The packaging script runs the compact archive audit, includes the Table 4 BO
+campaign records, 18 frozen programs, framework, execution scripts,
+documentation, and provenance, then creates `MANIFEST.sha256` and checks
+excluded state. The paper PDF is distributed by the publisher and is not
+duplicated in the repository.
+
+A formal release must also pass `make paper-data-check` and publish the exact
+Table 5/6 data package described in `docs/paper-data-layout.md`. Audit-only
+packaging may acknowledge missing data, but must not be labeled a complete
+reproduction release.
 
 Before upload:
 
 - inspect the reported archive path, size, and SHA-256;
-- extract it in a clean temporary directory and run `make evidence`;
+- extract it in a clean temporary directory and run `make test`,
+  `make validate-configs`, and `make audit-archive`;
+- run the one-case fresh path through `make validate-evaluator` on the Rocky
+  Linux reference environment;
+- verify the separately distributed Table 5/6 archive, checksums, and public
+  URL/DOI;
 - confirm `.zenodo.json` and `CITATION.cff` use the camera-ready order;
 - upload to Zenodo, reserve/finalize the DOI, and add the DOI to the paper's
   artifact appendix and repository metadata.

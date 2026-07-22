@@ -94,25 +94,30 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(any("make doctor" in item for item in report["suggestions"]))
         self.assertTrue(any("does not install" in item for item in report["suggestions"]))
 
-    def test_doctor_tasks_are_fixed_commands(self):
+    def test_core_tasks_are_fixed_commands(self):
         self.assertEqual(server.TASKS["doctor"][1], ["bash", "scripts/human/doctor.sh"])
         self.assertEqual(
-            server.TASKS["doctor-smoke"][1],
-            ["bash", "scripts/human/doctor.sh", "--strict-smoke"],
+            server.TASKS["validate-evaluator"][1],
+            ["make", "validate-evaluator"],
         )
+        self.assertEqual(server.TASKS["audit-archive"][1], ["make", "audit-archive"])
 
     def test_full_reproduction_uses_documented_order(self):
         self.assertEqual(
             server.TASKS["full"][1],
-            ["bash", "-c", "make bootstrap && make setup && make check && make smoke"],
+            [
+                "bash",
+                "-c",
+                "make bootstrap && make build-tools && make prepare-paper-inputs && make validate-evaluator",
+            ],
         )
 
     def test_ui_explains_fresh_clone_paths(self):
         html = (WEB_DEMO_ROOT / "templates" / "index.html").read_text(encoding="utf-8")
-        self.assertIn("Using a fresh Git clone?", html)
-        self.assertIn("make doctor → make evidence", html)
-        self.assertIn("make bootstrap → make setup → make check → make smoke", html)
-        self.assertIn("Seeing <code>[SKIP]</code> on a clean clone is expected", html)
+        self.assertIn("Fresh clone: prepare the experiment", html)
+        self.assertIn("prepare-paper-inputs", html)
+        self.assertIn("reproduce-bo", html)
+        self.assertIn("archive audit is clearly separated", html)
 
     def test_ui_exposes_every_fixed_reviewer_task(self):
         html = (WEB_DEMO_ROOT / "templates" / "index.html").read_text(encoding="utf-8")

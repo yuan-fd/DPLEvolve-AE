@@ -2,18 +2,29 @@
 
 These rules apply to agents operating in this repository.
 
-## Stable interface
+## Stable experiment interface
 
-Run supported artifacts through:
+The primary interface executes paper experiments:
 
 ```bash
-bash scripts/agent/run_artifact.sh --artifact table4|table5|table6|smoke
+make prepare-paper-inputs
+make validate-evaluator
+make reproduce-default
+make reproduce-bo
+make replay-reviewdse TRACK=hpwl
+make replay-reviewdse TRACK=ghr
+make reproduce-table5
+make reproduce-table6
+make plan-level1
+make reproduce-level1 ACKNOWLEDGE_LLM_COST=yes
+make run-dse-small CASE=aes_nangate45
+make plan-dse-paper
 ```
 
-The smoke artifact is check-only unless `--run-smoke` is explicit. Use
-`--dry-run` before an expensive or environment-dependent command.
+Use the wrappers in `scripts/reproduce/` when Make is unavailable. Use a
+single `CASE=` and/or each script's `--dry-run` before a large launch.
 
-## Read-only evidence
+## Read-only archived evidence
 
 Never modify files under:
 
@@ -21,40 +32,44 @@ Never modify files under:
 - `artifacts/*/expected/`
 - `artifacts/01-table4-qor/selected-programs/inputs/`
 - `provenance/`
-- `paper/`
 
-Generated records belong only in the relevant `output/` directory. Do not
-change an expected value to turn a failing comparison into a pass.
+Do not change an expected value to turn a failing comparison into a pass.
+Fresh experimental outputs belong under `DPL_EVOLVE_STATE_ROOT` and the ORFS
+reports/results trees, never in an expected-value directory.
 
-## Supported claims
+## Claim boundaries
 
-- Table 4 BO is recomputed from 3,600 normalized records.
-- Table 4 ReviewDSE is recomputed from selected-candidate records.
-- Tables 5 and 6 are compact archived-summary checks.
-- The 18 selected programs receive an integrity check by default.
-- AES smoke is the only supported fresh EDA execution.
-
-Do not describe archived-summary checks as fresh EDA reproduction. Do not
-claim exact selected-program replay: the original nine ODB inputs are absent.
-Do not launch a full LLM search from this repository.
+- `make audit-archive` (and compatibility alias `make evidence`) checks compact
+  packaged records. It does not run EDA and is not paper reproduction.
+- `make toolchain-smoke` exercises one AES toolchain path. It is not a paper
+  experiment and must not be called RTL-to-GDS.
+- Table 4 selected-program replay is a fresh OpenROAD experiment when its
+  prepared ODB is present.
+- A full ReviewDSE search is supported by `make run-dse-paper`, but it must
+  retain the explicit LLM-cost acknowledgement.
+- Table 5/6 fresh replay remains blocked until the exact assets described in
+  `docs/paper-data-layout.md` are installed. Never substitute archived TSV/JSON
+  rows and label the result fresh.
 
 ## Validation sequence
 
-For a repository-wide audit, run:
+For source changes, run:
 
 ```bash
-make evidence
+make plan-dse-paper
+bash scripts/reproduce/run_bo.sh --case aes_nangate45 --dry-run
+bash scripts/reproduce/replay_selected.sh --track hpwl --case aes_nangate45 --dry-run
 make test
 make validate-configs
+make audit-archive
 ```
 
-Run `make smoke-check` only when the pinned ORFS workspace exists. Run
-`make zenodo-audit` for archive-content validation; a formal `make zenodo`
-release must remain blocked until real author metadata is installed.
+Run a live EDA case only when the pinned workspace is available. Run a paid LLM
+search only when the user explicitly authorizes the cost.
 
 ## Failure reporting
 
-Record the artifact ID, exact command, exit code, and complete output. Separate
-environment failures from evidence mismatches. A missing dependency or ODB is
+Record the experiment, exact command, exit code, and complete output. Separate
+environment/data failures from QoR differences. A missing ODB or source tree is
 not evidence that a paper value is wrong, and a digest mismatch is not safe to
 repair automatically.

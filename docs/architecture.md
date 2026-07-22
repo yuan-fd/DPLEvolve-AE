@@ -1,60 +1,68 @@
 # Repository architecture
 
-The public repository is organized by reviewer task, not by implementation
-type. Each supported result is a self-contained bundle under `artifacts/`.
+The repository separates executable paper experiments from compact archived
+records.
 
 ```text
-artifacts/
-  01-table4-qor/
-  02-table5-composability/
-  03-table6-cutrow/
-  04-aes-smoke/
-src/dpl_evolve_agent/
-scripts/
-  human/
-  agent/
-  shared/
-  maintenance/
-docs/
-agent/
-schemas/
+configs/reproduction/     paper-derived machine-readable experiment contract
+scripts/reproduce/        fresh default, BO, replay, Level 1/2, Table 5/6 paths
+src/dpl_evolve_agent/     protected evaluator and Teacher/Student framework
+artifacts/                archived records, reference values, selected sources
+images/                   repository figures
+docs/                     reviewer and maintainer guidance
+agent/                    machine-facing instructions
+provenance/               pinned source revisions
 ```
 
-## Artifact contract
+## Fresh-execution contract
 
-Every top-level artifact bundle provides:
+The primary public interface is the root `Makefile`, which delegates to
+`scripts/reproduce/`. A fresh experiment must:
+
+1. start from a recorded or checksummed ODB;
+2. build the required fixed or edited OpenROAD source;
+3. run the protected detailed-placement evaluator;
+4. emit status, `H_g/H_lg/H_ip/H_f`, legality, displacement, runtime, and
+   source/binary/metric provenance;
+5. write new products under `DPL_EVOLVE_STATE_ROOT` and ORFS, never under an
+   immutable `expected/` directory.
+
+Missing exact inputs are a blocking error. A fresh path must not read an
+archived expected value as its observed result.
+
+## Archived-bundle contract
+
+Each directory under `artifacts/` contains compact provenance/reference data:
 
 ```text
-README.md   human explanation and evidence boundary
-run.sh      independent entry point
-inputs/     archived inputs or input-generation instructions
-expected/   checked paper values or reproduction lock
-output/     ignored generated reports
+README.md   scope and evidence boundary
+run.sh      independent archive-audit entry point
+inputs/     compact retained records or generation notes
+expected/   paper transcription or diagnostic lock
+output/     ignored generated audit reports
 ```
 
-Bundle-specific code and configuration remain inside the bundle. Shared code
-is limited to environment and utility functions needed by more than one
-execution path.
+The 18 selected Table 4 source trees are executable inputs and are reused by
+the fresh replay path. The Table 4/5/6 bundle `run.sh` files themselves only
+audit retained records and are deliberately labeled non-reproduction.
+
+## External EDA state
+
+Large generated ODBs, builds, BO trials, and DSE workspaces live outside the
+Git checkout:
+
+- `$ORFS_ROOT/flow/{results,reports,logs}` for EDA products;
+- `$DPL_EVOLVE_STATE_ROOT` for builds, matrices, DSE rounds, and summaries;
+- `$PAPER_DATA_ROOT` for separately distributed exact Table 5/6 inputs.
+
+This keeps a clone small without pretending that compact JSON/TSV files are the
+experiment.
 
 ## Human and machine interfaces
 
-Human users enter through `README.md`, `make`, `scripts/human/`, and the
-artifact READMEs. These files use explanatory prose and stable commands.
+Reviewers use `README.md`, `make help`, and `docs/`. Automation agents use
+`agent/` and may call the same Make targets or reproduction wrappers. Both
+interfaces share the same execution contract and blocking semantics.
 
-Automation agents enter through `agent/` and `scripts/agent/`. The dispatcher
-accepts a fixed artifact ID and writes a JSON run manifest. Agent instructions
-do not appear in the reviewer quick start.
-
-## Framework boundary
-
-`src/dpl_evolve_agent/` contains the research implementation used by the
-fresh smoke flow and optional source replay. Evidence-only verification does
-not import or initialize the framework. This keeps archived checks fast and
-independent of OpenROAD, model APIs, and the original discovery workspace.
-
-## Release boundary
-
-`extras/unsupported/` is a local preservation area for incomplete launchers,
-legacy layouts, and unsupported experiments. It is ignored by Git and
-explicitly excluded from Zenodo archives. Nothing in public documentation or
-CI depends on it.
+`extras/unsupported/` is a local ignored preservation area. Public commands,
+tests, and releases must not depend on it.

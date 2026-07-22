@@ -1,15 +1,16 @@
-# AES Nangate45 smoke flow
+# AES Nangate45 toolchain diagnostic
 
-This bundle performs a fresh one-case EDA execution. It regenerates the AES
+This optional bundle performs a fresh one-case EDA execution. It regenerates the AES
 Nangate45 placement input with the pinned Yosys revision, runs the native
 OpenROAD detailed-placement baseline, and checks the result against the
-reproduction lock.
+diagnostic lock. It is not one of the paper experiments and is not a substitute
+for the nine-case Table 4 commands.
 
 After preparing the environment from the repository root, run:
 
 ```bash
 make bootstrap  # omit only when the pinned sibling ORFS workspace exists
-make setup
+make build-tools
 bash artifacts/04-aes-smoke/run.sh --run --threads 8
 ```
 
@@ -43,8 +44,9 @@ included in a clean clone. In that case the command prints `[SKIP]` and exits
 successfully. Run the preparation and fresh-flow commands above for an
 end-to-end validation.
 
-This artifact verifies one default OpenROAD case. It does not execute a
-selected ReviewDSE program or reproduce all nine Table 4 cases.
+This diagnostic verifies one default OpenROAD case. It does not execute a
+selected ReviewDSE program, BO, or the two-level search and therefore does not
+reproduce a paper result.
 
 - `config/aes_nangate45.yaml`: human-readable smoke configuration.
 - `expected/ae_reproduction_lock.json`: commits, hashes, values, and tolerances.

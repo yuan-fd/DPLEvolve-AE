@@ -23,11 +23,11 @@ papers:
     title: "Fence-Region-Aware Mixed-Height Standard Cell Legalization"
     role: "Fence/fragmented-row/mixed-height legalization donor."
     doi: "https://doi.org/10.1145/3299874.3318012"
-    committed_reference_note: "OpenDP-named committed reference"
-    git_policy: "committed_existing_reference"
-    fetch_policy: "already_in_repo"
+    catalog_note: "Formerly stored under the misleading OpenDP.pdf filename; PDF removed from Git."
+    git_policy: "link_only"
+    fetch_policy: "publisher_or_author_lookup"
     notes:
-      - "The committed reference name is misleading; content is this GLSVLSI 2019 paper, not the OpenROAD OpenDP engine paper."
+      - "The former reference filename was misleading; this is the GLSVLSI 2019 paper, not the OpenROAD OpenDP engine paper."
 
   - id: abacus_2008
     title: "Abacus: Fast Legalization of Standard Cell Circuits with Minimal Movement"

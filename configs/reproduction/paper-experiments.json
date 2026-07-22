@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "paper": {
+    "title": "From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA",
+    "pdf_sha256": "e5b08018cb4ef7cf634e2ba9ad048e42b5aad0686dea3f88ef5664b1ac49e2c5",
+    "primary_metric": "final post-DPL HPWL H_f",
+    "runtime_gate": 2.0
+  },
+  "protected_evaluator": {
+    "input_stage": "3_4_place_resized.odb",
+    "constraint_stage": "2_floorplan.sdc",
+    "flow_variant": "paper9_place",
+    "trajectory": ["H_g", "H_lg", "H_ip", "H_f"],
+    "required_checks": [
+      "strict_legality",
+      "average_displacement",
+      "maximum_displacement",
+      "runtime",
+      "mechanism_liveness",
+      "source_binary_metric_consistency"
+    ]
+  },
+  "level1_calibration": {
+    "frozen_before_target_search": true,
+    "author_exact_student_breadth": "not reported in the main paper; must be recovered for exact search-process reproduction",
+    "public_reconstruction_profile": {"students_per_case": 50, "iterations": 1, "max_parallel": 10},
+    "cases": [
+      {"case": "jpeg_util90_nangate45", "core_utilization": 90},
+      {"case": "aes_nangate45", "core_utilization": 70},
+      {"case": "swerv_wrapper_nangate45", "core_utilization": 60}
+    ],
+    "outputs": ["method_evidence", "complete_source_start_branches"]
+  },
+  "table4": {
+    "cases": [
+      "aes_asap7",
+      "aes_nangate45",
+      "ariane133_nangate45",
+      "ibex_asap7",
+      "ibex_nangate45",
+      "jpeg_asap7",
+      "jpeg_nangate45",
+      "swerv_wrapper_asap7",
+      "swerv_wrapper_nangate45"
+    ],
+    "default": {"implementation": "OpenROAD Diamond detailed placement"},
+    "bo": {
+      "implementation": "Optuna TPE over public detailed-placement controls",
+      "search_space": "src/dpl_evolve_agent/configs/bo_search_spaces/openroad_dpl_native_dpo_frontier.yaml",
+      "parameters": ["improve_random_seed", "improve_max_displacement", "improve_enable_extra_dpl", "global_swap_tradeoff", "global_swap_area_weight", "global_swap_pin_weight", "global_swap_congestion_user_weight", "global_swap_sampling_moves", "global_swap_normalization_interval", "global_swap_profiling_excess", "global_swap_budget_multipliers"],
+      "trials_per_case": 400,
+      "parallel_trials_per_case": 4
+    },
+    "reviewdse": {
+      "teacher": {"model": "gpt-5.5", "reasoning_effort": "xhigh", "count": 1},
+      "students": {"model": "gpt-5.4", "reasoning_effort": "xhigh", "count": 4},
+      "iterations": 10,
+      "selection_tracks": ["hpwl", "ghr"],
+      "reported_token_budget_billions_per_target": {"logged": 2.15, "active": 0.10}
+    }
+  },
+  "table5": {
+    "purpose": "Run the selected stage-local legalizer and its fixed full-flow reference through the same downstream DPO and final mirroring flow.",
+    "requires_external_paper_data": true,
+    "rows": [
+      {"id": "aes_dense_n45", "case": "aes_dense_nangate45", "core_utilization": 70, "selected": "legalm_i18", "reference": "diamond_i12"},
+      {"id": "jpeg_dense_n45", "case": "jpeg_util90_nangate45", "core_utilization": 90, "selected": "negotiation", "reference": "negotiation"},
+      {"id": "swerv_dense_n45", "case": "swerv_wrapper_nangate45", "core_utilization": 60, "selected": "diamond", "reference": "negotiation"}
+    ]
+  },
+  "table6": {
+    "purpose": "Replay Diamond, Negotiation, and the selected ReviewDSE source on each exact cut-row ODB under a 7200-second timeout.",
+    "requires_external_paper_data": true,
+    "timeout_seconds": 7200,
+    "rows": [
+      {"case": "ariane133_nangate45", "pattern": "center-8um", "program": "evolved_negotiation_selected", "expected": {"diamond": "fail", "negotiation": "pass", "reviewdse": "pass"}},
+      {"case": "ariane133_nangate45", "pattern": "center-9um", "program": "evolved_negotiation_default_fail_probe8", "expected": {"diamond": "fail", "negotiation": "fail", "reviewdse": "pass"}},
+      {"case": "ariane133_nangate45", "pattern": "center-10um", "program": "evolved_negotiation_default_fail_probe8", "expected": {"diamond": "fail", "negotiation": "timeout", "reviewdse": "pass"}},
+      {"case": "swerv_wrapper_nangate45", "pattern": "center-5.25um", "program": "evolved_negotiation_selected", "expected": {"diamond": "pass", "negotiation": "fail", "reviewdse": "pass"}},
+      {"case": "swerv_wrapper_nangate45", "pattern": "center-5.5um", "program": "evolved_negotiation_default_fail_probe8", "expected": {"diamond": "fail", "negotiation": "fail", "reviewdse": "pass"}},
+      {"case": "swerv_wrapper_nangate45", "pattern": "center-6um", "program": "evolved_negotiation_default_fail_probe8", "expected": {"diamond": "fail", "negotiation": "fail", "reviewdse": "pass"}},
+      {"case": "bp_quad_nangate45", "pattern": "center-5um", "program": "evolved_negotiation_bpquad_center_probe", "expected": {"diamond": "fail", "negotiation": "timeout", "reviewdse": "pass"}},
+      {"case": "bp_quad_nangate45", "pattern": "center-6um", "program": "evolved_negotiation_bpquad_center_probe", "expected": {"diamond": "fail", "negotiation": "timeout", "reviewdse": "pass"}},
+      {"case": "bp_quad_nangate45", "pattern": "center-8um", "program": "evolved_negotiation_bpquad_center_probe", "expected": {"diamond": "fail", "negotiation": "timeout", "reviewdse": "pass"}}
+    ]
+  },
+  "author_reference_machine": {
+    "os": "Rocky Linux 8.10 x86_64",
+    "cpu": "2 x Intel Xeon Platinum 8462Y+ (64 physical / 128 logical cores total)",
+    "memory_gib": 314,
+    "home_filesystem_tib": 22,
+    "gpu_required": false
+  }
+}
