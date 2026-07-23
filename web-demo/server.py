@@ -717,6 +717,10 @@ TASKS: dict[str, tuple[str, list[str]]] = {
     "bo": ("Reproduce Table 4 BO", ["make", "reproduce-bo"]),
     "replay-hpwl": ("Replay ReviewDSE HPWL Programs", ["make", "replay-reviewdse", "TRACK=hpwl"]),
     "replay-ghr": ("Replay ReviewDSE GHR Programs", ["make", "replay-reviewdse", "TRACK=ghr"]),
+    "table4-fresh": ("Reproduce Complete Table 4", ["make", "reproduce-table4"]),
+    "figures-retained": ("Rebuild Figures 4 and 5", ["make", "reproduce-figures"]),
+    "ariane-source-check": ("Check Ariane Diagnostic Sources", ["make", "check-ariane-diagnostic-sources"]),
+    "ariane-diagnostic": ("Reproduce Ariane Diagnostic", ["make", "reproduce-ariane-diagnostic"]),
     "fetch-table6-data": ("Download Verified Table 6 Data", ["make", "fetch-table6-data"]),
     "table6-data-check": ("Check Table 6 Replay Data", ["make", "check-table6-data"]),
     "table5-data-check": ("Check Table 5 Recovery Data", ["make", "check-table5-data"]),
@@ -728,6 +732,10 @@ TASKS: dict[str, tuple[str, list[str]]] = {
     "dse-plan": ("Print Full Paper DSE Plan", ["make", "plan-dse-paper"]),
     "audit-archive": ("Audit Packaged Records", ["make", "audit-archive"]),
     "toolchain-smoke": ("Run Optional AES Toolchain Diagnostic", ["make", "toolchain-smoke"]),
+    "available-results": (
+        "Reproduce All Currently Available Results",
+        ["make", "reproduce-available-results"],
+    ),
     "full": (
         "Prepare and Validate Paper Evaluator",
         ["bash", "-c", "make bootstrap && make build-tools && make prepare-paper-inputs && make validate-evaluator"],

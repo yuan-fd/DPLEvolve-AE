@@ -43,7 +43,10 @@ class ReproductionContractTests(unittest.TestCase):
             root = Path(directory)
             state = root / "state-that-must-not-be-created"
             result = subprocess.run(
-                ["bash", "scripts/reproduce/run_dse.sh", "--profile", "paper", "--dry-run"],
+                [
+                    "bash", "scripts/reproduce/run_dse.sh", "--profile", "paper",
+                    "--run-prefix", "contract_test", "--dry-run",
+                ],
                 cwd=ROOT,
                 env={
                     **os.environ,
@@ -65,6 +68,7 @@ class ReproductionContractTests(unittest.TestCase):
             "--iterations 10",
             "--runtime-multiplier 2.0",
             "--level1-evidence",
+            "--run-prefix contract_test",
         ):
             self.assertIn(fragment, output)
 
@@ -222,7 +226,7 @@ class ReproductionContractTests(unittest.TestCase):
                         "after_improve_micron": bo_final + 1.0,
                         "final_micron": bo_final,
                     },
-                    "runtime_seconds": 11.0,
+                    "runtime_seconds": 10.0 * target["bo_runtime"],
                 }))
                 bo_path.write_text(json.dumps({
                     "status": "ok",
@@ -230,7 +234,7 @@ class ReproductionContractTests(unittest.TestCase):
                     "metrics_path": str(bo_metrics_path),
                     "metrics": {
                         "hpwl_final": bo_final,
-                        "runtime": 11.0,
+                        "runtime": 10.0 * target["bo_runtime"],
                     },
                 }))
 
@@ -266,7 +270,7 @@ class ReproductionContractTests(unittest.TestCase):
                             "hpwl_legalized_micron": 1020.0,
                             "hpwl_after_improve_micron": 1005.0,
                             "hpwl_after_micron": 1000.0 * (1.0 + target[key] / 100.0),
-                            "runtime_seconds": 12.0,
+                            "runtime_seconds": 10.0 * target[f"{track}_runtime"],
                             "candidate_metrics": replay_metrics,
                         })
 
@@ -284,6 +288,63 @@ class ReproductionContractTests(unittest.TestCase):
                 rows = list(csv.DictReader(stream, delimiter="\t"))
             self.assertEqual(len(rows), 10)
             self.assertEqual(rows[-1]["case"], "Mean")
+
+    def test_selected_replay_distinguishes_pinned_and_rebuilt_inputs(self):
+        selected_root = ROOT / "artifacts/01-table4-qor/selected-programs"
+        manifest = json.loads((selected_root / "manifest.json").read_text())
+
+        def run(case: str, hpwl: float) -> subprocess.CompletedProcess[str]:
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                metrics = root / "metrics.json"
+                metrics.write_text(json.dumps({
+                    "status": "ok",
+                    "legality": {"placement_violations": 0},
+                }))
+                results = root / "results.tsv"
+                fields = [
+                    "status", "hpwl_global_micron", "hpwl_legalized_micron",
+                    "hpwl_after_improve_micron", "hpwl_after_micron",
+                    "runtime_seconds", "candidate_metrics",
+                ]
+                with results.open("w", newline="") as stream:
+                    writer = csv.DictWriter(stream, fieldnames=fields, delimiter="\t")
+                    writer.writeheader()
+                    writer.writerow({
+                        "status": "PASS",
+                        "hpwl_global_micron": hpwl + 3,
+                        "hpwl_legalized_micron": hpwl + 2,
+                        "hpwl_after_improve_micron": hpwl + 1,
+                        "hpwl_after_micron": hpwl,
+                        "runtime_seconds": 10,
+                        "candidate_metrics": metrics,
+                    })
+                return subprocess.run(
+                    [
+                        sys.executable, str(selected_root / "verify.py"),
+                        "--root", str(selected_root), "--case", case,
+                        "--objective", "hpwl", "--results", str(results),
+                    ],
+                    cwd=ROOT,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                )
+
+        rebuilt = next(item for item in manifest["programs"] if item["case"] == "aes_asap7")
+        rebuilt_hpwl = rebuilt["tracks"]["hpwl"]["expected_hpwl"] * 1.10
+        rebuilt_result = run("aes_asap7", rebuilt_hpwl)
+        self.assertEqual(rebuilt_result.returncode, 0, rebuilt_result.stdout)
+        self.assertIn("reconstructed-input replay is complete and legal", rebuilt_result.stdout)
+        self.assertIn("informational", rebuilt_result.stdout)
+
+        pinned = next(
+            item for item in manifest["programs"] if item["case"] == "aes_nangate45"
+        )
+        pinned_hpwl = pinned["tracks"]["hpwl"]["expected_hpwl"] * 1.01
+        pinned_result = run("aes_nangate45", pinned_hpwl)
+        self.assertNotEqual(pinned_result.returncode, 0)
+        self.assertIn("checksum-pinned replay HPWL drift", pinned_result.stdout)
 
     def test_table5_summary_derives_counterexamples_from_fresh_rows(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -74,6 +74,7 @@ def main() -> int:
     parser.add_argument("--selected-manifest", required=True, type=Path)
     parser.add_argument("--expected", required=True, type=Path)
     parser.add_argument("--delta-tolerance-pp", type=float, default=0.06)
+    parser.add_argument("--runtime-ratio-tolerance", type=float, default=0.20)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
 
@@ -132,14 +133,30 @@ def main() -> int:
         fresh["expected_bo_delta_percent"] = target["bo_delta"]
         fresh["expected_reviewdse_hpwl_delta_percent"] = target["hpwl_delta"]
         fresh["expected_reviewdse_ghr_delta_percent"] = target["ghr_delta"]
+        fresh["expected_bo_runtime_ratio"] = target["bo_runtime"]
+        fresh["expected_reviewdse_hpwl_runtime_ratio"] = target["hpwl_runtime"]
+        fresh["expected_reviewdse_ghr_runtime_ratio"] = target["ghr_runtime"]
         delta_fields = (
             ("bo_delta_percent", "bo_delta"),
             ("reviewdse_hpwl_delta_percent", "hpwl_delta"),
             ("reviewdse_ghr_delta_percent", "ghr_delta"),
         )
-        fresh["delta_verdict"] = (
+        runtime_fields = (
+            ("bo_runtime_ratio", "bo_runtime"),
+            ("reviewdse_hpwl_runtime_ratio", "hpwl_runtime"),
+            ("reviewdse_ghr_runtime_ratio", "ghr_runtime"),
+        )
+        delta_match = all(
+            abs(float(fresh[field]) - float(target[target_field])) <= args.delta_tolerance_pp
+            for field, target_field in delta_fields
+        )
+        runtime_match = all(
+            abs(float(fresh[field]) - float(target[target_field])) <= args.runtime_ratio_tolerance
+            for field, target_field in runtime_fields
+        )
+        fresh["scientific_verdict"] = (
             "match"
-            if all(abs(float(fresh[field]) - float(target[target_field])) <= args.delta_tolerance_pp for field, target_field in delta_fields)
+            if delta_match and runtime_match
             else "mismatch"
         )
         rows.append(fresh)
@@ -157,10 +174,12 @@ def main() -> int:
         ):
             mean[field] = sum(float(row[field]) for row in rows) / len(rows)
         writer.writerow(mean)
-    mismatches = [row["case"] for row in rows if row["delta_verdict"] != "match"]
+    mismatches = [row["case"] for row in rows if row["scientific_verdict"] != "match"]
     if mismatches:
         raise ValueError(
-            f"fresh Table 4 deltas exceed {args.delta_tolerance_pp:.3f} percentage-point tolerance: "
+            "fresh Table 4 results exceed scientific tolerances "
+            f"(delta={args.delta_tolerance_pp:.3f} percentage point, "
+            f"runtime ratio={args.runtime_ratio_tolerance:.3f}): "
             + ", ".join(mismatches)
         )
     print(f"[PASS] summarized nine fresh Table 4 cases: {args.output}")

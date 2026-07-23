@@ -31,7 +31,11 @@ experiments.
 5. Use `fetch-table6-data`, `check-table6-data`, and `table6-fresh` for the
    retained cut-row experiment; Table 5 still lacks its SWERV DENSE_2 config
    and six sources.
-6. Use `audit-archive` only as a secondary integrity check.
+6. Use `figures-retained` to rebuild Figures 4/5 and `ariane-diagnostic` for
+   the fresh six-source Ariane run.
+7. Use `available-results` for the complete currently executable subset;
+   Table 5 is explicitly excluded.
+8. Use `audit-archive` only as a secondary integrity check.
 
 Full BO is 3,600 placements. Full ReviewDSE search is not exposed as a one-click
 browser action because it requires an explicit token-cost acknowledgement; use
@@ -43,8 +47,9 @@ The backend accepts only predefined tasks:
 
 `doctor`, `check`, `bootstrap`, `build-tools`, `prepare-inputs`,
 `validate-evaluator`, `default`, `setup-bo`, `bo`, `replay-hpwl`, `replay-ghr`,
-`paper-data-check`, `table5-fresh`, `table6-fresh`, `dse-plan`,
-`level1-plan`, `audit-archive`, `toolchain-smoke`, and `full`.
+`table4-fresh`, `figures-retained`, `ariane-source-check`, `ariane-diagnostic`,
+`paper-data-check`, `table5-fresh`, `table6-fresh`, `dse-plan`, `level1-plan`,
+`audit-archive`, `toolchain-smoke`, `available-results`, and `full`.
 
 Commands are serialized, streamed over WebSocket, and recorded in the in-memory
 session history. SSH mode runs those same fixed commands on the selected remote

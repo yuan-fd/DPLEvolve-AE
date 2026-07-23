@@ -1,0 +1,13 @@
+*~
+__pycache__/
+*.pyc
+TAGS
+experiments/logs/*
+!experiments/logs/.gitkeep
+experiments/metrics/*
+!experiments/metrics/.gitkeep
+patches/candidates/*
+!patches/candidates/.gitkeep
+patches/accepted/*
+!patches/accepted/.gitkeep
+notebooks/.ipynb_checkpoints

@@ -13,7 +13,9 @@ The artifact exposes runnable experiment paths for OpenROAD detailed placement:
 - rerun the Level 1 calibration and Level 2 Teacher/Student search;
 - regenerate the deleted Table 5 dense inputs and rerun its six candidates if
   the missing SWERV DENSE_2 config and source commits are recovered;
-- rerun all 27 Table 6 OpenROAD jobs from retained cut-row DEF/V/SDC data.
+- rerun all 27 Table 6 OpenROAD jobs from retained cut-row DEF/V/SDC data;
+- reconstruct Figures 4/5 from checksummed author-run logs or fresh DSE/BO
+  outputs, and replay the six exact Ariane diagnostic sources.
 
 The compact archived records are supplied for provenance and fast inspection.
 They are not the primary evaluation path.
@@ -66,6 +68,10 @@ make fetch-table6-data
 make check-table6-data
 make reproduce-table6 THREADS=10
 
+# Figures and Ariane diagnostic
+make reproduce-figures FIGURE_SOURCE=retained
+make reproduce-ariane-diagnostic THREADS=10
+
 # Table 5 reconstruction; awaits one input config and six sources
 make prepare-table5-inputs THREADS=10
 make check-table5-data
@@ -92,7 +98,11 @@ not to spend that budget.
 ## Current completeness boundary
 
 Table 4 execution code, selected source trees, and regenerable inputs are
-present. Table 6's nine exact DEF/Verilog pairs, three SDC files, and single
+present. Eight rebuilt Table 4 inputs lack paper-time ODB hashes, so their
+acceptance is based on complete legal runs and explicit relative-result
+tolerances rather than a bit-for-bit claim. Figure 4/5 retained logs and all
+six Ariane diagnostic source trees are checksummed and runnable. Table 6's
+nine exact DEF/Verilog pairs, three SDC files, and single
 evolved source survived; the exported 200 MB data archive and replay were
 validated against a real Ariane run. Table 5 is not complete: its ODBs can be
 regenerated for AES/JPEG, but SWERV's untracked `config_dense2.mk` and all six

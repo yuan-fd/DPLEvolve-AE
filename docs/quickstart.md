@@ -29,6 +29,27 @@ make replay-reviewdse CASE=aes_nangate45 TRACK=ghr THREADS=8
 Remove `CASE=...` or run `make reproduce-table4` for all nine targets. BO then
 executes 3,600 trials, so plan capacity before starting it.
 
+The eight cases without a retained paper-time ODB hash use regenerated pinned
+inputs. Their fresh runs must be complete and legal, and their relative HPWL
+and runtime results must fall within the documented scientific tolerances;
+they are not advertised as bit-for-bit replays.
+
+## Rebuild paper figures and Ariane diagnostic
+
+```bash
+make reproduce-figures FIGURE_SOURCE=retained
+make check-ariane-diagnostic-sources
+make reproduce-ariane-diagnostic THREADS=10
+```
+
+The first command redraws checksummed author-run logs. After a full fresh DSE
+run, use the same stable prefix for launch and rendering:
+
+```bash
+make run-dse-paper ACKNOWLEDGE_LLM_COST=yes DSE_RUN_PREFIX=review_run_01
+make reproduce-figures FIGURE_SOURCE=fresh DSE_RUN_PREFIX=review_run_01
+```
+
 ## Exercise the actual search loop
 
 ```bash
@@ -72,6 +93,12 @@ make reproduce-paper-results THREADS=10
 It runs fresh Table 4/5/6 experiments. Today Table 4 and Table 6 are runnable
 independently, while Table 5 is a disclosed gap. The separate full discovery rerun is
 `make reproduce-paper-search ACKNOWLEDGE_LLM_COST=yes`.
+
+The current all-available path excludes Table 5 explicitly:
+
+```bash
+make reproduce-available-results THREADS=10
+```
 
 ## Optional archive audit
 

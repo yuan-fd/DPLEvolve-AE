@@ -99,6 +99,8 @@ def main() -> int:
             print("[WARN] present but no archived checksum: " + ", ".join(unpinned))
 
     if args.results:
+        if not args.case:
+            raise SystemExit("[ERROR] --results requires --case")
         rows = list(csv.DictReader(args.results.open(newline=""), delimiter="\t"))
         if len(rows) != 1:
             raise SystemExit(f"[ERROR] expected one replay result, found {len(rows)}")
@@ -107,16 +109,48 @@ def main() -> int:
         track = item["tracks"][args.objective]
         if row["status"] != "PASS":
             raise SystemExit(f"[ERROR] replay status is {row['status']}")
+        required_metrics = (
+            "hpwl_global_micron",
+            "hpwl_legalized_micron",
+            "hpwl_after_improve_micron",
+            "hpwl_after_micron",
+            "runtime_seconds",
+        )
+        for field in required_metrics:
+            value = float(row.get(field, ""))
+            if not math.isfinite(value):
+                raise SystemExit(f"[ERROR] replay metric is not finite: {field}")
+        metrics_path = Path(row.get("candidate_metrics", ""))
+        metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+        if metrics.get("status") != "ok":
+            raise SystemExit(f"[ERROR] replay metrics status is not ok: {metrics_path}")
+        violations = (metrics.get("legality") or {}).get("placement_violations")
+        if str(violations) not in ("0", "0.0"):
+            raise SystemExit(f"[ERROR] replay is not explicitly legal: {metrics_path}")
+
         actual_hpwl = float(row["hpwl_after_micron"])
         drift_percent = abs(actual_hpwl - track["expected_hpwl"]) / track["expected_hpwl"] * 100
-        if drift_percent > 0.05:
-            raise SystemExit(
-                f"[ERROR] replay HPWL drift {drift_percent:.4f}% exceeds 0.05% tolerance"
+        if item.get("input_odb_sha256"):
+            if drift_percent > 0.05:
+                raise SystemExit(
+                    f"[ERROR] checksum-pinned replay HPWL drift {drift_percent:.4f}% "
+                    "exceeds 0.05% tolerance"
+                )
+            print(
+                f"[PASS] {args.case}/{args.objective} checksum-pinned replay "
+                f"HPWL={actual_hpwl:.1f}; archived={track['expected_hpwl']:.1f}; "
+                f"drift={drift_percent:.4f}%"
             )
-        print(
-            f"[PASS] {args.case}/{args.objective} replay HPWL={actual_hpwl:.1f}; "
-            f"archived={track['expected_hpwl']:.1f}; drift={drift_percent:.4f}%"
-        )
+        else:
+            print(
+                f"[PASS] {args.case}/{args.objective} reconstructed-input replay is "
+                "complete and legal"
+            )
+            print(
+                f"[INFO] absolute HPWL={actual_hpwl:.1f}; archived="
+                f"{track['expected_hpwl']:.1f}; drift={drift_percent:.4f}% (informational; "
+                "paper-time input hash is unavailable)"
+            )
 
     if args.require_inputs and missing:
         return 2

@@ -103,6 +103,16 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(server.TASKS["audit-archive"][1], ["make", "audit-archive"])
         self.assertEqual(server.TASKS["fetch-table6-data"][1], ["make", "fetch-table6-data"])
         self.assertEqual(server.TASKS["prepare-table5-inputs"][1], ["make", "prepare-table5-inputs"])
+        self.assertEqual(server.TASKS["table4-fresh"][1], ["make", "reproduce-table4"])
+        self.assertEqual(server.TASKS["figures-retained"][1], ["make", "reproduce-figures"])
+        self.assertEqual(
+            server.TASKS["ariane-diagnostic"][1],
+            ["make", "reproduce-ariane-diagnostic"],
+        )
+        self.assertEqual(
+            server.TASKS["available-results"][1],
+            ["make", "reproduce-available-results"],
+        )
 
     def test_full_reproduction_uses_documented_order(self):
         self.assertEqual(
@@ -123,6 +133,10 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("config_dense2.mk", html)
         self.assertIn("does not need the deleted ODBs", html)
         self.assertIn("archive audit is clearly separated", html)
+        self.assertIn("Table 5 is the only blocked reported table", html)
+        self.assertIn("explicit relative-result tolerances", html)
+        self.assertIn("reproduce-ariane-diagnostic", html)
+        self.assertIn("reproduce-available-results", html)
 
     def test_ui_exposes_every_fixed_reviewer_task(self):
         html = (WEB_DEMO_ROOT / "templates" / "index.html").read_text(encoding="utf-8")

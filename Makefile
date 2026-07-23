@@ -16,6 +16,12 @@ DPL_EVOLVE_STATE_ROOT ?= $(AE_ROOT)/../dpl_evolve_state
 DPL_EVOLVE_PYTHON ?= python3
 THREADS ?= 10
 TRACK ?= hpwl
+FIGURE_SOURCE ?= retained
+DSE_RUN_PREFIX ?=
+TABLE4_DELTA_TOLERANCE_PP ?= 0.06
+TABLE4_RUNTIME_RATIO_TOLERANCE ?= 0.20
+ARIANE_DELTA_TOLERANCE_PP ?= 0.25
+ARIANE_RUNTIME_RATIO_TOLERANCE ?= 0.20
 
 -include env.local.sh
 
@@ -26,12 +32,14 @@ export DPL_EVOLVE_PYTHON THREADS
 .PHONY: validate-evaluator reproduce-default setup-bo reproduce-bo replay-reviewdse
 .PHONY: plan-level1 reproduce-level1
 .PHONY: reproduce-table4 summarize-table4 prepare-table5-inputs reproduce-table5 reproduce-table6
-.PHONY: reproduce-paper-results reproduce-paper-search
-.PHONY: run-dse-small plan-dse-paper run-dse-paper paper-data-check
+.PHONY: reproduce-figure4 reproduce-figure5 reproduce-figures
+.PHONY: check-ariane-diagnostic-sources reproduce-ariane-diagnostic
+.PHONY: reproduce-available-results reproduce-paper-results reproduce-paper-search
+.PHONY: run-dse-small plan-dse-paper run-dse-paper paper-data-check paper-data-check-available
 .PHONY: fetch-table6-data check-table5-data check-table6-data
 .PHONY: audit-archive evidence table4 table5 table6
 .PHONY: toolchain-smoke smoke smoke-check doctor-smoke
-.PHONY: test test-structure test-integration test-unit validate-configs
+.PHONY: test test-structure test-integration test-unit test-web validate-configs
 .PHONY: provenance zenodo zenodo-audit clean
 
 .DEFAULT_GOAL := help
@@ -57,6 +65,11 @@ help:
 	@echo "  make prepare-table5-inputs  Rebuild Table 5 inputs after DENSE_2 config recovery"
 	@echo "  make reproduce-table5       Prepare inputs + replay six Table 5 sources"
 	@echo "  make reproduce-table6       Replay 27 runs from exact cut-row DEF/V/SDC"
+	@echo "  make reproduce-ariane-diagnostic  Replay six exact Ariane diagnostic sources"
+	@echo "  make reproduce-figures      Redraw Figures 4/5 from retained author-run logs"
+	@echo "  make reproduce-figures FIGURE_SOURCE=fresh DSE_RUN_PREFIX=NAME"
+	@echo "                              Redraw Figures 4/5 from a fresh full DSE run"
+	@echo "  make reproduce-available-results  All runnable non-LLM results (Table 5 excluded)"
 	@echo "  make reproduce-paper-results  All non-LLM paper result experiments"
 	@echo ""
 	@echo "3. Exercise or rerun the LLM search itself:"
@@ -110,6 +123,7 @@ replay-reviewdse:
 	@bash "$(REPRO_SCRIPTS)/replay_selected.sh" --track "$(TRACK)" --threads "$(THREADS)" $(if $(CASE),--case "$(CASE)",)
 
 reproduce-table4:
+	@$(MAKE) setup-bo
 	@$(MAKE) reproduce-default THREADS="$(THREADS)" $(if $(CASE),CASE="$(CASE)",)
 	@$(MAKE) reproduce-bo THREADS="$(THREADS)" $(if $(CASE),CASE="$(CASE)",)
 	@$(MAKE) replay-reviewdse TRACK=hpwl THREADS="$(THREADS)" $(if $(CASE),CASE="$(CASE)",)
@@ -123,6 +137,8 @@ summarize-table4:
 	  --flow-variant paper9_place \
 	  --selected-manifest "$(ARTIFACTS_DIR)/01-table4-qor/selected-programs/manifest.json" \
 	  --expected "$(ARTIFACTS_DIR)/01-table4-qor/expected/table4.json" \
+	  --delta-tolerance-pp "$(TABLE4_DELTA_TOLERANCE_PP)" \
+	  --runtime-ratio-tolerance "$(TABLE4_RUNTIME_RATIO_TOLERANCE)" \
 	  --output "$(DPL_EVOLVE_STATE_ROOT)/paper_reproduction/table4/table4-fresh.tsv"
 
 prepare-table5-inputs:
@@ -136,6 +152,42 @@ reproduce-table6:
 	  $(if $(CASE),--case "$(CASE)",) \
 	  $(if $(PATTERN),--pattern "$(PATTERN)",) \
 	  $(if $(ROLE),--only-role "$(ROLE)",)
+
+reproduce-figure4:
+	@"$(DPL_EVOLVE_PYTHON)" "$(REPRO_SCRIPTS)/reproduce_figures.py" figure4 \
+	  --source "$(FIGURE_SOURCE)" \
+	  --artifact-root "$(AE_ROOT)" \
+	  --state-root "$(DPL_EVOLVE_STATE_ROOT)" \
+	  --run-prefix "$(DSE_RUN_PREFIX)" \
+	  --output-dir "$(DPL_EVOLVE_STATE_ROOT)/paper_reproduction/figures/$(FIGURE_SOURCE)"
+
+reproduce-figure5:
+	@"$(DPL_EVOLVE_PYTHON)" "$(REPRO_SCRIPTS)/reproduce_figures.py" figure5 \
+	  --source "$(FIGURE_SOURCE)" \
+	  --artifact-root "$(AE_ROOT)" \
+	  --state-root "$(DPL_EVOLVE_STATE_ROOT)" \
+	  --run-prefix "$(DSE_RUN_PREFIX)" \
+	  --flow-variant paper9_place \
+	  --output-dir "$(DPL_EVOLVE_STATE_ROOT)/paper_reproduction/figures/$(FIGURE_SOURCE)"
+
+reproduce-figures: reproduce-figure4 reproduce-figure5
+
+check-ariane-diagnostic-sources:
+	@bash "$(REPRO_SCRIPTS)/reproduce_ariane_diagnostic.sh" --check-sources
+
+reproduce-ariane-diagnostic:
+	@$(MAKE) reproduce-default CASE=ariane133_nangate45 THREADS="$(THREADS)"
+	@ARIANE_DELTA_TOLERANCE_PP="$(ARIANE_DELTA_TOLERANCE_PP)" \
+	 ARIANE_RUNTIME_RATIO_TOLERANCE="$(ARIANE_RUNTIME_RATIO_TOLERANCE)" \
+	 bash "$(REPRO_SCRIPTS)/reproduce_ariane_diagnostic.sh" --threads "$(THREADS)"
+
+# All currently runnable no-LLM result paths. Table 5 is deliberately omitted
+# here and remains an explicit recovery gate in reproduce-paper-results.
+reproduce-available-results: paper-data-check-available
+	@$(MAKE) reproduce-table4 THREADS="$(THREADS)"
+	@$(MAKE) reproduce-table6 THREADS="$(THREADS)"
+	@$(MAKE) reproduce-ariane-diagnostic THREADS="$(THREADS)"
+	@$(MAKE) reproduce-figures FIGURE_SOURCE=retained
 
 # Complete no-LLM result reproduction. Check external data before spending the
 # 3,600-run BO budget so an incomplete package fails early.
@@ -174,13 +226,17 @@ reproduce-level1:
 	@ACKNOWLEDGE_LLM_COST="$(ACKNOWLEDGE_LLM_COST)" bash "$(REPRO_SCRIPTS)/run_level1.sh" --threads "$(THREADS)" --children "$(or $(LEVEL1_CHILDREN),50)"
 
 run-dse-small:
-	@bash "$(REPRO_SCRIPTS)/run_dse.sh" --profile small --case "$(or $(CASE),aes_nangate45)" --threads "$(THREADS)" --children "$(or $(STUDENTS),1)" --iterations "$(or $(ITERATIONS),1)"
+	@DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(REPRO_SCRIPTS)/run_dse.sh" --profile small --case "$(or $(CASE),aes_nangate45)" --threads "$(THREADS)" --children "$(or $(STUDENTS),1)" --iterations "$(or $(ITERATIONS),1)"
 
 plan-dse-paper:
-	@bash "$(REPRO_SCRIPTS)/run_dse.sh" --profile paper --threads "$(THREADS)" --dry-run
+	@DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(REPRO_SCRIPTS)/run_dse.sh" --profile paper --threads "$(THREADS)" --dry-run
 
 run-dse-paper:
-	@ACKNOWLEDGE_LLM_COST="$(ACKNOWLEDGE_LLM_COST)" bash "$(REPRO_SCRIPTS)/run_dse.sh" --profile paper --threads "$(THREADS)"
+	@ACKNOWLEDGE_LLM_COST="$(ACKNOWLEDGE_LLM_COST)" DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(REPRO_SCRIPTS)/run_dse.sh" --profile paper --threads "$(THREADS)"
+
+paper-data-check-available:
+	@$(MAKE) check-table6-data
+	@$(MAKE) check-ariane-diagnostic-sources
 
 # Archived arithmetic/integrity checks. These do not invoke OpenROAD and do not
 # count as reproducing a paper experiment.
@@ -209,7 +265,7 @@ toolchain-smoke smoke:
 smoke-check:
 	@bash "$(ARTIFACTS_DIR)/04-aes-smoke/run.sh" --check-only
 
-test: test-structure test-integration test-unit
+test: test-structure test-integration test-unit test-web
 	@echo ""
 	@echo "[PASS] All repository tests passed"
 
@@ -222,6 +278,10 @@ test-integration:
 test-unit:
 	@"$(DPL_EVOLVE_PYTHON)" -m pytest "$(AE_ROOT)/tests/unit/" -v 2>/dev/null || \
 	 PYTHONPATH="$(AE_ROOT)" "$(DPL_EVOLVE_PYTHON)" -m unittest discover -s "$(AE_ROOT)/tests/unit/" -v
+
+test-web:
+	@PYTHONPATH="$(AE_ROOT)" "$(DPL_EVOLVE_PYTHON)" -m unittest \
+	  discover -s "$(AE_ROOT)/web-demo/tests/" -v
 
 validate-configs:
 	@"$(DPL_EVOLVE_PYTHON)" "$(SHARED_SCRIPTS)/validate_config.py" --all

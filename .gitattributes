@@ -1,0 +1,3 @@
+# Preserve exact author-commit source trees even when an upstream CMakeLists
+# intentionally contains a blank final line.
+artifacts/01-table4-qor/diagnostics/ariane-warmstart/programs/**/CMakeLists.txt whitespace=-blank-at-eof

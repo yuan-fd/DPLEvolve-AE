@@ -1,0 +1,7 @@
+{
+  "apply_base": "framework_dpl_evolve",
+  "patch_path": "/home/zhiyuzheng/Project/Agenticflow/dpl_evolve_agent/patches/evolved_legalizers/openroad_dpl_evolve_diamond_iter30_framework_delta.patch",
+  "patch_sha256": "2352ae23a1bc3e832fda6c9109fe69dd4be6b81247a07d08fc43416c80f0c48f",
+  "seed_name": "evolved_diamond_dpl_evolve",
+  "status": "materialized"
+}

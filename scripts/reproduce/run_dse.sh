@@ -12,6 +12,7 @@ CHILDREN="1"
 ITERATIONS="1"
 ACKNOWLEDGE_COST="${ACKNOWLEDGE_LLM_COST:-no}"
 LEVEL1_EVIDENCE="${LEVEL1_EVIDENCE:-${DPL_EVOLVE_STATE_ROOT}/calibrations/paper_level1/frozen/level1_evidence.md}"
+RUN_PREFIX="${DSE_RUN_PREFIX:-}"
 
 usage() {
   cat <<'EOF'
@@ -32,6 +33,8 @@ Options:
   --threads N           OpenROAD threads per evaluation. Default: 10.
   --acknowledge-cost    Equivalent to ACKNOWLEDGE_LLM_COST=yes.
   --level1-evidence P   Frozen output of make reproduce-level1.
+  --run-prefix NAME     Stable prefix used to locate this run when rebuilding
+                        Figures 4/5. Can also be set with DSE_RUN_PREFIX.
   --dry-run             Print the exact launch configuration; no API/EDA work.
 EOF
 }
@@ -46,6 +49,7 @@ while [[ $# -gt 0 ]]; do
     --threads) THREADS="$2"; shift 2 ;;
     --acknowledge-cost) ACKNOWLEDGE_COST=yes; shift ;;
     --level1-evidence) LEVEL1_EVIDENCE="$2"; shift 2 ;;
+    --run-prefix) RUN_PREFIX="$2"; shift 2 ;;
     --dry-run) REPRO_DRY_RUN=1; shift ;;
     --help|-h) usage; exit 0 ;;
     *) repro_die "unknown argument: $1" ;;
@@ -66,6 +70,9 @@ args=(
   --student-reasoning-effort xhigh
   --skip-core-build
 )
+if [[ -n "${RUN_PREFIX}" ]]; then
+  args+=(--run-prefix "${RUN_PREFIX}")
+fi
 
 if [[ "${PROFILE}" == paper ]]; then
   if [[ "${ACKNOWLEDGE_COST}" != yes && "${REPRO_DRY_RUN}" -eq 0 ]]; then

@@ -54,6 +54,7 @@ required_files=(
   configs/reproduction/table5-inputs.tsv
   configs/reproduction/table5-sources.tsv
   configs/reproduction/table6-replay.tsv
+  configs/reproduction/ariane-diagnostic.tsv
   scripts/reproduce/prepare_paper_inputs.sh
   scripts/reproduce/fetch_table6_data.sh
   scripts/reproduce/prepare_table5_inputs.sh
@@ -64,6 +65,9 @@ required_files=(
   scripts/reproduce/replay_selected.sh
   scripts/reproduce/reproduce_table5.sh
   scripts/reproduce/reproduce_table6.sh
+  scripts/reproduce/reproduce_figures.py
+  scripts/reproduce/reproduce_ariane_diagnostic.sh
+  scripts/reproduce/summarize_ariane_diagnostic.py
   scripts/reproduce/record_table4_inputs.py
   scripts/reproduce/summarize_table4.py
   scripts/reproduce/summarize_table5.py
@@ -71,6 +75,9 @@ required_files=(
   scripts/reproduce/verify_data_manifest.py
   scripts/reproduce/openroad_legalize_cutrow.tcl
   scripts/maintenance/export_table6_data.sh
+  artifacts/01-table4-qor/inputs/figures/MANIFEST.sha256
+  artifacts/01-table4-qor/inputs/diagnostics/MANIFEST.sha256
+  artifacts/01-table4-qor/diagnostics/ariane-warmstart/README.md
   images/dplevolve-architecture.png
 )
 for path in "${required_files[@]}"; do

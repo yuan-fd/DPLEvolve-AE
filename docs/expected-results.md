@@ -27,6 +27,30 @@ Small floating-point/runtime differences can occur across compilers and hosts.
 A mismatch should be reported with the new metrics, input hash, tool revision,
 and host configuration; the reference file must not be edited to make it pass.
 
+For the checksum-pinned paper-time ODB (AES Nangate45), replayed absolute HPWL
+must remain within 0.05%. For the eight pinned-flow reconstructed inputs,
+absolute HPWL drift is informational. `summarize-table4` instead requires each
+reported HPWL delta to be within 0.06 percentage point and each runtime ratio
+within 0.20 of the paper transcription by default. These are scientific
+acceptance checks, not claims of bit-for-bit execution.
+
+## Figures 4 and 5
+
+Figure 4 produces 99 data rows: nine cases × iterations 0..10. Each trajectory
+is best-so-far and therefore non-increasing in delta. Its final points agree
+with the Table 4 HPWL-selected track within the transcription tolerance.
+
+Figure 5 contains exactly 400 BO points for AES N45 and 400 for Ariane133 N45,
+plus available ReviewDSE candidates. Its horizontal field is runtime divided
+by the same-case default runtime; the script recomputes Pareto membership.
+
+## Ariane diagnostic
+
+The retained six-source means are `+1.516536989% / 1.066704935x` for the four
+missed-handoff runs and `-3.259535454% / 0.706380570x` for the two guided runs.
+A fresh rebuilt-input replay is accepted within 0.25 percentage point and 0.20
+runtime-ratio units. This result is diagnostic rather than an ablation.
+
 ## Table 5
 
 The fresh output contains three rows. A reproduced counterexample has both:

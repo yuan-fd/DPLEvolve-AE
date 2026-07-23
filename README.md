@@ -23,6 +23,9 @@ only a toolchain diagnostic and is not a paper experiment.
 | Table 4 ReviewDSE-GHR | `make replay-reviewdse TRACK=ghr` | Builds and runs the nine runtime-aware selected source trees |
 | Table 5 | `make reproduce-table5` | Rebuilds AES/JPEG inputs and replays six candidates after the missing sources and SWERV DENSE_2 config are recovered |
 | Table 6 | `make reproduce-table6` | Replays Diamond, Negotiation, and one frozen ReviewDSE source on nine exact cut-row DEF/V/SDC inputs |
+| Figure 4 | `make reproduce-figure4` | Redraws the 9 × 11 best-so-far trajectories from checksummed author-run logs |
+| Figure 5 | `make reproduce-figure5` | Recomputes both BO/ReviewDSE Pareto panels using runtime ratio on the x-axis |
+| Ariane diagnostic | `make reproduce-ariane-diagnostic` | Rebuilds and replays the six exact source trees behind the warm-start diagnostic |
 | ReviewDSE Level 1 | `make reproduce-level1` | Runs the three calibration instances and freezes reviewed mechanism/source-start evidence |
 | ReviewDSE Level 2 | `make run-dse-small` / `make run-dse-paper` | Runs the target Teacher/Student source-edit, build, evaluate, and review loop |
 
@@ -31,6 +34,12 @@ checks external data first, then executes Table 4, Table 5, and Table 6. It is
 not a shortcut to archived numbers. At present it stops at the documented
 Table 5 recovery gate; run Table 4 and Table 6 independently. `make reproduce-paper-search
 ACKNOWLEDGE_LLM_COST=yes` executes Level 1 followed by the full Level 2 search.
+
+`make reproduce-available-results` is the current executable aggregate. It
+runs fresh Table 4, Table 6, and the six-source Ariane diagnostic, then redraws
+Figures 4/5 from checksummed retained author-run logs. It deliberately excludes
+Table 5 and says so in the target. The retained figure command reconstructs
+plotted author data; it is not a fresh rerun of the LLM search.
 
 Important current data status: Table 4 selected sources are included and its
 inputs are regenerated from the pinned flow. Table 6's exact DEF/Verilog/SDC
@@ -133,7 +142,34 @@ program manifest. The AES Nangate45 input is checksum-pinned; input checksums
 for the other eight cases still need to be added before claiming bit-exact
 paper-input identity.
 
-## 3. Run the ReviewDSE method
+This does not prevent scientific reproduction. For those eight cases the
+runner requires a complete, legal fresh result, reports absolute-HPWL drift as
+diagnostic information, and lets `summarize-table4` judge relative deltas and
+runtime ratios. The default acceptance windows are 0.06 percentage point for
+HPWL delta and 0.20 for runtime ratio. Only checksum-pinned AES Nangate45 uses
+the strict 0.05% absolute-HPWL replay check.
+
+## 3. Reproduce Figures 4/5 and the Ariane diagnostic
+
+```bash
+make reproduce-figures FIGURE_SOURCE=retained
+make check-ariane-diagnostic-sources
+make reproduce-ariane-diagnostic THREADS=10
+```
+
+Figure 4 emits exactly 99 normalized points: nine cases and iteration 0 through
+10, with best-so-far carry-forward. Figure 5 requires 400 BO trials for each of
+AES N45 and Ariane133 N45, uses `runtime_ratio` as its horizontal coordinate,
+and recomputes the Pareto frontier. SVG and TSV products are written under
+`$DPL_EVOLVE_STATE_ROOT/paper_reproduction/figures/`, outside Git.
+
+The Ariane command replays four sources that missed the handoff mechanism and
+two Level-1-guided sources, then derives both group means from fresh metrics.
+It is diagnostic context, not a controlled ablation. Its paper-time ODB hash
+did not survive, so this path uses a pinned-flow reconstruction and does not
+claim bit-for-bit input identity.
+
+## 4. Run the ReviewDSE method
 
 The paper method first constructs frozen global evidence on three calibration
 instances (JPEG N45 UTIL=90, AES N45 UTIL=70, and SWERV N45 UTIL=60):
@@ -165,7 +201,8 @@ The exact paper launch is deliberately cost-gated:
 
 ```bash
 make plan-dse-paper
-make run-dse-paper ACKNOWLEDGE_LLM_COST=yes THREADS=10
+make run-dse-paper ACKNOWLEDGE_LLM_COST=yes DSE_RUN_PREFIX=review_run_01 THREADS=10
+make reproduce-figures FIGURE_SOURCE=fresh DSE_RUN_PREFIX=review_run_01
 ```
 
 The paper protocol is one GPT-5.5 xhigh Teacher, four GPT-5.4 xhigh Students,
@@ -175,7 +212,7 @@ targets that is about 19.35 billion logged and 0.90 billion active tokens. A
 reviewer is **not required** to pay for this full search. The artifact must,
 however, contain the runnable full-search path and all non-LLM replay paths.
 
-## 4. Reproduce Tables 5 and 6
+## 5. Reproduce Tables 5 and 6
 
 Download and verify the retained Table 6 package:
 
@@ -232,6 +269,12 @@ This aggregate command intentionally exits before the expensive Table 4 BO
 campaign while Table 5 recovery data is missing. Today, use `make reproduce-table4`
 and `make reproduce-table6` as the complete runnable result paths and report
 Table 5 as the known artifact gap.
+
+For the currently available subset, use:
+
+```bash
+PAPER_DATA_ROOT=/path/to/paper-data make reproduce-available-results THREADS=10
+```
 
 Table 5 reruns the legalization-selected candidate and its full-flow reference,
 then compares `H_lg` with downstream `H_ip`/`H_f`. Table 6 loads each exact
