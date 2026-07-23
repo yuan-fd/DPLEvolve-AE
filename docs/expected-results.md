@@ -27,8 +27,10 @@ Small floating-point/runtime differences can occur across compilers and hosts.
 A mismatch should be reported with the new metrics, input hash, tool revision,
 and host configuration; the reference file must not be edited to make it pass.
 
-For the checksum-pinned paper-time ODB (AES Nangate45), replayed absolute HPWL
-must remain within 0.05%. For the eight pinned-flow reconstructed inputs,
+For the checksum-pinned paper-time ODB (AES Nangate45), the rebuilt selected
+program's absolute HPWL must remain within the manifest's 0.5% numerical replay
+window. This covers cross-build numerical drift; the missing author-time linked
+binary prevents a bit-identical executable claim. For the eight pinned-flow reconstructed inputs,
 absolute HPWL drift is informational. `summarize-table4` instead requires each
 reported HPWL delta to be within 0.06 percentage point and each runtime ratio
 within 0.20 of the paper transcription by default. These are scientific
@@ -36,9 +38,11 @@ acceptance checks, not claims of bit-for-bit execution.
 
 ## Figures 4 and 5
 
-Figure 4 produces 99 data rows: nine cases × iterations 0..10. Each trajectory
-is best-so-far and therefore non-increasing in delta. Its final points agree
-with the Table 4 HPWL-selected track within the transcription tolerance.
+The retained Figure 4 logs produce 96 observed data rows. SWERV ASAP7 iterations
+9/10 and SWERV Nangate45 iteration 10 were not retained, and are listed in
+`figure4-missing-points.json` instead of being imputed. A complete fresh search
+produces the full 99-point grid (nine cases × iterations 0..10). Each observed
+trajectory is best-so-far and therefore non-increasing in delta.
 
 Figure 5 contains exactly 400 BO points for AES N45 and 400 for Ariane133 N45,
 plus available ReviewDSE candidates. Its horizontal field is runtime divided
@@ -75,8 +79,10 @@ The expected status counts are:
 | Negotiation | 1 | 4 | 4 |
 | ReviewDSE repair | 9 | 0 | 0 |
 
-`pass` means both OpenROAD and `check_placement` pass. `timeout` means the
-detailed-placement flow reaches the 7200-second cap. Table 6 focuses on legality
+`pass` means both OpenROAD and `check_placement` pass. Every fresh run uses the
+7200-second cap. The retained Ariane center-10 Negotiation row is an earlier
+600-second historical timeout; it remains unchanged in the archive and does
+not pretend to be a fresh 7200-second observation. Table 6 focuses on legality
 recovery; BPQUAD has no legal fixed-source reference for a QoR comparison. All
 nine ReviewDSE rows use one frozen evolved-negotiation source and the retained
 exact DEF/Verilog/SDC inputs.
@@ -88,10 +94,13 @@ OpenROAD binary, protected evaluator metrics, a Student knowledge card, and a
 Teacher review. The full profile uses one GPT-5.5 xhigh Teacher, four GPT-5.4
 xhigh Students, ten iterations per target, and the 2x runtime gate.
 
-Search is stochastic. Reproduction means executing the disclosed method and
-reporting its newly observed trajectory, not requiring an identical sequence of
-LLM proposals. Exact reconstruction of the author process additionally depends
-on the unrecovered author-time Level 1 breadth and frozen evidence.
+Search is stochastic. A fresh public Level 1 run freezes a Markdown packet and
+companion JSON manifest; Level 2 verifies their hash, protocol, case coverage,
+source starts, and launched Student counts before launch. Reproduction means executing
+the disclosed method and reporting its newly observed trajectory, not requiring
+an identical sequence of LLM proposals. Exact reconstruction of the author
+process additionally depends on the unrecovered author-time Level 1 breadth and
+frozen evidence.
 
 ## Diagnostic-only AES run
 

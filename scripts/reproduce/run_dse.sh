@@ -75,11 +75,19 @@ if [[ -n "${RUN_PREFIX}" ]]; then
 fi
 
 if [[ "${PROFILE}" == paper ]]; then
+  if [[ -z "${RUN_PREFIX}" && "${REPRO_DRY_RUN}" -eq 0 ]]; then
+    RUN_PREFIX="paper_dse_$(date +%Y%m%d_%H%M%S)"
+    args+=(--run-prefix "${RUN_PREFIX}")
+  fi
   if [[ "${ACKNOWLEDGE_COST}" != yes && "${REPRO_DRY_RUN}" -eq 0 ]]; then
     repro_die "paper DSE is about 2.15B logged tokens per target; rerun with ACKNOWLEDGE_LLM_COST=yes"
   fi
   if [[ "${REPRO_DRY_RUN}" -eq 0 && ! -f "${LEVEL1_EVIDENCE}" ]]; then
     repro_die "frozen Level 1 evidence is missing: ${LEVEL1_EVIDENCE}; run 'make reproduce-level1' first"
+  fi
+  if [[ "${REPRO_DRY_RUN}" -eq 0 ]]; then
+    repro_run "${DPL_EVOLVE_PYTHON}" "${SCRIPT_DIR}/verify_level1.py" \
+      --packet "${LEVEL1_EVIDENCE}"
   fi
   args+=(--level1-evidence "${LEVEL1_EVIDENCE}")
   args+=(--case-set evolve_9case --children 4 --iterations 10 --max-parallel 4 --max-concurrent-cases 3)
@@ -98,3 +106,15 @@ fi
 
 repro_note "launching ${PROFILE} ReviewDSE profile"
 repro_run "${DPL_EVOLVE_AGENT_ROOT}/experiments/launchers/run_evolve_9case_place_batch.sh" "${args[@]}"
+
+if [[ "${PROFILE}" == paper && "${REPRO_DRY_RUN}" -eq 0 ]]; then
+  batch_root="${DPL_EVOLVE_STATE_ROOT}/experiment_batches/${RUN_PREFIX}_${FLOW_VARIANT}"
+  repro_note "selecting HPWL/G_HR winners from the complete protected candidate population"
+  repro_run "${DPL_EVOLVE_PYTHON}" "${SCRIPT_DIR}/summarize_dse_campaign.py" \
+    --batch-root "${batch_root}" \
+    --orfs-root "${ORFS_ROOT}" \
+    --expected "${AE_ROOT}/artifacts/01-table4-qor/expected/table4.json" \
+    --output "${batch_root}/table4-search.tsv" \
+    --audit-output "${batch_root}/candidate-eligibility-audit.json"
+  repro_note "full-search summary: ${batch_root}/table4-search.tsv"
+fi

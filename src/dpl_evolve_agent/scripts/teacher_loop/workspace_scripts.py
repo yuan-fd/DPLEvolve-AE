@@ -187,6 +187,9 @@ SOURCE_BASE_RECORD={shlex.quote(str(paths.source_base_record))}
 SOURCE_COMMIT_RECORD={shlex.quote(str(paths.source_commit_record))}
 METRICS_SUMMARY_JSON={shlex.quote(str(paths.candidate_metrics_summary_json))}
 METRICS_SUMMARY_MD={shlex.quote(str(paths.candidate_metrics_summary_md))}
+BUILD_PROVENANCE_JSON="$ARTIFACT_DIR/candidate_build_provenance.json"
+EVALUATION_START_JSON="$ARTIFACT_DIR/candidate_evaluation_start.json"
+EVALUATION_PROVENANCE_JSON="$ARTIFACT_DIR/candidate_evaluation_provenance.json"
 IMPLEMENTATION_DIFF={shlex.quote(str(paths.implementation_diff))}
 KNOWLEDGE_CARD={shlex.quote(str(paths.knowledge_card))}
 THREADS={shlex.quote(str(threads))}
@@ -907,7 +910,12 @@ assert_no_git_index_lock
   --dpl-src "$DPL_SRC" \\
   --threads "$THREADS"
 test -x "$PRIVATE_BINARY"
+"$DPL_EVOLVE_PYTHON" "$AGENT_ROOT/scripts/evaluator/candidate_provenance.py" capture-build \
+  --source "$DPL_SRC" \
+  --binary "$PRIVATE_BINARY" \
+  --output "$BUILD_PROVENANCE_JSON"
 echo "[INFO] private_binary=$PRIVATE_BINARY"
+echo "[INFO] build_provenance=$BUILD_PROVENANCE_JSON"
 """,
     )
 
@@ -930,7 +938,12 @@ FRESH_BUILD_DIR="$VARIANT_ROOT/build_fresh"
   --dpl-src "$DPL_SRC" \\
   --threads "$THREADS"
 test -x "$PRIVATE_BINARY"
+"$DPL_EVOLVE_PYTHON" "$AGENT_ROOT/scripts/evaluator/candidate_provenance.py" capture-build \
+  --source "$DPL_SRC" \
+  --binary "$PRIVATE_BINARY" \
+  --output "$BUILD_PROVENANCE_JSON"
 echo "[INFO] private_binary=$PRIVATE_BINARY"
+echo "[INFO] build_provenance=$BUILD_PROVENANCE_JSON"
 """,
     )
 
@@ -945,6 +958,19 @@ ensure_dpl_git_repo
 assert_no_git_index_lock
 RUN_BASELINE="$AGENT_ROOT/baseline/run_baseline.sh"
 mkdir -p "$ARTIFACT_DIR"
+if [[ ! -f "$BUILD_PROVENANCE_JSON" ]]; then
+  echo "[ERROR] build provenance missing; run 10_build_variant.sh first: $BUILD_PROVENANCE_JSON" >&2
+  exit 2
+fi
+"$DPL_EVOLVE_PYTHON" "$AGENT_ROOT/scripts/evaluator/candidate_provenance.py" start-evaluation \
+  --source "$DPL_SRC" \
+  --binary "$PRIVATE_BINARY" \
+  --build-provenance "$BUILD_PROVENANCE_JSON" \
+  --protected-file "$RUN_BASELINE" \
+  --protected-file "$AGENT_ROOT/baseline/collect_metrics.py" \
+  --protected-file "$AGENT_ROOT/scripts/evaluator/report_candidate_metrics.py" \
+  --protected-file "$AGENT_ROOT/scripts/evaluator/candidate_eligibility.py" \
+  --output "$EVALUATION_START_JSON"
 set +e
 "$RUN_BASELINE" \\
   --line evolve_default \\
@@ -993,6 +1019,14 @@ if [[ ! -f "$METRICS_PATH" ]]; then
 fi
 echo "[INFO] metrics=$METRICS_PATH"
 "$SCRIPT_DIR/21_report_candidate_metrics.sh"
+"$DPL_EVOLVE_PYTHON" "$AGENT_ROOT/scripts/evaluator/candidate_provenance.py" finish-evaluation \
+  --source "$DPL_SRC" \
+  --binary "$PRIVATE_BINARY" \
+  --start-provenance "$EVALUATION_START_JSON" \
+  --metrics "$METRICS_PATH" \
+  --summary "$METRICS_SUMMARY_JSON" \
+  --output "$EVALUATION_PROVENANCE_JSON"
+echo "[INFO] evaluation_provenance=$EVALUATION_PROVENANCE_JSON"
 """,
     )
 

@@ -87,7 +87,7 @@ VARIANT_ROOT="${DPL_EVOLVE_STATE_ROOT}/paper_reproduction/table6_evolved_negotia
 VARIANT_SRC="${VARIANT_ROOT}/dpl_evolve"
 if [[ "${REPRO_DRY_RUN}" -eq 0 ]]; then
   mkdir -p "${RUN_ROOT}"
-  printf 'case\tpattern\trole\tstatus\texit_code\truntime_seconds\tmetrics_json\tlog\n' > "${RESULTS}"
+  printf 'case\tpattern\trole\tstatus\texit_code\truntime_seconds\thpwl_before_micron\thpwl_after_micron\tdelta_percent\tavg_disp_um\tmax_disp_um\tcheck_result\ttimeout_seconds\tmetrics_json\tlog\n' > "${RESULTS}"
 fi
 
 if [[ "${REPRO_DRY_RUN}" -eq 0 ]]; then
@@ -128,7 +128,9 @@ expand_platform_files() {
 run_one() {
   local case_id="$1" pattern="$2" design="$3" nickname="$4"
   local lefs_encoded="$5" libs_encoded="$6" timeout_seconds="$7" role="$8"
-  local binary eval_dir stage_dir log metrics status rc runtime additional_lefs lib_files
+  local binary eval_dir stage_dir log metrics summary status rc normalized_rc
+  local runtime hpwl_before hpwl_after delta avg_disp max_disp check_result line
+  local additional_lefs lib_files
   stage_dir="${RUN_ROOT}/inputs/${case_id}/${pattern}"
   eval_dir="${RUN_ROOT}/runs/${case_id}/${pattern}/${role}"
   log="${eval_dir}/openroad.log"
@@ -143,13 +145,19 @@ run_one() {
     repro_note "would decompress ${case_id}/${pattern} cutrows.def.gz and cutrows.v.gz"
   fi
   if [[ "${role}" == reviewdse ]]; then binary="${EVOLVED_OPENROAD}"; else binary="${BASE_OPENROAD}"; fi
-  repro_shell_join timeout "${timeout_seconds}" env \
+  case "${role}" in
+    diamond) line=openroad_dpl_flow ;;
+    negotiation) line=openroad_dpl_negotiation ;;
+    reviewdse) line=evolve_default ;;
+  esac
+  summary="${eval_dir}/legalize_summary.json"
+  repro_shell_join timeout --kill-after=30s "${timeout_seconds}s" env \
     FLOW_HOME="${ORFS_ROOT}/flow" \
     PLATFORM_DIR="${ORFS_ROOT}/flow/platforms/nangate45" \
     CUTROW_DEF="${stage_dir}/cutrows.def" \
     CUTROW_VERILOG="${stage_dir}/cutrows.v" \
     INPUT_SDC="${PAPER_DATA_ROOT}/table6/cases/${case_id}/handoff.sdc" \
-    EVAL_DIR="${eval_dir}" METRICS_JSON="${metrics}" LEGALIZER_LINE="${role}" \
+    EVAL_DIR="${eval_dir}" METRICS_JSON="${metrics}" LEGALIZER_LINE="${line}" \
     CUTROW_CASE_ID="${case_id}" CUTROW_PATTERN_ID="${pattern}" \
     DESIGN_NAME="${design}" DESIGN_NICKNAME="${nickname}" PLATFORM=nangate45 \
     ADDITIONAL_LEFS="${additional_lefs}" LIB_FILES="${lib_files}" \
@@ -157,13 +165,13 @@ run_one() {
     "${SCRIPT_DIR}/openroad_legalize_cutrow.tcl"
   if [[ "${REPRO_DRY_RUN}" -eq 1 ]]; then return; fi
   set +e
-  timeout "${timeout_seconds}" env \
+  timeout --kill-after=30s "${timeout_seconds}s" env \
     FLOW_HOME="${ORFS_ROOT}/flow" \
     PLATFORM_DIR="${ORFS_ROOT}/flow/platforms/nangate45" \
     CUTROW_DEF="${stage_dir}/cutrows.def" \
     CUTROW_VERILOG="${stage_dir}/cutrows.v" \
     INPUT_SDC="${PAPER_DATA_ROOT}/table6/cases/${case_id}/handoff.sdc" \
-    EVAL_DIR="${eval_dir}" METRICS_JSON="${metrics}" LEGALIZER_LINE="${role}" \
+    EVAL_DIR="${eval_dir}" METRICS_JSON="${metrics}" LEGALIZER_LINE="${line}" \
     CUTROW_CASE_ID="${case_id}" CUTROW_PATTERN_ID="${pattern}" \
     DESIGN_NAME="${design}" DESIGN_NICKNAME="${nickname}" PLATFORM=nangate45 \
     ADDITIONAL_LEFS="${additional_lefs}" LIB_FILES="${lib_files}" \
@@ -171,19 +179,47 @@ run_one() {
     "${SCRIPT_DIR}/openroad_legalize_cutrow.tcl" > "${log}" 2>&1
   rc=$?
   set -e
-  if [[ "${rc}" -eq 124 ]]; then
-    status=timeout
-    runtime="${timeout_seconds}"
-  elif [[ -f "${metrics}" ]]; then
-    read -r status runtime < <("${DPL_EVOLVE_PYTHON}" -c \
-      'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("status","invalid"), d.get("runtime_seconds",""))' "${metrics}")
-    [[ "${status}" == ok ]] && status=pass || status=fail
-  else
-    status=fail
-    runtime=""
-  fi
-  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-    "${case_id}" "${pattern}" "${role}" "${status}" "${rc}" "${runtime}" "${metrics}" "${log}" >> "${RESULTS}"
+  normalized_rc="${rc}"
+  if [[ "${rc}" -eq 124 || "${rc}" -eq 137 ]]; then normalized_rc=124; fi
+  "${DPL_EVOLVE_PYTHON}" "${SCRIPT_DIR}/ensure_cutrow_summary.py" \
+    --summary "${summary}" --log "${log}" --eval-dir "${eval_dir}" \
+    --case-id "${case_id}" --pattern-id "${pattern}" --line "${line}" \
+    --rc "${normalized_rc}" --timeout "${timeout_seconds}"
+  "${DPL_EVOLVE_PYTHON}" "${SCRIPT_DIR}/collect_cutrow_metrics.py" \
+    --summary "${summary}" \
+    --before "${eval_dir}/before.tsv" --after "${eval_dir}/after.tsv" \
+    --legalize-log "${log}" --output "${metrics}"
+  mapfile -t parsed < <("${DPL_EVOLVE_PYTHON}" - "${metrics}" <<'PY'
+import json, sys
+data = json.load(open(sys.argv[1], encoding="utf-8"))
+hpwl = data.get("hpwl") or {}
+disp = data.get("displacement") or {}
+leg = data.get("legality") or {}
+status = data.get("status", "invalid")
+if status == "ok" and hpwl.get("after_micron") is None:
+    status = "invalid_metrics"
+values = [
+    status, data.get("runtime_seconds"), hpwl.get("before_micron"),
+    hpwl.get("after_micron"), hpwl.get("delta_percent"),
+    disp.get("average_displacement_micron"), disp.get("max_displacement_micron"),
+    leg.get("check_result"),
+]
+for value in values:
+    print("" if value is None else str(value).replace("\t", " ").replace("\n", " "))
+PY
+  )
+  status="${parsed[0]}"; runtime="${parsed[1]}"; hpwl_before="${parsed[2]}"
+  hpwl_after="${parsed[3]}"; delta="${parsed[4]}"; avg_disp="${parsed[5]}"
+  max_disp="${parsed[6]}"; check_result="${parsed[7]}"
+  case "${status}" in
+    ok) status=pass ;;
+    timeout) status=timeout ;;
+    *) status=fail ;;
+  esac
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    "${case_id}" "${pattern}" "${role}" "${status}" "${rc}" "${runtime}" \
+    "${hpwl_before}" "${hpwl_after}" "${delta}" "${avg_disp}" "${max_disp}" \
+    "${check_result}" "${timeout_seconds}" "${metrics}" "${log}" >> "${RESULTS}"
   repro_note "Table 6 ${case_id}/${pattern}/${role}: ${status}"
 }
 

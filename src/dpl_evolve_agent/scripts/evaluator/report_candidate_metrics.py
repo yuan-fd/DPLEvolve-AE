@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from candidate_eligibility import metric_eligibility
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -247,7 +249,11 @@ def build_summary(
     )
 
     violations = str(legality.get("placement_violations", ""))
-    legality_status = "clean" if violations.strip() == "" else violations
+    legality_status = (
+        "clean"
+        if violations.strip().lower() in {"", "0", "clean", "none"}
+        else violations
+    )
 
     check_report_path = resolve_path(metrics_path.parent, legality.get("check_report"))
     if check_report_path is not None and not check_report_path.is_file():
@@ -260,6 +266,7 @@ def build_summary(
         "engine": manifest.get("engine"),
         "case_report_dir": str(metrics_path.parent),
         "canonical": {
+            "hpwl_source": hpwl.get("source"),
             "final_hpwl_micron": as_float(hpwl.get("after_micron")),
             "hpwl_before_micron": as_float(hpwl.get("before_micron")),
             "hpwl_delta_micron": as_float(hpwl.get("delta_micron")),
@@ -300,6 +307,7 @@ def build_summary(
             legalize_summary.get("status") if isinstance(legalize_summary, dict) else None
         ),
     }
+    summary["eligibility"] = metric_eligibility(summary)
     return summary
 
 

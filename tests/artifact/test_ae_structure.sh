@@ -61,6 +61,7 @@ required_files=(
   scripts/reproduce/run_baselines.sh
   scripts/reproduce/run_bo.sh
   scripts/reproduce/run_level1.sh
+  scripts/reproduce/verify_level1.py
   scripts/reproduce/run_dse.sh
   scripts/reproduce/replay_selected.sh
   scripts/reproduce/reproduce_table5.sh

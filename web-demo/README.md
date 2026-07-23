@@ -40,6 +40,12 @@ experiments.
 Full BO is 3,600 placements. Full ReviewDSE search is not exposed as a one-click
 browser action because it requires an explicit token-cost acknowledgement; use
 `make plan-dse-paper` and the guarded terminal command from the root README.
+The retained Figure 4 source has 96 observed points and emits a machine-readable
+three-point gap list. Level 1 is a fresh public reconstruction whose Markdown
+packet and JSON manifest are validated before Level 2; the author-time packet
+and exact breadth were not retained. Every fresh Table 6 job uses 7200 seconds,
+while the archived Ariane center-10 Negotiation row truthfully retains its
+earlier 600-second timeout.
 
 ## Fixed API task names
 

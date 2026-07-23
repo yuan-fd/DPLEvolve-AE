@@ -23,7 +23,7 @@ only a toolchain diagnostic and is not a paper experiment.
 | Table 4 ReviewDSE-GHR | `make replay-reviewdse TRACK=ghr` | Builds and runs the nine runtime-aware selected source trees |
 | Table 5 | `make reproduce-table5` | Rebuilds AES/JPEG inputs and replays six candidates after the missing sources and SWERV DENSE_2 config are recovered |
 | Table 6 | `make reproduce-table6` | Replays Diamond, Negotiation, and one frozen ReviewDSE source on nine exact cut-row DEF/V/SDC inputs |
-| Figure 4 | `make reproduce-figure4` | Redraws the 9 × 11 best-so-far trajectories from checksummed author-run logs |
+| Figure 4 | `make reproduce-figure4` | Redraws the 96 retained best-so-far points and reports the three unretained points without inventing values |
 | Figure 5 | `make reproduce-figure5` | Recomputes both BO/ReviewDSE Pareto panels using runtime ratio on the x-axis |
 | Ariane diagnostic | `make reproduce-ariane-diagnostic` | Rebuilds and replays the six exact source trees behind the warm-start diagnostic |
 | ReviewDSE Level 1 | `make reproduce-level1` | Runs the three calibration instances and freezes reviewed mechanism/source-start evidence |
@@ -139,15 +139,20 @@ from the new default `metrics.json`, BO `best.json`, and replay `results.tsv`.
 Regenerated ODBs are used with the stable `paper9_place` flow variant. Exact
 paper-time ODBs can instead be installed under the variant in the selected
 program manifest. The AES Nangate45 input is checksum-pinned; input checksums
-for the other eight cases still need to be added before claiming bit-exact
-paper-input identity.
+for the other eight cases were not retained. This pins the AES input, not the
+whole executable: the author-time linked winner binary and complete compiler
+fingerprint were also not retained, so no selected-source run is presented as
+a bit-for-bit binary replay.
 
 This does not prevent scientific reproduction. For those eight cases the
 runner requires a complete, legal fresh result, reports absolute-HPWL drift as
 diagnostic information, and lets `summarize-table4` judge relative deltas and
-runtime ratios. The default acceptance windows are 0.06 percentage point for
-HPWL delta and 0.20 for runtime ratio. Only checksum-pinned AES Nangate45 uses
-the strict 0.05% absolute-HPWL replay check.
+runtime ratios. The default Table 4 acceptance windows are 0.06 percentage
+point for HPWL delta and 0.20 for runtime ratio. AES Nangate45 additionally
+checks its exact input digest and requires the rebuilt winner's final HPWL to
+be within the manifest's 0.5% window. This is a numerical reproduction check,
+not a claim that a newly compiled binary is bit-identical to the missing
+author-time winner executable.
 
 ## 3. Reproduce Figures 4/5 and the Ariane diagnostic
 
@@ -157,11 +162,15 @@ make check-ariane-diagnostic-sources
 make reproduce-ariane-diagnostic THREADS=10
 ```
 
-Figure 4 emits exactly 99 normalized points: nine cases and iteration 0 through
-10, with best-so-far carry-forward. Figure 5 requires 400 BO trials for each of
-AES N45 and Ariane133 N45, uses `runtime_ratio` as its horizontal coordinate,
-and recomputes the Pareto frontier. SVG and TSV products are written under
-`$DPL_EVOLVE_STATE_ROOT/paper_reproduction/figures/`, outside Git.
+The retained Figure 4 source contains 96 observed points. SWERV ASAP7
+iterations 9/10 and SWERV Nangate45 iteration 10 were not retained; the script
+does not impute them and writes the exact gap list to
+`figure4-missing-points.json`. A complete fresh nine-case campaign can produce
+all 99 points (nine cases × iterations 0..10). Figure 5 requires 400 BO trials
+for each of AES N45 and Ariane133 N45, uses `runtime_ratio` as its horizontal
+coordinate, and recomputes the Pareto frontier. SVG, TSV, and gap metadata are
+written under `$DPL_EVOLVE_STATE_ROOT/paper_reproduction/figures/`, outside
+Git.
 
 The Ariane command replays four sources that missed the handoff mechanism and
 two Level-1-guided sources, then derives both group means from fresh metrics.
@@ -179,12 +188,14 @@ make plan-level1
 make reproduce-level1 ACKNOWLEDGE_LLM_COST=yes LEVEL1_CHILDREN=50 THREADS=10
 ```
 
-This generates a read-only Level 1 packet that the Level 2 launcher copies into
-every target context. The main paper does not disclose Level 1 Student breadth;
-50 is the framework's documented public breadth-calibration profile, not an
-assertion about the unrecovered author run. The author-time value must be added
-to the AE appendix/configuration before claiming exact search-process
-reproduction.
+This generates `level1_evidence.md` plus a machine-readable
+`level1_evidence.json`. Before the paper-profile Level 2 launch, the launcher
+verifies the packet hash, all three cases and source starts, the one-iteration
+protocol, model profiles, 2× gate, and launched Student counts. The main paper
+does not disclose Level 1 Student breadth, and the author-time packet was not
+retained. Therefore 50 Students/case is the documented public reconstruction
+profile, not an assertion that the stochastic author-time Level 1 process is
+being replayed exactly.
 
 A small run exercises the actual method rather than inspecting a final binary:
 
@@ -197,7 +208,7 @@ source edit, builds a private OpenROAD variant, evaluates the complete flow,
 and returns the evidence to Teacher review. It requires a working Codex/API
 configuration and incurs model usage.
 
-The exact paper launch is deliberately cost-gated:
+The paper-profile Level 2 launch is deliberately cost-gated:
 
 ```bash
 make plan-dse-paper
@@ -236,10 +247,13 @@ make reproduce-table6 THREADS=10
 ```
 
 This executes 27 OpenROAD jobs from the retained cut-row DEF/Verilog/SDC data,
-with the paper's 7200-second cap on every legalizer. The same single evolved
-source is rebuilt once and replayed on all nine patterns. Reviewers do not need
-Innovus: the exact `cutRow` products are inputs, while all replay execution is
-OpenROAD.
+with a 7200-second cap on every fresh legalizer execution. The retained Table 6
+record for Ariane center-10 Negotiation came from an earlier 600-second run and
+is preserved as historical evidence rather than rewritten to look like a
+7200-second observation. A fresh rerun reports the new 7200-second-cap outcome.
+The same single evolved source is rebuilt once and replayed on all nine
+patterns. Reviewers do not need Innovus: the exact `cutRow` products are inputs,
+while all replay execution is OpenROAD.
 
 Run one real row first if desired:
 

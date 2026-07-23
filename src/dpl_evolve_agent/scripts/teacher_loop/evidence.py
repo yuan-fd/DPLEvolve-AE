@@ -14,6 +14,10 @@ from typing import Any, Callable
 
 from runtime_paths import clean_subprocess_env
 from scripts.repo.case_registry import get_case
+from scripts.evaluator.candidate_provenance import (
+    file_sha256,
+    source_ref_fingerprint,
+)
 from scripts.teacher_loop.common import (
     CandidateArtifacts,
     ChildRound,
@@ -394,10 +398,21 @@ def candidate_artifact_problems(
         else 0
     )
     private_binary = _candidate_private_binary(round_dir, artifacts)
+    artifact_dir = artifacts.implementation_diff.parent
+    source_commit_path = artifact_dir / "source_commit.json"
+    metrics_summary_path = artifact_dir / "candidate_metrics_summary.json"
+    build_provenance_path = artifact_dir / "candidate_build_provenance.json"
+    evaluation_provenance_path = artifact_dir / "candidate_evaluation_provenance.json"
+    metrics_summary = load_json(metrics_summary_path) or {}
+    build_provenance = load_json(build_provenance_path) or {}
+    evaluation_provenance = load_json(evaluation_provenance_path) or {}
+    source_commit = load_json(source_commit_path) or {}
 
     problems: list[str] = []
     if not usage_path.exists():
         problems.append("missing_usage_summary")
+    elif returncode != 0:
+        problems.append("codex_operation_failed")
     if agent_message_count <= 0:
         problems.append("no_agent_message")
     if last_message_size <= 0 and not str(usage.get("last_agent_message") or "").strip():
@@ -416,13 +431,64 @@ def candidate_artifact_problems(
         problems.append("missing_implementation_diff")
     elif diff_size <= 0:
         problems.append("empty_implementation_diff")
+    if not artifacts.knowledge_card.exists():
+        problems.append("missing_knowledge_card")
+    elif knowledge_size <= 0:
+        problems.append("empty_knowledge_card")
+    if not source_commit_path.exists():
+        problems.append("missing_source_commit_record")
+    if build_provenance.get("status") != "complete":
+        problems.append("build_provenance_incomplete")
+    if evaluation_provenance.get("status") != "verified":
+        problems.append("evaluation_provenance_unverified")
+    metric_verdict = metrics_summary.get("eligibility") or {}
+    if not metric_verdict.get("eligible"):
+        metric_problems = metric_verdict.get("problems") or []
+        if metric_problems:
+            problems.extend(f"metric_{item}" for item in metric_problems)
+        else:
+            problems.append("missing_metric_eligibility_verdict")
     if not candidate.metrics_path.exists():
         problems.append("missing_metrics_json")
     if not is_clean_placement(candidate):
         problems.append("placement_not_clean")
     if candidate.hpwl_after is None:
         problems.append("missing_hpwl_after")
-    return problems
+    if candidate.metrics_path.is_file() and evaluation_provenance:
+        expected_metrics_hash = evaluation_provenance.get("metrics_sha256")
+        if not expected_metrics_hash or file_sha256(candidate.metrics_path) != expected_metrics_hash:
+            problems.append("metrics_provenance_mismatch")
+        if evaluation_provenance.get("metrics_run_tag") != candidate.run_tag:
+            problems.append("metrics_run_tag_mismatch")
+    if (
+        artifacts.source_repo.exists()
+        and artifacts.source_ref
+        and git_ref_exists(artifacts.source_repo, artifacts.source_ref)
+        and evaluation_provenance.get("source_fingerprint")
+    ):
+        try:
+            ref_fingerprint = source_ref_fingerprint(
+                artifacts.source_repo, artifacts.source_ref
+            )
+        except (OSError, subprocess.SubprocessError):
+            problems.append("source_ref_fingerprint_failed")
+        else:
+            if ref_fingerprint != evaluation_provenance.get("source_fingerprint"):
+                problems.append("evaluated_source_ref_mismatch")
+    if source_commit and artifacts.source_ref and artifacts.source_repo.exists():
+        resolved = subprocess.run(
+            ["git", "-C", str(artifacts.source_repo), "rev-parse", artifacts.source_ref],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            env=clean_subprocess_env(),
+        )
+        if (
+            resolved.returncode != 0
+            or resolved.stdout.strip() != str(source_commit.get("source_commit") or "")
+        ):
+            problems.append("source_commit_record_mismatch")
+    return list(dict.fromkeys(problems))
 
 
 def candidate_artifact_status_text(problems: list[str]) -> str:

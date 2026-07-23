@@ -9,6 +9,7 @@ child prompts, and optionally launches `codex exec` workers through the existing
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import shlex
 import subprocess
@@ -1212,6 +1213,27 @@ def main(argv: list[str] | None = None) -> int:
                 "student_reasoning_effort": student_reasoning_effort,
                 "resume_sessions": args.resume_sessions,
                 "student_runtime_multiplier": args.student_runtime_multiplier,
+                "level1_evidence_source": (
+                    None if level1_evidence_source is None else str(level1_evidence_source)
+                ),
+                "level1_evidence_sha256": (
+                    None
+                    if level1_evidence_source is None
+                    else hashlib.sha256(level1_evidence_source.read_bytes()).hexdigest()
+                ),
+                "baseline_metrics": {
+                    line: (
+                        None
+                        if last_metrics is None or last_metrics.get(line) is None
+                        else {
+                            "metrics_path": str(last_metrics[line].metrics_path),
+                            "hpwl_after": last_metrics[line].hpwl_after,
+                            "runtime_seconds": last_metrics[line].runtime_seconds,
+                            "violations": last_metrics[line].violations,
+                        }
+                    )
+                    for line in CANONICAL_LINES
+                },
                 "calibration_mode": args.calibration_mode,
                 "compact_after_first": True,
                 "stable_student_workspaces": True,

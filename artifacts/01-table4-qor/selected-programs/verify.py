@@ -28,6 +28,17 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def placement_is_clean(value: object) -> bool:
+    """Recognize the clean values emitted by the pinned OpenROAD check command.
+
+    A successful check with no violations returns an empty Tcl string and does
+    not create a report file.  Non-empty diagnostics remain failures.
+    """
+    if value is None:
+        return False
+    return str(value).strip().lower() in {"", "0", "0.0", "clean", "none"}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, required=True)
@@ -125,21 +136,28 @@ def main() -> int:
         if metrics.get("status") != "ok":
             raise SystemExit(f"[ERROR] replay metrics status is not ok: {metrics_path}")
         violations = (metrics.get("legality") or {}).get("placement_violations")
-        if str(violations) not in ("0", "0.0"):
+        if not placement_is_clean(violations):
             raise SystemExit(f"[ERROR] replay is not explicitly legal: {metrics_path}")
 
         actual_hpwl = float(row["hpwl_after_micron"])
         drift_percent = abs(actual_hpwl - track["expected_hpwl"]) / track["expected_hpwl"] * 100
         if item.get("input_odb_sha256"):
-            if drift_percent > 0.05:
+            tolerance = float(
+                manifest["replay_contract"]["rebuilt_hpwl_relative_tolerance_percent"]
+            )
+            if drift_percent > tolerance:
                 raise SystemExit(
-                    f"[ERROR] checksum-pinned replay HPWL drift {drift_percent:.4f}% "
-                    "exceeds 0.05% tolerance"
+                    f"[ERROR] input-checksum-pinned rebuilt replay HPWL drift "
+                    f"{drift_percent:.4f}% exceeds {tolerance:.4f}% tolerance"
                 )
             print(
-                f"[PASS] {args.case}/{args.objective} checksum-pinned replay "
+                f"[PASS] {args.case}/{args.objective} input-checksum-pinned rebuilt replay "
                 f"HPWL={actual_hpwl:.1f}; archived={track['expected_hpwl']:.1f}; "
-                f"drift={drift_percent:.4f}%"
+                f"drift={drift_percent:.4f}% (limit={tolerance:.4f}%)"
+            )
+            print(
+                "[INFO] The author-time linked winner binary/build fingerprint was not "
+                "retained; this is numerical reproduction, not bit-for-bit replay."
             )
         else:
             print(

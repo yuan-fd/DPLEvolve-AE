@@ -295,6 +295,25 @@ else
   "${make_base[@]}" "${input_stage}"
 fi
 
+# Freeze the exact protected evaluator, input ODB, and candidate binary before
+# OpenROAD starts.  Verification below runs after placement and before metrics
+# are assembled, so a changed input/evaluator can never produce an eligible
+# fresh result.
+run_provenance_cmd=(
+  "${DPL_EVOLVE_PYTHON}"
+  "${SCRIPT_DIR}/../scripts/evaluator/run_provenance.py"
+  --manifest "$(flow_abs "${manifest_json}")"
+  --input-snapshot "${input_snapshot_abs}"
+  --protected-file "${BASH_SOURCE[0]}"
+  --protected-file "${detail_tcl}"
+  --protected-file "${SCRIPT_DIR}/collect_metrics.py"
+  --protected-file "${SCRIPT_DIR}/report_legalized_metrics.tcl"
+)
+if [[ -n "${OPENROAD_EXE:-}" ]]; then
+  run_provenance_cmd+=(--openroad-binary "${OPENROAD_EXE}")
+fi
+"${run_provenance_cmd[@]}"
+
 before_snapshot="${run_dir}/before.tsv"
 after_snapshot="${run_dir}/after.tsv"
 legalize_summary_json="${report_dir}/legalize_summary.json"
@@ -386,6 +405,10 @@ path.parent.mkdir(parents=True, exist_ok=True)
 path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
 fi
+
+"${DPL_EVOLVE_PYTHON}" "${SCRIPT_DIR}/../scripts/evaluator/run_provenance.py" \
+  --manifest "$(flow_abs "${manifest_json}")" \
+  --verify
 
 collect_args=(
   --before "${before_snapshot}"

@@ -62,6 +62,11 @@ make plan-dse-paper
 The small run uses real model calls and source edits. `plan-dse-paper` prints
 the full nine-case protocol without spending tokens. A complete search requires
 `ACKNOWLEDGE_LLM_COST=yes`; see the root README for reported token budgets.
+The fresh Level 1 command creates `level1_evidence.md` and
+`level1_evidence.json`; the paper-profile Level 2 launcher validates both before
+it starts. This is a runnable public reconstruction. The author-time Level 1
+packet and exact Student breadth were not retained, so it is not described as
+an exact replay of the original stochastic calibration.
 
 ## Table 5/6 data
 
@@ -73,6 +78,10 @@ make fetch-table6-data
 make check-table6-data
 make reproduce-table6 THREADS=10
 ```
+
+All 27 fresh executions use a 7200-second cap. One retained historical row,
+Ariane center-10 Negotiation, records an earlier 600-second timeout and remains
+unchanged for provenance; fresh output records the newly observed result.
 
 Table 5's ODBs were deleted. AES/JPEG generation recipes survive, but the
 untracked SWERV `config_dense2.mk` and all six exact source commits are

@@ -1,6 +1,12 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "release_normalization": "Developer workspace prefixes in non-functional messages.txt path annotations were replaced with <ORIGINAL_WORKSPACE>; source code was not changed.",
+  "replay_contract": {
+    "rebuilt_hpwl_relative_tolerance_percent": 0.5,
+    "pinned_material": "Frozen source-tree digests; AES Nangate45 paper-time input ODB digest; base EDA revisions.",
+    "not_retained": "Author-time linked winner-variant binaries and complete compiler/build fingerprints.",
+    "interpretation": "A fresh run is a source-and-input-pinned numerical reproduction, not a bit-for-bit binary replay. The tolerance is evaluated against the archived final HPWL."
+  },
   "flow_variant": "place_batch_20260421_220319",
   "input_stage": "3_4_place_resized.odb",
   "constraint_stage": "2_floorplan.sdc",

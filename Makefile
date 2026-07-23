@@ -35,7 +35,7 @@ export DPL_EVOLVE_PYTHON THREADS
 .PHONY: reproduce-figure4 reproduce-figure5 reproduce-figures
 .PHONY: check-ariane-diagnostic-sources reproduce-ariane-diagnostic
 .PHONY: reproduce-available-results reproduce-paper-results reproduce-paper-search
-.PHONY: run-dse-small plan-dse-paper run-dse-paper paper-data-check paper-data-check-available
+.PHONY: run-dse-small plan-dse-paper run-dse-paper summarize-dse-paper paper-data-check paper-data-check-available
 .PHONY: fetch-table6-data check-table5-data check-table6-data
 .PHONY: audit-archive evidence table4 table5 table6
 .PHONY: toolchain-smoke smoke smoke-check doctor-smoke
@@ -78,6 +78,7 @@ help:
 	@echo "  make run-dse-small CASE=aes_nangate45  Real 1-Student/1-iteration run"
 	@echo "  make plan-dse-paper         Print exact 9-case paper launch; no API calls"
 	@echo "  make run-dse-paper ACKNOWLEDGE_LLM_COST=yes"
+	@echo "  make summarize-dse-paper DSE_RUN_PREFIX=NAME"
 	@echo "  make reproduce-paper-search ACKNOWLEDGE_LLM_COST=yes"
 	@echo ""
 	@echo "Supporting checks (not paper reproduction):"
@@ -136,6 +137,7 @@ summarize-table4:
 	  --state-root "$(DPL_EVOLVE_STATE_ROOT)" \
 	  --flow-variant paper9_place \
 	  --selected-manifest "$(ARTIFACTS_DIR)/01-table4-qor/selected-programs/manifest.json" \
+	  $(if $(DSE_RUN_PREFIX),--dse-summary "$(DPL_EVOLVE_STATE_ROOT)/experiment_batches/$(DSE_RUN_PREFIX)_paper9_place/table4-search.tsv",) \
 	  --expected "$(ARTIFACTS_DIR)/01-table4-qor/expected/table4.json" \
 	  --delta-tolerance-pp "$(TABLE4_DELTA_TOLERANCE_PP)" \
 	  --runtime-ratio-tolerance "$(TABLE4_RUNTIME_RATIO_TOLERANCE)" \
@@ -233,6 +235,15 @@ plan-dse-paper:
 
 run-dse-paper:
 	@ACKNOWLEDGE_LLM_COST="$(ACKNOWLEDGE_LLM_COST)" DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(REPRO_SCRIPTS)/run_dse.sh" --profile paper --threads "$(THREADS)"
+
+summarize-dse-paper:
+	@if [[ -z "$(DSE_RUN_PREFIX)" ]]; then echo "[ERROR] DSE_RUN_PREFIX is required" >&2; exit 2; fi
+	@"$(DPL_EVOLVE_PYTHON)" "$(REPRO_SCRIPTS)/summarize_dse_campaign.py" \
+	  --batch-root "$(DPL_EVOLVE_STATE_ROOT)/experiment_batches/$(DSE_RUN_PREFIX)_paper9_place" \
+	  --orfs-root "$(ORFS_ROOT)" \
+	  --expected "$(ARTIFACTS_DIR)/01-table4-qor/expected/table4.json" \
+	  --output "$(DPL_EVOLVE_STATE_ROOT)/experiment_batches/$(DSE_RUN_PREFIX)_paper9_place/table4-search.tsv" \
+	  --audit-output "$(DPL_EVOLVE_STATE_ROOT)/experiment_batches/$(DSE_RUN_PREFIX)_paper9_place/candidate-eligibility-audit.json"
 
 paper-data-check-available:
 	@$(MAKE) check-table6-data

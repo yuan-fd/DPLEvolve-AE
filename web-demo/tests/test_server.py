@@ -137,6 +137,9 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("explicit relative-result tolerances", html)
         self.assertIn("reproduce-ariane-diagnostic", html)
         self.assertIn("reproduce-available-results", html)
+        self.assertIn("96 observed points", html)
+        self.assertIn("hashed Markdown/JSON evidence packet", html)
+        self.assertIn("7200-second cap", html)
 
     def test_ui_exposes_every_fixed_reviewer_task(self):
         html = (WEB_DEMO_ROOT / "templates" / "index.html").read_text(encoding="utf-8")

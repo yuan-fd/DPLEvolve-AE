@@ -24,9 +24,12 @@ bash artifacts/01-table4-qor/selected-programs/run.sh \
 The launcher verifies the selected source digest, requires the requested ODB,
 builds a private OpenROAD variant, runs the full protected trajectory, and
 compares the new HPWL with the archived selected result. AES Nangate45 also
-checks the retained paper-time ODB digest. The other eight ODBs are generated
-from pinned revisions but lack retained paper-time digests, so those runs are
-fresh revision-pinned replays rather than bit-identity proofs.
+checks the retained paper-time ODB digest and the machine-readable rebuilt-HPWL
+tolerance in `manifest.json`. The author-time linked winner binaries and full
+compiler fingerprints were not retained, so this is numerical reproduction,
+not bit-for-bit binary replay. The other eight ODBs are generated from pinned
+revisions but lack retained paper-time digests; their absolute HPWL drift is
+reported as diagnostic information rather than an identity proof.
 
 The stable all-case interface is:
 

@@ -299,7 +299,9 @@ class ReproductionContractTests(unittest.TestCase):
                 metrics = root / "metrics.json"
                 metrics.write_text(json.dumps({
                     "status": "ok",
-                    "legality": {"placement_violations": 0},
+                    # Clean pinned OpenROAD checks return an empty Tcl string
+                    # and do not create an otherwise empty report file.
+                    "legality": {"placement_violations": ""},
                 }))
                 results = root / "results.tsv"
                 fields = [
@@ -341,10 +343,23 @@ class ReproductionContractTests(unittest.TestCase):
         pinned = next(
             item for item in manifest["programs"] if item["case"] == "aes_nangate45"
         )
+        rebuilt_tolerance = manifest["replay_contract"][
+            "rebuilt_hpwl_relative_tolerance_percent"
+        ]
+        within_tolerance_hpwl = pinned["tracks"]["hpwl"]["expected_hpwl"] * (
+            1.0 + 0.9 * rebuilt_tolerance / 100.0
+        )
+        within_tolerance_result = run("aes_nangate45", within_tolerance_hpwl)
+        self.assertEqual(
+            within_tolerance_result.returncode, 0, within_tolerance_result.stdout
+        )
+        self.assertIn("input-checksum-pinned rebuilt replay", within_tolerance_result.stdout)
+        self.assertIn("not bit-for-bit replay", within_tolerance_result.stdout)
+
         pinned_hpwl = pinned["tracks"]["hpwl"]["expected_hpwl"] * 1.01
         pinned_result = run("aes_nangate45", pinned_hpwl)
         self.assertNotEqual(pinned_result.returncode, 0)
-        self.assertIn("checksum-pinned replay HPWL drift", pinned_result.stdout)
+        self.assertIn("input-checksum-pinned rebuilt replay HPWL drift", pinned_result.stdout)
 
     def test_table5_summary_derives_counterexamples_from_fresh_rows(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -366,23 +381,90 @@ class ReproductionContractTests(unittest.TestCase):
     def test_table6_summary_classifies_fresh_status_and_legality(self):
         contract_path = ROOT / "configs/reproduction/paper-experiments.json"
         contract = json.loads(contract_path.read_text())
+        def reference_rows(name):
+            with (ROOT / f"artifacts/03-table6-cutrow/inputs/{name}").open() as stream:
+                return {
+                    (row["case"], row["pattern"]): row
+                    for row in csv.DictReader(stream, delimiter="\t")
+                }
+
+        review_reference = reference_rows("reviewdse.tsv")
+        fixed_reference = reference_rows("fixed_routes.tsv")
+        case_labels = {
+            "ariane133_placebatch": "Ariane133 N45",
+            "swerv_wrapper_dense2": "SWERV dense N45",
+            "bp_quad_placebatch": "BPQUAD",
+        }
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             results = root / "results.tsv"
-            fields = ["case", "pattern", "role", "status", "exit_code", "runtime_seconds", "metrics_json", "log"]
+            fields = [
+                "case", "pattern", "role", "status", "exit_code", "runtime_seconds",
+                "hpwl_before_micron", "hpwl_after_micron", "delta_percent",
+                "avg_disp_um", "max_disp_um", "check_result", "timeout_seconds",
+                "metrics_json", "log",
+            ]
             with results.open("w", newline="") as stream:
                 writer = csv.DictWriter(stream, fieldnames=fields, delimiter="\t")
                 writer.writeheader()
                 for spec in contract["table6"]["rows"]:
+                    paper_key = (case_labels[spec["case"]], spec["paper_pattern"])
                     for role in ("diamond", "negotiation", "reviewdse"):
+                        status = spec["expected"][role]
+                        hpwl_before = hpwl_after = None
+                        if role == "reviewdse":
+                            ref = review_reference[paper_key]
+                            runtime = float(ref["runtime_seconds"])
+                            hpwl_before = float(ref["hpwl_before"])
+                            hpwl_after = float(ref["hpwl_after"])
+                        elif status == "pass":
+                            ref = fixed_reference[paper_key]
+                            runtime = float(ref[f"{role}_runtime_seconds"])
+                            hpwl_after = float(ref[f"{role}_hpwl_after"])
+                            hpwl_before = float(review_reference[paper_key]["hpwl_before"])
+                        elif status == "timeout":
+                            runtime = 7200.0
+                        else:
+                            runtime = 1.0
+                        metrics = root / f"{spec['case']}-{spec['pattern']}-{role}.json"
+                        metrics.write_text(
+                            json.dumps(
+                                {
+                                    "status": "ok" if status == "pass" else (
+                                        "timeout" if status == "timeout" else "error"
+                                    ),
+                                    "runtime_seconds": runtime,
+                                    "hpwl": {
+                                        "source": "openroad_dpl_log",
+                                        "before_micron": hpwl_before,
+                                        "after_micron": hpwl_after,
+                                    },
+                                    "displacement": {
+                                        "average_displacement_micron": 1.0,
+                                        "max_displacement_micron": 2.0,
+                                    },
+                                    "legality": {
+                                        "check_status": 0 if status == "pass" else (
+                                            "not_run" if status == "timeout" else 1
+                                        )
+                                    },
+                                }
+                            )
+                        )
                         writer.writerow({
                             "case": spec["case"],
                             "pattern": spec["pattern"],
                             "role": role,
-                            "status": spec["expected"][role],
-                            "exit_code": 0 if spec["expected"][role] == "pass" else 1,
-                            "runtime_seconds": 1,
-                            "metrics_json": root / f"{spec['case']}-{spec['pattern']}-{role}.json",
+                            "status": status,
+                            "exit_code": 0 if status == "pass" else (124 if status == "timeout" else 1),
+                            "runtime_seconds": runtime,
+                            "hpwl_before_micron": hpwl_before,
+                            "hpwl_after_micron": hpwl_after,
+                            "avg_disp_um": 1.0,
+                            "max_disp_um": 2.0,
+                            "check_result": "clean" if status == "pass" else status,
+                            "timeout_seconds": 7200,
+                            "metrics_json": metrics,
                             "log": root / "run.log",
                         })
             output = root / "table6-fresh.tsv"
@@ -396,6 +478,11 @@ class ReproductionContractTests(unittest.TestCase):
                 rows = list(csv.DictReader(stream, delimiter="\t"))
             self.assertEqual(len(rows), 27)
             self.assertTrue(all(row["verdict"] == "match" for row in rows))
+            review_rows = [row for row in rows if row["role"] == "reviewdse"]
+            self.assertTrue(all(row["metrics_contract"] == "pass" for row in review_rows))
+            comparable = [row for row in review_rows if row["legal_fixed_role"]]
+            self.assertEqual(len(comparable), 2)
+            self.assertTrue(all(float(row["qor_improvement_percent"]) > 0 for row in comparable))
 
 
 if __name__ == "__main__":

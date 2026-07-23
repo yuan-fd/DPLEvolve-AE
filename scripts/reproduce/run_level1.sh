@@ -11,6 +11,7 @@ ACKNOWLEDGE_COST="${ACKNOWLEDGE_LLM_COST:-no}"
 STAMP="$(date +%Y%m%d_%H%M%S)"
 ROUND_PREFIX="paper_level1_${STAMP}"
 FROZEN_OUTPUT="${DPL_EVOLVE_STATE_ROOT}/calibrations/paper_level1/frozen/level1_evidence.md"
+FROZEN_MANIFEST="${DPL_EVOLVE_STATE_ROOT}/calibrations/paper_level1/frozen/level1_evidence.json"
 
 usage() {
   cat <<'EOF'
@@ -92,7 +93,10 @@ freeze_args=(
   --state-root "${DPL_EVOLVE_STATE_ROOT}"
   --children-per-case "${CHILDREN}"
   --output "${FROZEN_OUTPUT}"
+  --manifest-output "${FROZEN_MANIFEST}"
 )
 for round_id in "${ROUNDS[@]}"; do freeze_args+=(--round "${round_id}"); done
 repro_run "${freeze_args[@]}"
 repro_note "frozen Level 1 packet: ${FROZEN_OUTPUT}"
+repro_run "${DPL_EVOLVE_PYTHON}" "${SCRIPT_DIR}/verify_level1.py" \
+  --packet "${FROZEN_OUTPUT}" --manifest "${FROZEN_MANIFEST}"

@@ -91,6 +91,12 @@ cut-row construction used Innovus; reviewers do not need Innovus because its
 exact outputs are the replay inputs.  The OpenROAD replay itself is fully open
 source.
 
+Every fresh replay uses the public 7200-second timeout. The retained
+`fixed_routes.tsv` keeps the author record exactly as found, including the
+Ariane center-10 Negotiation timeout captured by an earlier 600-second run.
+That historical value is provenance, not a fabricated 7200-second measurement;
+the fresh result reports whatever the new 7200-second execution observes.
+
 ## Table 5: incomplete input recipe and six source commits missing
 
 The paper-time dense ODBs were deleted. They are not distributed as if they

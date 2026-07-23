@@ -35,7 +35,7 @@ class PaperFigureTests(unittest.TestCase):
             check=True,
         )
 
-    def test_figure4_is_nine_complete_monotone_trajectories(self):
+    def test_figure4_retained_log_is_not_silently_imputed(self):
         expected = json.loads(
             (ROOT / "artifacts/01-table4-qor/expected/table4.json").read_text()
         )["cases"]
@@ -45,19 +45,36 @@ class PaperFigureTests(unittest.TestCase):
             self.assertIn("verified 3 retained", result.stdout)
             with (output / "figure4-best-so-far.tsv").open(newline="") as stream:
                 rows = list(csv.DictReader(stream, delimiter="\t"))
-            self.assertEqual(len(rows), 99)
+            self.assertEqual(len(rows), 96)
             grouped = defaultdict(list)
             for row in rows:
                 grouped[row["case"]].append(row)
                 self.assertNotEqual(row["best_so_far_delta_hpwl_percent"], "")
             self.assertEqual(len(grouped), 9)
             for case, series in grouped.items():
-                self.assertEqual([int(row["iteration"]) for row in series], list(range(11)))
+                expected_iterations = list(range(11))
+                if case == "swerv_wrapper_asap7":
+                    expected_iterations = list(range(9))
+                elif case == "swerv_wrapper_nangate45":
+                    expected_iterations = list(range(10))
+                self.assertEqual([int(row["iteration"]) for row in series], expected_iterations)
                 values = [float(row["best_so_far_delta_hpwl_percent"]) for row in series]
                 self.assertTrue(
                     all(next_value <= value + 1e-12 for value, next_value in zip(values, values[1:]))
                 )
                 self.assertAlmostEqual(values[-1], expected[case]["hpwl_delta"], delta=0.01)
+                self.assertTrue(all(row["point_status"] == "observed" for row in series))
+            missing = json.loads(
+                (output / "figure4-missing-points.json").read_text(encoding="utf-8")
+            )["missing_points"]
+            self.assertEqual(
+                {(row["case"], row["iteration"]) for row in missing},
+                {
+                    ("swerv_wrapper_asap7", 9),
+                    ("swerv_wrapper_asap7", 10),
+                    ("swerv_wrapper_nangate45", 10),
+                },
+            )
             self.assertTrue((output / "figure4-best-so-far.svg").is_file())
 
     def test_figure5_uses_runtime_ratio_and_exact_bo_populations(self):
@@ -118,20 +135,29 @@ class PaperFigureTests(unittest.TestCase):
                 for case in cases:
                     writer.writerow({"case": case, "default_H_f": 1000, "default_runtime_s": 10})
 
+            audit_path = (
+                state / "experiment_batches/fresh_contract_paper9_place"
+                / "candidate-eligibility-audit.json"
+            )
+            audit_path.parent.mkdir(parents=True)
+            rounds = []
             for case in cases:
-                metrics = (
-                    state / f"fresh_contract_paper9_place_{case}_4x10_test"
-                    / "teacher_rounds/students/student_01/iter_01/artifacts"
-                    / "candidate_metrics_summary.json"
-                )
-                metrics.parent.mkdir(parents=True)
-                metrics.write_text(json.dumps({
-                    "canonical": {
-                        "final_hpwl_micron": 990,
-                        "runtime_seconds": 11,
-                        "legality": "clean",
-                    }
-                }))
+                eligible = []
+                for iteration in range(1, 11):
+                    for student_number in range(1, 5):
+                        eligible.append(
+                            {
+                                "iteration": iteration,
+                                "student": f"student_{student_number:02d}",
+                                "run_tag": f"fresh_contract_{case}_iter_{iteration:02d}_student_{student_number:02d}",
+                                "hpwl": 1000 - iteration - student_number / 10,
+                                "runtime_seconds": 11 + student_number / 10,
+                            }
+                        )
+                rounds.append({"case": case, "eligible": eligible, "rejected": []})
+            audit_path.write_text(
+                json.dumps({"schema_version": 1, "rounds": rounds}), encoding="utf-8"
+            )
 
             for case in ("aes_nangate45", "ariane133_nangate45"):
                 trials = (
@@ -169,6 +195,11 @@ class PaperFigureTests(unittest.TestCase):
                     check=True,
                 )
                 self.assertIn("[PASS]", result.stdout)
+            with (root / "figure4/figure4-best-so-far.tsv").open(newline="") as stream:
+                figure4_rows = list(csv.DictReader(stream, delimiter="\t"))
+            self.assertEqual(len(figure4_rows), 99)
+            self.assertTrue(any(row["promotion_status"] == "promoted" for row in figure4_rows))
+            self.assertTrue(all(row["point_status"] == "observed" for row in figure4_rows))
 
 
 if __name__ == "__main__":

@@ -61,9 +61,21 @@ def replay_row(path: Path) -> dict[str, str]:
     if metrics.get("status") != "ok":
         raise ValueError(f"selected-source metrics status is not ok: {metrics_path}")
     violations = (metrics.get("legality") or {}).get("placement_violations")
-    if str(violations) not in ("0", "0.0"):
+    if violations is None or str(violations).strip().lower() not in (
+        "", "0", "0.0", "clean", "none"
+    ):
         raise ValueError(f"selected-source replay is not explicitly legal: {metrics_path}")
     return row
+
+
+def dse_rows(path: Path) -> dict[str, dict[str, str]]:
+    if not path.is_file():
+        raise ValueError(f"missing full-DSE population summary: {path}")
+    with path.open(newline="", encoding="utf-8") as stream:
+        rows = [row for row in csv.DictReader(stream, delimiter="\t") if row.get("case") != "Mean"]
+    if not rows:
+        raise ValueError(f"full-DSE population summary has no case rows: {path}")
+    return {row["case"]: row for row in rows}
 
 
 def main() -> int:
@@ -72,6 +84,12 @@ def main() -> int:
     parser.add_argument("--state-root", required=True, type=Path)
     parser.add_argument("--flow-variant", default="paper9_place")
     parser.add_argument("--selected-manifest", required=True, type=Path)
+    parser.add_argument(
+        "--dse-summary",
+        type=Path,
+        help="Optional table4-search.tsv from a fresh complete ReviewDSE campaign. "
+        "When supplied, use its population-selected HPWL/G_HR winners instead of frozen-source replays.",
+    )
     parser.add_argument("--expected", required=True, type=Path)
     parser.add_argument("--delta-tolerance-pp", type=float, default=0.06)
     parser.add_argument("--runtime-ratio-tolerance", type=float, default=0.20)
@@ -80,6 +98,7 @@ def main() -> int:
 
     selected = load_json(args.selected_manifest)
     expected = load_json(args.expected)["cases"]
+    search_rows = dse_rows(args.dse_summary) if args.dse_summary else {}
     rows = []
     for spec in selected["programs"]:
         case = spec["case"]
@@ -100,17 +119,36 @@ def main() -> int:
         bo_hpwl, bo_runtime = hpwl_runtime(load_json(bo_metrics_path))
 
         track_values = {}
-        for track in ("hpwl", "ghr"):
-            run_id = f"paper_table4_{track}_{case}"
-            path = (
-                args.state_root / "paper_reproduction" / "table4" / run_id
-                / run_id / "results.tsv"
-            )
-            replay = replay_row(path)
-            track_values[track] = (
-                float(replay["hpwl_after_micron"]),
-                float(replay["runtime_seconds"]),
-            )
+        track_metadata: dict[str, object] = {}
+        if search_rows:
+            search = search_rows.get(case)
+            if search is None:
+                raise ValueError(f"full-DSE summary lacks case {case}")
+            for track in ("hpwl", "ghr"):
+                track_values[track] = (
+                    float(search[f"{track}_hpwl"]),
+                    float(search[f"{track}_runtime_seconds"]),
+                )
+                track_metadata[f"reviewdse_{track}_iteration"] = int(search[f"{track}_iteration"])
+                track_metadata[f"reviewdse_{track}_student"] = search[f"{track}_student"]
+                track_metadata[f"reviewdse_{track}_run_tag"] = search[f"{track}_run_tag"]
+                track_metadata[f"reviewdse_{track}_gain_hr"] = float(search[f"{track}_gain_hr"])
+            track_metadata["tokens_logged_billions"] = float(search["tokens_logged_billions"])
+            track_metadata["tokens_active_billions"] = float(search["tokens_active_billions"])
+            track_metadata["reviewdse_source"] = "fresh_full_population"
+        else:
+            for track in ("hpwl", "ghr"):
+                run_id = f"paper_table4_{track}_{case}"
+                path = (
+                    args.state_root / "paper_reproduction" / "table4" / run_id
+                    / run_id / "results.tsv"
+                )
+                replay = replay_row(path)
+                track_values[track] = (
+                    float(replay["hpwl_after_micron"]),
+                    float(replay["runtime_seconds"]),
+                )
+            track_metadata["reviewdse_source"] = "frozen_selected_program_replay"
 
         def delta(value: float) -> float:
             return (value / default_hpwl - 1.0) * 100.0
@@ -128,6 +166,7 @@ def main() -> int:
                 "default_metrics": str(default_path),
                 "bo_best": str(bo_path),
                 "bo_metrics": str(bo_metrics_path),
+                **track_metadata,
             }
         target = expected[case]
         fresh["expected_bo_delta_percent"] = target["bo_delta"]

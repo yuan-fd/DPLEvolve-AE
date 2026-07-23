@@ -17,7 +17,7 @@ import json
 import math
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 
 CASE_LABELS = {
@@ -101,23 +101,6 @@ def write_tsv(path: Path, rows: list[dict[str, Any]], fields: list[str]) -> None
         writer.writerows(rows)
 
 
-def case_from_text(text: str, cases: Iterable[str]) -> str | None:
-    matches = [case for case in cases if case in text]
-    if not matches:
-        return None
-    return max(matches, key=len)
-
-
-def iteration_from_path(path: Path) -> int | None:
-    for part in path.parts:
-        if part.startswith("iter_"):
-            try:
-                return int(part.split("_", 1)[1])
-            except ValueError:
-                return None
-    return None
-
-
 def fresh_defaults(path: Path) -> dict[str, dict[str, float]]:
     defaults: dict[str, dict[str, float]] = {}
     for row in read_tsv(path):
@@ -134,40 +117,12 @@ def fresh_defaults(path: Path) -> dict[str, dict[str, float]]:
     return defaults
 
 
-def discover_round_dirs(state_root: Path, run_prefix: str, cases: Iterable[str]) -> dict[str, Path]:
-    if not run_prefix:
-        fail("fresh figure mode requires --run-prefix")
-    candidates: dict[str, list[Path]] = defaultdict(list)
-    for path in state_root.glob(f"{run_prefix}*"):
-        if not (path / "teacher_rounds").is_dir():
-            continue
-        case = case_from_text(path.name, cases)
-        if case:
-            candidates[case].append(path)
-    selected: dict[str, Path] = {}
-    for case in cases:
-        matches = candidates.get(case, [])
-        if len(matches) != 1:
-            fail(
-                f"expected one ReviewDSE round for {case} with prefix {run_prefix!r}, "
-                f"found {len(matches)}"
-            )
-        selected[case] = matches[0]
-    return selected
-
-
-def candidate_payloads(round_dir: Path) -> Iterable[tuple[Path, dict[str, Any]]]:
-    pattern = "teacher_rounds/students/*/iter_*/artifacts/candidate_metrics_summary.json"
-    for path in sorted(round_dir.glob(pattern)):
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        yield path, payload
-
-
 def normalize_figure4(
-    points: dict[str, dict[int, float]], defaults: dict[str, float], max_iteration: int
+    points: dict[str, dict[int, float]],
+    defaults: dict[str, float],
+    max_iteration: int,
+    *,
+    require_complete: bool,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for case, label in CASE_LABELS.items():
@@ -175,9 +130,12 @@ def normalize_figure4(
             fail(f"Figure 4 lacks a default HPWL for {case}")
         default = defaults[case]
         best = default
-        for iteration in range(0, max_iteration + 1):
-            if iteration in points.get(case, {}):
-                best = min(best, points[case][iteration])
+        observed = sorted(points.get(case, {}))
+        missing = sorted(set(range(max_iteration + 1)) - set(observed))
+        if require_complete and missing:
+            fail(f"Figure 4 fresh population lacks iterations for {case}: {missing}")
+        for iteration in observed:
+            best = min(best, points[case][iteration])
             delta = 100.0 * (best - default) / default
             rows.append(
                 {
@@ -187,11 +145,13 @@ def normalize_figure4(
                     "best_so_far_hpwl_micron": f"{best:.6f}",
                     "best_so_far_delta_hpwl_percent": f"{delta:.9f}",
                     "best_so_far_reduction_percent": f"{-delta:.9f}",
+                    "point_status": "observed",
+                    "promotion_status": "retained_log_point",
+                    "selected_student": "",
+                    "selected_run_tag": "",
+                    "source_path": "",
                 }
             )
-    expected = len(CASE_LABELS) * (max_iteration + 1)
-    if len(rows) != expected:
-        fail(f"Figure 4 expected {expected} normalized rows, found {len(rows)}")
     return rows
 
 
@@ -209,31 +169,117 @@ def retained_figure4(path: Path, max_iteration: int) -> list[dict[str, Any]]:
         points[case][iteration] = hpwl
         if iteration == 0:
             defaults[case] = hpwl
-    return normalize_figure4(points, defaults, max_iteration)
+    return normalize_figure4(
+        points, defaults, max_iteration, require_complete=False
+    )
+
+
+def fresh_population_audit(
+    state_root: Path, run_prefix: str, flow_variant: str
+) -> dict[str, dict[str, Any]]:
+    if not run_prefix:
+        fail("fresh figure mode requires --run-prefix")
+    exact = (
+        state_root / "experiment_batches" / f"{run_prefix}_{flow_variant}"
+        / "candidate-eligibility-audit.json"
+    )
+    matches = [exact] if exact.is_file() else list(
+        (state_root / "experiment_batches").glob(
+            f"{run_prefix}*_{flow_variant}/candidate-eligibility-audit.json"
+        )
+    )
+    if len(matches) != 1:
+        fail(f"expected one protected candidate audit for prefix {run_prefix!r}, found {len(matches)}")
+    payload = json.loads(matches[0].read_text(encoding="utf-8"))
+    rounds = payload.get("rounds") or []
+    by_case = {str(item.get("case")): item for item in rounds}
+    missing = sorted(set(CASE_LABELS) - set(by_case))
+    if missing:
+        fail("protected candidate audit lacks cases: " + ", ".join(missing))
+    for case, item in by_case.items():
+        attempts = list(item.get("eligible") or []) + list(item.get("rejected") or [])
+        per_iteration: dict[int, int] = defaultdict(int)
+        for row in attempts:
+            per_iteration[int(row["iteration"])] += 1
+        bad = {
+            iteration: per_iteration.get(iteration, 0)
+            for iteration in range(1, 11)
+            if per_iteration.get(iteration, 0) != 4
+        }
+        if bad:
+            fail(f"{case}: protected audit is not 4 candidates x 10 iterations: {bad}")
+        item["_audit_path"] = str(matches[0])
+    return by_case
 
 
 def fresh_figure4(
-    state_root: Path, run_prefix: str, default_table: Path, max_iteration: int
+    state_root: Path,
+    run_prefix: str,
+    default_table: Path,
+    flow_variant: str,
+    max_iteration: int,
 ) -> list[dict[str, Any]]:
     default_rows = fresh_defaults(default_table)
-    defaults = {case: row["hpwl"] for case, row in default_rows.items()}
-    points: dict[str, dict[int, float]] = defaultdict(dict)
-    rounds = discover_round_dirs(state_root, run_prefix, CASE_LABELS)
-    for case, round_dir in rounds.items():
-        for path, payload in candidate_payloads(round_dir):
-            iteration = iteration_from_path(path)
-            if iteration is None or not 1 <= iteration <= max_iteration:
-                continue
-            canonical = payload.get("canonical") or {}
-            if payload.get("status") not in (None, "ok") or canonical.get("legality") != "clean":
-                continue
-            hpwl = as_float(canonical.get("final_hpwl_micron"), "final_hpwl_micron")
-            current = points[case].get(iteration)
-            if current is None or hpwl < current:
-                points[case][iteration] = hpwl
-        if not points[case]:
-            fail(f"no clean fresh ReviewDSE candidates found for {case}")
-    return normalize_figure4(points, defaults, max_iteration)
+    population = fresh_population_audit(state_root, run_prefix, flow_variant)
+    rows: list[dict[str, Any]] = []
+    for case, label in CASE_LABELS.items():
+        default = default_rows[case]["hpwl"]
+        best = default
+        selected: dict[str, Any] | None = None
+        rows.append(
+            {
+                "case": case, "case_label": label, "iteration": 0,
+                "best_so_far_hpwl_micron": f"{best:.6f}",
+                "best_so_far_delta_hpwl_percent": "0.000000000",
+                "best_so_far_reduction_percent": "0.000000000",
+                "point_status": "observed",
+                "promotion_status": "default_parent",
+                "selected_student": "",
+                "selected_run_tag": "",
+                "source_path": population[case]["_audit_path"],
+            }
+        )
+        eligible = population[case].get("eligible") or []
+        for iteration in range(1, max_iteration + 1):
+            iteration_candidates = [
+                item for item in eligible if int(item["iteration"]) == iteration
+            ]
+            promoted = False
+            if iteration_candidates:
+                candidate = min(
+                    iteration_candidates,
+                    key=lambda item: as_float(item["hpwl"], "hpwl"),
+                )
+                candidate_hpwl = as_float(candidate["hpwl"], "hpwl")
+                # Mirror best_round_candidate(): HPWL-only inside the hard
+                # gate; an equal-HPWL candidate from a later iteration becomes
+                # the newer promoted source. Runtime never breaks the tie.
+                if candidate_hpwl < default and (
+                    selected is None
+                    or candidate_hpwl < best
+                    or (
+                        candidate_hpwl == best
+                        and iteration > int(selected["iteration"])
+                    )
+                ):
+                    best = candidate_hpwl
+                    selected = candidate
+                    promoted = True
+            delta = 100.0 * (best - default) / default
+            rows.append(
+                {
+                    "case": case, "case_label": label, "iteration": iteration,
+                    "best_so_far_hpwl_micron": f"{best:.6f}",
+                    "best_so_far_delta_hpwl_percent": f"{delta:.9f}",
+                    "best_so_far_reduction_percent": f"{-delta:.9f}",
+                    "point_status": "observed",
+                    "promotion_status": "promoted" if promoted else "parent_retained",
+                    "selected_student": "" if selected is None else selected.get("student", ""),
+                    "selected_run_tag": "" if selected is None else selected.get("run_tag", ""),
+                    "source_path": population[case]["_audit_path"],
+                }
+            )
+    return rows
 
 
 def pareto_indices(rows: list[dict[str, Any]]) -> set[int]:
@@ -325,6 +371,7 @@ def fresh_figure5(
     state_root: Path, run_prefix: str, default_table: Path, flow_variant: str
 ) -> list[dict[str, Any]]:
     defaults = fresh_defaults(default_table)
+    population = fresh_population_audit(state_root, run_prefix, flow_variant)
     rows: list[dict[str, Any]] = []
     for case in FIG5_CASES:
         path = locate_bo_trials(state_root, flow_variant, case)
@@ -347,18 +394,12 @@ def fresh_figure5(
                     "source_path": str(path),
                 }
             )
-    rounds = discover_round_dirs(state_root, run_prefix, FIG5_CASES)
-    for case, round_dir in rounds.items():
-        for path, payload in candidate_payloads(round_dir):
-            canonical = payload.get("canonical") or {}
-            if payload.get("status") not in (None, "ok") or canonical.get("legality") != "clean":
-                continue
-            hpwl = as_float(canonical.get("final_hpwl_micron"), "final_hpwl_micron")
-            runtime = as_float(canonical.get("runtime_seconds"), "runtime_seconds")
-            iteration = iteration_from_path(path)
-            if iteration is None:
-                continue
-            student = next((part for part in path.parts if part.startswith("student_")), "")
+    for case in FIG5_CASES:
+        for candidate in population[case].get("eligible") or []:
+            hpwl = as_float(candidate.get("hpwl"), "hpwl")
+            runtime = as_float(candidate.get("runtime_seconds"), "runtime_seconds")
+            iteration = int(candidate["iteration"])
+            student = str(candidate.get("student") or "")
             rows.append(
                 {
                     "case": case,
@@ -372,7 +413,7 @@ def fresh_figure5(
                     "delta_hpwl_percent": 100.0
                     * (hpwl - defaults[case]["hpwl"])
                     / defaults[case]["hpwl"],
-                    "source_path": str(path),
+                    "source_path": population[case]["_audit_path"],
                 }
             )
     return normalize_figure5(rows)
@@ -535,17 +576,40 @@ def main() -> int:
         rows = (
             retained_figure4(retained_root / "evolve_hpwl_reduction_curves.tsv", 10)
             if args.source == "retained"
-            else fresh_figure4(args.state_root, args.run_prefix, default_table, 10)
+            else fresh_figure4(
+                args.state_root, args.run_prefix, default_table, args.flow_variant, 10
+            )
         )
         fields = [
             "case", "case_label", "iteration", "best_so_far_hpwl_micron",
             "best_so_far_delta_hpwl_percent", "best_so_far_reduction_percent",
+            "point_status", "promotion_status", "selected_student",
+            "selected_run_tag", "source_path",
         ]
         data_path = args.output_dir / "figure4-best-so-far.tsv"
         figure_path = args.output_dir / "figure4-best-so-far.svg"
         write_tsv(data_path, rows, fields)
         render_figure4(figure_path, rows)
-        print(f"[PASS] Figure 4: 9 cases x 11 points (iteration 0..10): {figure_path}")
+        observed = {(row["case"], int(row["iteration"])) for row in rows}
+        missing = [
+            {"case": case, "iteration": iteration, "status": "not_retained"}
+            for case in CASE_LABELS
+            for iteration in range(11)
+            if (case, iteration) not in observed
+        ]
+        missing_path = args.output_dir / "figure4-missing-points.json"
+        missing_path.write_text(
+            json.dumps({"missing_points": missing}, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        if missing:
+            print(
+                f"[WARN] Figure 4 retained log is incomplete: {len(rows)} observed, "
+                f"{len(missing)} not retained; no values were imputed: {missing_path}"
+            )
+        else:
+            print(f"[PASS] Figure 4: 9 cases x 11 observed points (iteration 0..10)")
+        print(f"[PASS] Figure 4 SVG: {figure_path}")
     else:
         rows = (
             retained_figure5(retained_root / "bo_evolve_pareto_points.tsv")

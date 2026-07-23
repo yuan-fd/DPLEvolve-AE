@@ -90,7 +90,9 @@ JSON as an experimental result.
 
 `make reproduce-level1 ACKNOWLEDGE_LLM_COST=yes` evaluates the three calibration
 instances and freezes reviewed method evidence and complete source starts.
-Level 2 refuses to launch the paper profile without that frozen packet.
+It writes a Markdown packet and companion JSON manifest. Level 2 refuses to
+launch the paper profile unless their hash, three-case protocol, source starts,
+model settings, runtime gate, and launched Student counts validate.
 
 `make run-dse-small` executes a one-Student, one-iteration method check with a
 real private source edit, rebuild, EDA evaluation, and Teacher review.
@@ -99,10 +101,11 @@ real private source edit, rebuild, EDA evaluation, and Teacher review.
 four-Student, ten-iteration protocol. The full search is cost-gated because the
 paper reports 2.15B logged and 0.10B active tokens per target.
 
-The main paper does not disclose the exact Level 1 Student breadth. The public
-manifest labels 50 Students/case as a reconstruction profile, not an recovered
-author-time value. Exact search-process reproduction requires that value and
-the author-time Level 1 products to be recovered.
+The main paper does not disclose the exact Level 1 Student breadth and the
+author-time packet was not retained. The public manifest labels 50
+Students/case as a reconstruction profile, not a recovered author-time value.
+The public process is runnable, but exact replay of the original stochastic
+Level 1 decisions would require those author-time products.
 
 ## Supporting checks that are not paper reproduction
 

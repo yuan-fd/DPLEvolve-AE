@@ -111,7 +111,10 @@ retained backup. Its command intentionally exits `BLOCKED` instead of using
 the standard config or treating the archived TSV as reproduction.
 
 The main paper also omits the exact Level 1 Student breadth. The public
-50-Student calibration profile is explicitly marked as a reconstruction.
+50-Student calibration profile is explicitly marked as a reconstruction. A
+fresh run emits a Markdown packet and JSON provenance manifest, and Level 2
+validates their hash and complete three-case protocol before launch; the
+unretained author-time packet is not silently reconstructed.
 These limitations must be resolved before claiming bit-exact reproduction of
 every paper experiment and search decision.
 
