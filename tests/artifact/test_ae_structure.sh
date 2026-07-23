@@ -13,7 +13,7 @@ for path in "${required_root[@]}"; do
 done
 
 bundles=(
-  artifacts/04-aes-smoke
+  tests/toolchain/aes-smoke
 )
 for bundle in "${bundles[@]}"; do
   for path in README.md run.sh inputs expected output; do
@@ -30,9 +30,9 @@ experiment_bundles=(
   artifacts/01-table4-qor
   artifacts/02-table5-composability
   artifacts/03-table6-cutrow
-  artifacts/05-figures
-  artifacts/06-reviewdse-search
-  artifacts/07-ariane-diagnostic
+  artifacts/04-figures
+  artifacts/05-reviewdse-search
+  artifacts/06-ariane-diagnostic
 )
 for bundle in "${experiment_bundles[@]}"; do
   for path in README.md reproduce.sh inputs expected output; do
@@ -52,9 +52,9 @@ required_files=(
   artifacts/01-table4-qor/selected-programs/run.sh
   artifacts/02-table5-composability/inputs/counterexamples.tsv
   artifacts/03-table6-cutrow/inputs/reviewdse.tsv
-  artifacts/04-aes-smoke/check.sh
-  artifacts/04-aes-smoke/config/aes_nangate45.yaml
-  artifacts/04-aes-smoke/expected/ae_reproduction_lock.json
+  tests/toolchain/aes-smoke/check.sh
+  tests/toolchain/aes-smoke/config/aes_nangate45.yaml
+  tests/toolchain/aes-smoke/expected/ae_reproduction_lock.json
   scripts/agent/run_artifact.sh
   scripts/README.md
   scripts/shared/env_vars.sh
@@ -90,11 +90,14 @@ required_files=(
   scripts/reproduce/verify_data_manifest.py
   scripts/reproduce/openroad_legalize_cutrow.tcl
   scripts/maintenance/export_table6_data.sh
+  scripts/agent/README.md
   artifacts/01-table4-qor/inputs/figures/MANIFEST.sha256
   artifacts/01-table4-qor/inputs/diagnostics/MANIFEST.sha256
   artifacts/01-table4-qor/diagnostics/ariane-warmstart/README.md
   images/dplevolve-architecture.png
   docs/reviewer-walkthrough.md
+  docs/README.md
+  docs/table5-status.md
 )
 for path in "${required_files[@]}"; do
   [[ -f "${ROOT}/${path}" ]] && pass "file: ${path}" || fail "missing file: ${path}"
@@ -107,11 +110,31 @@ for path in "${ROOT}"/scripts/reproduce/*.sh "${ROOT}"/scripts/reproduce/*.py; d
 done
 
 for path in \
-  experiments results scripts/internal scripts/lib; do
+  experiments results scripts/internal scripts/lib \
+  artifacts/04-aes-smoke artifacts/05-figures \
+  artifacts/06-reviewdse-search artifacts/07-ariane-diagnostic; do
   [[ ! -e "${ROOT}/${path}" ]] \
     && pass "not public: ${path}" \
     || fail "legacy or local-only path is visible: ${path}"
 done
+
+if head -1 "${ROOT}/README.md" | grep -Fxq \
+  '# From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA'; then
+  pass "README title is the paper title"
+else
+  fail "README title is not the paper title"
+fi
+if grep -Fq '[Paper link](https://arxiv.org/abs/2607.11294)' "${ROOT}/README.md"; then
+  pass "README contains the public paper link"
+else
+  fail "README paper link is missing"
+fi
+if rg -n 'Optional ReviewDSE|## More information|The released environment was tested' \
+    "${ROOT}/README.md" >/dev/null; then
+  fail "README contains deprecated guide prose"
+else
+  pass "README is limited to the operational reproduction flow"
+fi
 
 if find "${ROOT}" -path "${ROOT}/.git" -prune -o -type f -iname '*.pdf' -print -quit | grep -q .; then
   fail "generated/reference PDF is tracked in the repository tree"

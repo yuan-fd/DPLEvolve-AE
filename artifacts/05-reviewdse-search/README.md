@@ -5,10 +5,10 @@ and review process. Planning is free; live modes require model access and incur
 token usage.
 
 ```bash
-bash artifacts/06-reviewdse-search/reproduce.sh --plan
-bash artifacts/06-reviewdse-search/reproduce.sh --small --case aes_nangate45
-bash artifacts/06-reviewdse-search/reproduce.sh --level1 --acknowledge-cost
-bash artifacts/06-reviewdse-search/reproduce.sh --paper --acknowledge-cost \
+bash artifacts/05-reviewdse-search/reproduce.sh --plan
+bash artifacts/05-reviewdse-search/reproduce.sh --small --case aes_nangate45
+bash artifacts/05-reviewdse-search/reproduce.sh --level1 --acknowledge-cost
+bash artifacts/05-reviewdse-search/reproduce.sh --paper --acknowledge-cost \
   --run-prefix review_run_01
 ```
 

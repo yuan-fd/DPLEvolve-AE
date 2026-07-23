@@ -1,4 +1,4 @@
-# AES Nangate45 Smoke Test Configuration
+# AES Nangate45 Toolchain Test Configuration
 # This is the minimal, lowest-cost validation path.
 # It does NOT invoke Teacher, Student, or any LLM API.
 

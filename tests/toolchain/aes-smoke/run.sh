@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # DPLEvolve AE — AES Smoke Test (Human Entry Point)
 # Runs the minimal AES smoke test using the pinned environment.
-# Usage: make toolchain-smoke or artifacts/04-aes-smoke/run.sh --run
+# Usage: make toolchain-smoke or tests/toolchain/aes-smoke/run.sh --run
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-AE_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+AE_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 export AE_ROOT
 
 MODE=""
@@ -16,7 +16,7 @@ THREADS="8"
 
 usage() {
   cat <<'EOF'
-Usage: artifacts/04-aes-smoke/run.sh (--check-only | --run | --rebuild) [options]
+Usage: tests/toolchain/aes-smoke/run.sh (--check-only | --run | --rebuild) [options]
 
 Modes:
   --check-only   Validate an existing AES snapshot and baseline result.

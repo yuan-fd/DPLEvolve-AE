@@ -1,156 +1,175 @@
-# DPLEvolve
+# From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA
 
-Artifact for **“From Tool Invocation to Source-Mechanism Exploration:
-Protected White-Box DSE for Open-Source EDA.”**
+A protected white-box design-space exploration framework for source-level
+mechanisms in OpenROAD detailed placement.
 
-DPLEvolve searches source-level modifications to OpenROAD detailed placement.
-This repository provides the pinned EDA environment and scripts for running and
-evaluating the paper experiments with newly generated results.
+[Paper link](https://arxiv.org/abs/2607.11294)
 
-## Repository structure
+## Code Structure
 
 ```text
 DPLEvolve-AE/
 ├── artifacts/
-│   ├── 01-table4-qor/              # Default, BO, and ReviewDSE QoR
-│   ├── 02-table5-composability/    # Stage composability (data incomplete)
-│   ├── 03-table6-cutrow/           # Hard cut-row legality
-│   ├── 05-figures/                 # Figures 4 and 5
-│   ├── 06-reviewdse-search/        # Level 1 and Teacher/Student search
-│   └── 07-ariane-diagnostic/       # Ariane diagnostic
-├── configs/reproduction/           # Paper experiment configurations
-├── paper-data/                     # Retained/fetched experiment inputs
+│   ├── 01-table4-qor/                 # Table 4: default, BO, ReviewDSE-HPWL/GHR
+│   │   ├── README.md                  # Experiment instructions
+│   │   ├── reproduce.sh               # Complete Table 4 entry point
+│   │   ├── config/                    # Baseline, BO, and search configurations
+│   │   ├── inputs/                    # Retained experiment inputs
+│   │   ├── selected-programs/         # 18 HPWL/GHR source programs
+│   │   ├── expected/                  # Numerical acceptance values
+│   │   └── output/                    # Output contract
+│   ├── 02-table5-composability/       # Table 5: stage composability
+│   ├── 03-table6-cutrow/              # Table 6: hard cut-row legality
+│   ├── 04-figures/                    # Figures 4 and 5
+│   ├── 05-reviewdse-search/           # Level 1 and Teacher/Student search
+│   └── 06-ariane-diagnostic/          # Ariane source-mechanism diagnostic
 ├── scripts/
-│   ├── human/                      # Environment setup
-│   ├── reproduce/                  # Experiment and evaluation scripts
-│   └── agent/                      # Fixed agent-facing wrappers
-├── src/dpl_evolve_agent/           # DPLEvolve implementation
-├── web-demo/                       # Optional browser interface
-├── docs/                           # Detailed reviewer documentation
-└── Makefile                        # Main command interface
+│   ├── human/                         # Environment setup scripts
+│   ├── reproduce/                     # Experiment runners and evaluators
+│   ├── agent/                         # Fixed agent-facing execution scripts
+│   ├── shared/                        # Shared runtime utilities
+│   └── maintenance/                   # Release and provenance scripts
+├── configs/reproduction/              # Paper experiment configurations
+├── paper-data/                        # Downloaded Table 6 inputs
+├── src/dpl_evolve_agent/              # ReviewDSE implementation
+├── docs/                              # Human-facing detailed documentation
+├── agent/                             # Agent-facing rules and task recipes
+├── tests/toolchain/aes-smoke/         # Non-paper EDA toolchain test
+├── web-demo/                          # Browser interface to fixed commands
+├── Makefile                           # Root command interface
+└── LICENSE
 ```
 
-Each experiment directory contains its own `README.md`, `reproduce.sh`, inputs,
-expected interpretation, and output contract.
-
-## 1. Install the environment
-
-The released environment was tested on Rocky Linux 8.10 x86-64. Detailed
-software versions and hardware guidance are in
-[docs/environment.md](docs/environment.md).
+## 1. Install the Environment
 
 ```bash
 git clone https://github.com/yuan-fd/DPLEvolve-AE.git
 cd DPLEvolve-AE
 
-# Read-only prerequisite check
+# Check the host and print missing dependencies
 make doctor
 
-# Fetch and build pinned ORFS, OpenROAD, and Yosys
+# Fetch and build the pinned ORFS, OpenROAD, and Yosys revisions
 make bootstrap
 make build-tools THREADS=8
 
-# Generate the nine incoming placement inputs
+# Generate the nine paper placement inputs
 make prepare-paper-inputs THREADS=8
 ```
 
-Generated tools and experiment state are stored outside the checkout in
-`../OpenROAD-flow-scripts` and `../dpl_evolve_state` by default.
+## 2. Run the Experiments
 
-For a bounded one-target setup and evaluator check:
+### Table 4: QoR and Runtime
 
 ```bash
-make reviewer-prepare THREADS=8
+# Nine defaults, 3,600 BO trials, and 18 selected-source replays
+bash artifacts/01-table4-qor/reproduce.sh --threads 10
 ```
 
-## 2. Run the experiments
+Result:
 
-### Table 4: QoR and runtime
-
-```bash
-# All nine default, 400-trial BO, and ReviewDSE-HPWL/GHR runs
-make reproduce-table4 THREADS=10
+```text
+../dpl_evolve_state/paper_reproduction/table4/table4-fresh.tsv
 ```
 
-This path executes OpenROAD and replays the selected source programs. It does
-not require an LLM API. To start with one AES default and one selected program:
+### Table 5: Stage Composability
 
 ```bash
-make reviewer-aes-result THREADS=8
+bash artifacts/02-table5-composability/reproduce.sh --threads 10
 ```
 
-### Table 5: stage composability
+Result:
 
-```bash
-make check-table5-data
-make reproduce-table5 THREADS=10
+```text
+../dpl_evolve_state/paper_reproduction/table5_*/table5-fresh.tsv
 ```
 
-Table 5 currently reports `BLOCKED`: the paper-time SWERV `DENSE_2`
-configuration and six source trees were not retained. It does not substitute
-old numbers for a fresh run.
-
-### Table 6: hard cut-row legality
+### Table 6: Hard Cut-Row Legality
 
 ```bash
-make fetch-table6-data
-make check-table6-data
-make reproduce-table6 THREADS=10
+# Download the experiment inputs, then execute all 27 runs
+bash artifacts/03-table6-cutrow/reproduce.sh --fetch --threads 10
 ```
 
-The complete matrix runs Diamond, Negotiation, and ReviewDSE on nine cut-row
-patterns. To run one Ariane row first:
+Result:
+
+```text
+../dpl_evolve_state/paper_reproduction/table6_*/table6-fresh.tsv
+```
+
+### ReviewDSE Search
 
 ```bash
-make reviewer-table6-one THREADS=10
+# Print the Level 1 and nine-case search plans without launching model calls
+bash artifacts/05-reviewdse-search/reproduce.sh --plan
+
+# Run one Teacher/Student iteration
+bash artifacts/05-reviewdse-search/reproduce.sh \
+  --small --case aes_nangate45 --threads 8
+
+# Full paper search: requires authenticated Codex/API access and the
+# paper-scale token budget.
+bash artifacts/05-reviewdse-search/reproduce.sh \
+  --level1 --acknowledge-cost --threads 10
+bash artifacts/05-reviewdse-search/reproduce.sh \
+  --paper --run-prefix review_run_01 --acknowledge-cost --threads 10
+```
+
+Result:
+
+```text
+../dpl_evolve_state/experiment_batches/review_run_01_paper9_place/
 ```
 
 ### Figures 4 and 5
 
 ```bash
-make reproduce-figures FIGURE_SOURCE=retained
+# Rebuild from retained paper-search logs
+bash artifacts/04-figures/reproduce.sh
+
+# Rebuild from the fresh search above
+bash artifacts/04-figures/reproduce.sh \
+  --fresh --run-prefix review_run_01
 ```
 
-### Optional ReviewDSE search
+Results:
+
+```text
+../dpl_evolve_state/paper_reproduction/figures/retained/
+../dpl_evolve_state/paper_reproduction/figures/fresh/
+```
+
+### Ariane Diagnostic
 
 ```bash
-# One bounded live Teacher/Student iteration
-make run-dse-small CASE=aes_nangate45 STUDENTS=1 ITERATIONS=1 THREADS=8
-
-# Print the full paper search plan without making API calls
-make plan-dse-paper
+bash artifacts/06-ariane-diagnostic/reproduce.sh --threads 10
 ```
 
-The complete nine-target discovery search requires model credentials and a
-very large paid token budget. It is not required for selected-program replay.
-See [artifacts/06-reviewdse-search/README.md](artifacts/06-reviewdse-search/README.md).
+Result:
 
-## 3. Evaluate the results
+```text
+../dpl_evolve_state/paper_reproduction/ariane_diagnostic_*/ariane-diagnostic-fresh.tsv
+```
 
-`make reproduce-table4` and `make reproduce-table6` evaluate their fresh
-outputs automatically. Table 4 can be summarized again after all runs finish:
+## 3. Evaluate the Results
+
+The experiment scripts evaluate each fresh run before returning success. Table
+4 can be summarized again after its runs complete:
 
 ```bash
 make summarize-table4
 ```
 
-Results are written under:
+All summaries, legality reports, metrics, and generated figures are
+written under:
 
 ```text
-../dpl_evolve_state/paper_reproduction/
+../dpl_evolve_state/
+├── paper_reproduction/
+│   ├── table4/table4-fresh.tsv
+│   ├── table5_*/table5-fresh.tsv
+│   ├── table6_*/table6-fresh.tsv
+│   ├── figures/{retained,fresh}/
+│   └── ariane_diagnostic_*/ariane-diagnostic-fresh.tsv
+└── experiment_batches/<RUN_PREFIX>_paper9_place/
 ```
-
-Evaluation checks successful EDA execution, placement legality, runtime, and
-numerical agreement within the documented tolerances. See
-[docs/expected-results.md](docs/expected-results.md) for the output fields and
-acceptance rules.
-
-## More information
-
-- [Reviewer walkthrough](docs/reviewer-walkthrough.md)
-- [Environment setup](docs/environment.md)
-- [Troubleshooting](docs/troubleshooting.md)
-- [Optional Web Demo](web-demo/README.md)
-
-Run `make help` for all supported commands. See [LICENSE](LICENSE) for license
-information.

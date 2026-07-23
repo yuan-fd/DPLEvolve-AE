@@ -1,73 +1,48 @@
-# Automation rules
+# Automation Rules
 
 These rules apply to agents operating in this repository.
 
-## Stable experiment interface
+## Execution interface
 
-The primary interface executes paper experiments:
+- Use `scripts/agent/run_artifact.sh` for fixed machine-facing stages.
+- Use root Make targets or `artifacts/*/reproduce.sh` only when a task recipe
+  requires arguments not exposed by the dispatcher.
+- Run `make doctor` before environment preparation.
+- Use one `CASE=` or `--dry-run` before launching a large campaign.
 
-```bash
-make prepare-paper-inputs
-make validate-evaluator
-make reproduce-default
-make reproduce-bo
-make replay-reviewdse TRACK=hpwl
-make replay-reviewdse TRACK=ghr
-make reproduce-table5
-make reproduce-table6
-make plan-level1
-make reproduce-level1 ACKNOWLEDGE_LLM_COST=yes
-make run-dse-small CASE=aes_nangate45
-make plan-dse-paper
-```
+## Immutable inputs
 
-Use the wrappers in `scripts/reproduce/` when Make is unavailable. Use a
-single `CASE=` and/or each script's `--dry-run` before a large launch.
+Never modify:
 
-## Read-only archived evidence
+- `artifacts/*/inputs/`;
+- `artifacts/*/expected/`;
+- `artifacts/01-table4-qor/selected-programs/inputs/`;
+- `configs/reproduction/`; or
+- `provenance/`.
 
-Never modify files under:
+Fresh outputs belong under `DPL_EVOLVE_STATE_ROOT`, `PAPER_DATA_ROOT`, or the
+sibling ORFS workspace. Never change an expected value to make a result pass.
 
-- `artifacts/*/inputs/`
-- `artifacts/*/expected/`
-- `artifacts/01-table4-qor/selected-programs/inputs/`
-- `provenance/`
+## Experiment rules
 
-Do not change an expected value to turn a failing comparison into a pass.
-Fresh experimental outputs belong under `DPL_EVOLVE_STATE_ROOT` and the ORFS
-reports/results trees, never in an expected-value directory.
+- Table 4 replay is fresh OpenROAD execution, not a packaged-number check.
+- Table 6 requires its published package; the agent dispatcher fetches and
+  verifies it before execution.
+- Table 5 returns `BLOCKED` while the exact configuration and six sources
+  listed in `docs/table5-status.md` are missing. Never substitute another
+  SWERV configuration or retained numbers.
+- ReviewDSE model-backed search requires explicit user authorization and the
+  repository cost acknowledgement. Planning commands make no model calls.
+- `make toolchain-smoke` is a non-paper diagnostic under `tests/toolchain/`.
 
-## Claim boundaries
+## Result acceptance
 
-- `make toolchain-smoke` exercises one AES toolchain path. It is not a paper
-  experiment and must not be called RTL-to-GDS.
-- Table 4 selected-program replay is a fresh OpenROAD experiment when its
-  prepared ODB is present.
-- A full ReviewDSE search is supported by `make run-dse-paper`, but it must
-  retain the explicit LLM-cost acknowledgement.
-- Table 6 is runnable after `make fetch-table6-data` installs the published
-  exact package. Table 5 remains blocked until the assets described in
-  `docs/paper-data-layout.md` are recovered. Never substitute archived TSV/JSON
-  rows and label the result fresh.
-
-## Validation sequence
-
-For source changes, run:
-
-```bash
-make plan-dse-paper
-bash scripts/reproduce/run_bo.sh --case aes_nangate45 --dry-run
-bash scripts/reproduce/replay_selected.sh --track hpwl --case aes_nangate45 --dry-run
-make test
-make validate-configs
-```
-
-Run a live EDA case only when the pinned workspace is available. Run a paid LLM
-search only when the user explicitly authorizes the cost.
+Report successful execution, legality, canonical trajectory metrics, runtime,
+and the generated numerical verdict. Hash availability is provenance metadata,
+not a replacement for scientific execution.
 
 ## Failure reporting
 
-Record the experiment, exact command, exit code, and complete output. Separate
-environment/data failures from QoR differences. A missing ODB or source tree is
-not evidence that a paper value is wrong, and a digest mismatch is not safe to
-repair automatically.
+Record the exact command, manifest, exit code, result directory, and first
+failure. Distinguish `BLOCKED` missing data from environment failure and from a
+completed run outside its numerical acceptance window.

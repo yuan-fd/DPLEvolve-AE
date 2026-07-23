@@ -11,8 +11,10 @@ digest_inputs() {
 
 before="$(digest_inputs)"
 
+bash scripts/agent/run_artifact.sh --artifact prepare --dry-run | grep -F 'prepare-paper-inputs' >/dev/null
 bash scripts/agent/run_artifact.sh --artifact table4 --dry-run | grep -F 'artifacts/01-table4-qor/reproduce.sh' >/dev/null
-bash scripts/agent/run_artifact.sh --artifact figures --dry-run | grep -F 'artifacts/05-figures/reproduce.sh' >/dev/null
+bash scripts/agent/run_artifact.sh --artifact table6 --dry-run | grep -F -- '--fetch' >/dev/null
+bash scripts/agent/run_artifact.sh --artifact figures --dry-run | grep -F 'artifacts/04-figures/reproduce.sh' >/dev/null
 bash scripts/agent/run_artifact.sh --artifact search --dry-run | grep -F -- '--plan' >/dev/null
 bash scripts/agent/run_artifact.sh --artifact smoke --dry-run | grep -F -- '--check-only' >/dev/null
 
@@ -20,9 +22,9 @@ for wrapper in \
   artifacts/01-table4-qor/reproduce.sh \
   artifacts/02-table5-composability/reproduce.sh \
   artifacts/03-table6-cutrow/reproduce.sh \
-  artifacts/05-figures/reproduce.sh \
-  artifacts/06-reviewdse-search/reproduce.sh \
-  artifacts/07-ariane-diagnostic/reproduce.sh; do
+  artifacts/04-figures/reproduce.sh \
+  artifacts/05-reviewdse-search/reproduce.sh \
+  artifacts/06-ariane-diagnostic/reproduce.sh; do
   bash "${wrapper}" --help >/dev/null
 done
 
@@ -35,10 +37,10 @@ fi
 python3 -m json.tool agent/schemas/run-manifest.schema.json >/dev/null
 
 missing_orfs="$(mktemp -d)/OpenROAD-flow-scripts"
-smoke_check_output="$(ORFS_ROOT="${missing_orfs}" bash artifacts/04-aes-smoke/run.sh --check-only)"
+smoke_check_output="$(ORFS_ROOT="${missing_orfs}" bash tests/toolchain/aes-smoke/run.sh --check-only)"
 grep -F '[SKIP] Optional prepared AES smoke result is not available.' <<<"${smoke_check_output}" >/dev/null
-ORFS_ROOT="${missing_orfs}" bash artifacts/04-aes-smoke/run.sh --help | grep -F 'Usage:' >/dev/null
-if ORFS_ROOT="${missing_orfs}" bash artifacts/04-aes-smoke/run.sh --run >/dev/null 2>&1; then
+ORFS_ROOT="${missing_orfs}" bash tests/toolchain/aes-smoke/run.sh --help | grep -F 'Usage:' >/dev/null
+if ORFS_ROOT="${missing_orfs}" bash tests/toolchain/aes-smoke/run.sh --run >/dev/null 2>&1; then
   echo '[FAIL] A fresh smoke run accepted a missing ORFS workspace.' >&2
   exit 1
 fi
@@ -70,5 +72,15 @@ if bash scripts/agent/run_artifact.sh --artifact unsupported --dry-run >/dev/nul
   echo '[FAIL] Agent dispatcher accepted an unsupported artifact.' >&2
   exit 1
 fi
+
+blocked_state="$(mktemp -d)"
+if DPL_EVOLVE_STATE_ROOT="${blocked_state}" \
+   bash scripts/agent/run_artifact.sh --artifact table5 >/dev/null 2>&1; then
+  echo '[FAIL] Missing Table 5 sources were not reported as blocked.' >&2
+  exit 1
+else
+  [[ "$?" -eq 3 ]] || { echo '[FAIL] Table 5 blocked exit code is not 3.' >&2; exit 1; }
+fi
+grep -F '"status": "BLOCKED"' "${blocked_state}"/agent_runs/table5_*.json >/dev/null
 
 echo '[PASS] Fresh experiment wrappers and machine dispatcher work as expected.'

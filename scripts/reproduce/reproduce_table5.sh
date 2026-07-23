@@ -84,7 +84,7 @@ if [[ "${missing}" -eq 0 ]]; then
 fi
 if [[ "${missing}" -gt 0 ]]; then
   echo "[BLOCKED] Table 5 recovery is incomplete: six source commits and the untracked SWERV config_dense2.mk were not retained." >&2
-  echo "          See configs/reproduction/table5-{sources,inputs}.tsv and docs/paper-data-layout.md." >&2
+  echo "          See docs/table5-status.md and configs/reproduction/table5-{sources,inputs}.tsv." >&2
   exit 3
 fi
 if [[ "${CHECK_MODE}" == paper-data ]]; then

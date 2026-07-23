@@ -14,7 +14,7 @@ usage() {
   cat <<'EOF'
 Usage: run_artifact.sh --artifact ID [--dry-run]
 
-IDs: table4, table5, table6, figures, search, ariane, smoke
+IDs: prepare, table4, table5, table6, figures, search, ariane, smoke
 
 Each ID invokes the experiment's fresh reproduce.sh wrapper. Search prints the
 Level 1/2 plans and never starts paid model calls through this dispatcher.
@@ -33,17 +33,18 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${artifact}" in
+  prepare) command=(make -C "${AE_ROOT}" bootstrap build-tools prepare-paper-inputs "THREADS=${DPL_EVOLVE_THREADS:-10}") ;;
   table4) command=(bash "${AE_ROOT}/artifacts/01-table4-qor/reproduce.sh") ;;
   table5) command=(bash "${AE_ROOT}/artifacts/02-table5-composability/reproduce.sh") ;;
-  table6) command=(bash "${AE_ROOT}/artifacts/03-table6-cutrow/reproduce.sh") ;;
-  figures) command=(bash "${AE_ROOT}/artifacts/05-figures/reproduce.sh") ;;
-  search) command=(bash "${AE_ROOT}/artifacts/06-reviewdse-search/reproduce.sh" --plan) ;;
-  ariane) command=(bash "${AE_ROOT}/artifacts/07-ariane-diagnostic/reproduce.sh") ;;
+  table6) command=(bash "${AE_ROOT}/artifacts/03-table6-cutrow/reproduce.sh" --fetch) ;;
+  figures) command=(bash "${AE_ROOT}/artifacts/04-figures/reproduce.sh") ;;
+  search) command=(bash "${AE_ROOT}/artifacts/05-reviewdse-search/reproduce.sh" --plan) ;;
+  ariane) command=(bash "${AE_ROOT}/artifacts/06-ariane-diagnostic/reproduce.sh") ;;
   smoke)
     if [[ "${run_smoke}" -eq 1 ]]; then
-      command=(bash "${AE_ROOT}/artifacts/04-aes-smoke/run.sh" --run --threads "${DPL_EVOLVE_THREADS:-4}")
+      command=(bash "${AE_ROOT}/tests/toolchain/aes-smoke/run.sh" --run --threads "${DPL_EVOLVE_THREADS:-4}")
     else
-      command=(bash "${AE_ROOT}/artifacts/04-aes-smoke/run.sh" --check-only)
+      command=(bash "${AE_ROOT}/tests/toolchain/aes-smoke/run.sh" --check-only)
     fi
     ;;
   *)
@@ -63,7 +64,13 @@ mkdir -p "${manifest_dir}"
 stamp="$(date +%Y%m%d_%H%M%S)"
 manifest="${manifest_dir}/${artifact}_${stamp}.json"
 started="$(date -Iseconds)"
-if "${command[@]}"; then exit_code=0; status=PASS; else exit_code=$?; status=FAIL; fi
+if "${command[@]}"; then
+  exit_code=0
+  status=PASS
+else
+  exit_code=$?
+  if [[ "${exit_code}" -eq 3 ]]; then status=BLOCKED; else status=FAIL; fi
+fi
 finished="$(date -Iseconds)"
 
 printf '{\n  "artifact": "%s",\n  "status": "%s",\n  "exit_code": %d,\n  "started_at": "%s",\n  "finished_at": "%s"\n}\n' \

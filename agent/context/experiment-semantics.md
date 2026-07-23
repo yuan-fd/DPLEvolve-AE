@@ -14,7 +14,7 @@
   xhigh Students, 10 iterations, and a 2x runtime gate.
 - `reproduce-table6` is a fresh replay path after the published external data
   is fetched. `reproduce-table5` is implemented but remains blocked by missing
-  recovery assets declared in `docs/paper-data-layout.md`.
+  recovery assets declared in `docs/table5-status.md`.
 
 Paper-time hashes strengthen provenance but are not the scientific pass/fail
 criterion. Fresh execution, legality, canonical metrics, and numerical or

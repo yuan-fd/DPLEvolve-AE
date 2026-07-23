@@ -1,33 +1,62 @@
-# Machine-facing interface
+# Agent Entry Point
 
-This directory is for automation agents, not the reviewer reading path. Human
-instructions live in the root README, `docs/reviewer-walkthrough.md`, and each
-experiment README.
+This directory is the machine-facing interface. Human instructions live in the
+root README and `docs/`.
 
-Agents use the same stable Make interface as humans:
+## Required reading order
+
+1. `AGENTS.md` — execution and safety rules.
+2. `context/project-map.md` — repository ownership and stable entry points.
+3. `context/experiment-semantics.md` — what each experiment executes.
+4. `context/invariants.md` — conditions an agent must not bypass.
+5. the matching recipe under `tasks/`.
+
+## Automated reproduction sequence
+
+Run from the repository root:
 
 ```bash
-make prepare-paper-inputs CASE=aes_nangate45
-make validate-evaluator CASE=aes_nangate45
-make replay-reviewdse TRACK=hpwl CASE=aes_nangate45
-make reproduce-table6 CASE=ariane133_placebatch PATTERN=center_band_8 ROLE=reviewdse
-make plan-dse-paper
-```
+# 1. Inspect the host without starting an experiment
+make doctor
 
-The fixed dispatcher provides an additional safe interface:
+# 2. Build the pinned tools and prepare all paper inputs
+bash scripts/agent/run_artifact.sh --artifact prepare
 
-```bash
-# real experiment wrapper
+# 3. Run the paper experiments independently
 bash scripts/agent/run_artifact.sh --artifact table4
+bash scripts/agent/run_artifact.sh --artifact table5
+bash scripts/agent/run_artifact.sh --artifact table6
+bash scripts/agent/run_artifact.sh --artifact figures
+bash scripts/agent/run_artifact.sh --artifact ariane
 
-# print search plans; never starts paid calls through the dispatcher
+# 4. Print the ReviewDSE search launch plan
 bash scripts/agent/run_artifact.sh --artifact search
 ```
 
-Generated agent manifests are written under
-`$DPL_EVOLVE_STATE_ROOT/agent_runs/`, not into the Git checkout.
+Table 5 returns `BLOCKED` until the assets in `docs/table5-status.md` are
+recovered. A blocked Table 5 run does not invalidate independently completed
+experiments.
 
-- `AGENTS.md`: operational rules;
-- `context/`: experiment semantics, invariants, and project map;
-- `tasks/`: bounded recipes;
-- `schemas/`: machine-generated record schemas.
+The search dispatcher prints the exact plan. A live or full model-backed search
+must use the cost-gated commands in `tasks/reproduce-paper-experiments.md` after
+the user authorizes API/model use.
+
+## Machine outputs
+
+Every dispatcher execution writes a JSON run manifest to:
+
+```text
+$DPL_EVOLVE_STATE_ROOT/agent_runs/
+```
+
+Manifest status is `PASS`, `BLOCKED`, or `FAIL`. Experiment results are written
+under:
+
+```text
+$DPL_EVOLVE_STATE_ROOT/paper_reproduction/
+$DPL_EVOLVE_STATE_ROOT/experiment_batches/
+```
+
+Agents must report the command, manifest path, result path, exit code, and first
+failed invariant. They must never rewrite expected values or fill missing
+inputs with guessed substitutes.

@@ -18,7 +18,7 @@ while [[ $# -gt 0 ]]; do
     --threads) THREADS="$2"; shift 2 ;;
     --acknowledge-cost) ACK=yes; shift ;;
     --help|-h)
-      sed -n '1,80p' "${ROOT}/artifacts/06-reviewdse-search/README.md"
+      sed -n '1,80p' "${ROOT}/artifacts/05-reviewdse-search/README.md"
       exit 0
       ;;
     *) echo "[ERROR] unknown argument: $1" >&2; exit 2 ;;

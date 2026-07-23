@@ -9,7 +9,7 @@ while [[ $# -gt 0 ]]; do
     --fresh) SOURCE=fresh; shift ;;
     --run-prefix) RUN_PREFIX="$2"; shift 2 ;;
     --help|-h)
-      echo "Usage: artifacts/05-figures/reproduce.sh [--fresh --run-prefix NAME]"
+      echo "Usage: artifacts/04-figures/reproduce.sh [--fresh --run-prefix NAME]"
       exit 0
       ;;
     *) echo "[ERROR] unknown argument: $1" >&2; exit 2 ;;

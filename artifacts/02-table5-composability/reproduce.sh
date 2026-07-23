@@ -16,4 +16,4 @@ while [[ $# -gt 0 ]]; do
     *) echo "[ERROR] unknown argument: $1" >&2; exit 2 ;;
   esac
 done
-exec make -C "${ROOT}" reproduce-table5 "THREADS=${THREADS}"
+exec bash "${ROOT}/scripts/reproduce/reproduce_table5.sh" --threads "${THREADS}"

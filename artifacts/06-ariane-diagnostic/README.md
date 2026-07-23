@@ -5,7 +5,7 @@ that missed the intended handoff mechanism and two Level-1-guided runs. It is
 supporting diagnostic evidence, not a controlled paper ablation.
 
 ```bash
-bash artifacts/07-ariane-diagnostic/reproduce.sh --threads 10
+bash artifacts/06-ariane-diagnostic/reproduce.sh --threads 10
 ```
 
 The runner generates a fresh Ariane input with the pinned flow, executes all

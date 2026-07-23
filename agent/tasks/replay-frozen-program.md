@@ -8,5 +8,5 @@
 5. Report the fresh legality, HPWL/runtime result, generated ODB hash when
    available, and whether the numerical acceptance window passed.
 
-`scripts/agent/run_artifact.sh --artifact table4` is only the compact archive
-audit and must not be reported as replay.
+`scripts/agent/run_artifact.sh --artifact table4` runs the complete fresh Table
+4 pipeline. Use the case-specific Make command above for a bounded replay.

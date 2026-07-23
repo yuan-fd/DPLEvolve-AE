@@ -1,4 +1,4 @@
-# Smoke input
+# Toolchain test input
 
 The binary ODB is intentionally regenerated rather than stored here. The
 source RTL, platform files, and flow scripts come from the pinned sibling

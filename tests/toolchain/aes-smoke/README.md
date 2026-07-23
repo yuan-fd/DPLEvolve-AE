@@ -1,4 +1,4 @@
-# AES Nangate45 toolchain diagnostic
+# AES Nangate45 toolchain test
 
 This optional bundle performs a fresh one-case EDA execution. It regenerates the AES
 Nangate45 placement input with the pinned Yosys revision, runs the native
@@ -11,7 +11,7 @@ After preparing the environment from the repository root, run:
 ```bash
 make bootstrap  # omit only when the pinned sibling ORFS workspace exists
 make build-tools
-bash artifacts/04-aes-smoke/run.sh --run --threads 8
+bash tests/toolchain/aes-smoke/run.sh --run --threads 8
 ```
 
 The run checks:
@@ -36,7 +36,7 @@ existing result. EDA products are written to the sibling ORFS workspace under
 To validate a locally prepared reference run without creating a new run:
 
 ```bash
-bash artifacts/04-aes-smoke/check.sh
+bash tests/toolchain/aes-smoke/check.sh
 ```
 
 The reference ORFS result tree is too large for this Git repository and is not

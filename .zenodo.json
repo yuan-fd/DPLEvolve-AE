@@ -1,6 +1,6 @@
 {
   "title": "DPLEvolve: Protected White-Box DSE for Open-Source EDA — Artifact Evaluation",
-  "description": "Artifact Evaluation repository for the MLCAD 2026 short paper: 'From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA'. Provides normalized Table 4 BO trial records, selected-candidate records for the two ReviewDSE columns, compact archived summaries for Tables 5 and 6, 18 integrity-checked ReviewDSE source programs, and a pinned one-case OpenROAD smoke flow. The nine paper-time Table 4 ODB inputs are not included.",
+  "description": "Artifact Evaluation repository for 'From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA'. Provides pinned EDA setup, fresh Table 4 and Table 6 experiment runners, 18 selected ReviewDSE source programs, ReviewDSE search scripts, figure generation, and numerical evaluation.",
   "creators": [
     {
       "name": "DPLEvolve Contributors"
@@ -20,7 +20,7 @@
   "related_identifiers": [
     {
       "relation": "isSupplementTo",
-      "identifier": "https://github.com/CODA-Team/DPLEvolve"
+      "identifier": "https://arxiv.org/abs/2607.11294"
     }
   ],
   "language": "eng",

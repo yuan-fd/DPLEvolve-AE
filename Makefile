@@ -271,10 +271,10 @@ paper-data-check-available:
 
 toolchain-smoke smoke:
 	@echo "[NOTICE] AES smoke is a toolchain exercise, not a paper reproduction."
-	@bash "$(ARTIFACTS_DIR)/04-aes-smoke/run.sh" --run --threads "$(THREADS)"
+	@bash "$(AE_ROOT)/tests/toolchain/aes-smoke/run.sh" --run --threads "$(THREADS)"
 
 smoke-check:
-	@bash "$(ARTIFACTS_DIR)/04-aes-smoke/run.sh" --check-only
+	@bash "$(AE_ROOT)/tests/toolchain/aes-smoke/run.sh" --check-only
 
 test: test-structure test-integration test-unit test-web
 	@echo ""

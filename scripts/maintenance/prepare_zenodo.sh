@@ -36,7 +36,7 @@ required_paths=(
   artifacts/01-table4-qor/selected-programs/manifest.json
   artifacts/02-table5-composability/inputs/provenance.json
   artifacts/03-table6-cutrow/inputs/provenance.json
-  artifacts/04-aes-smoke/expected/ae_reproduction_lock.json
+  tests/toolchain/aes-smoke/expected/ae_reproduction_lock.json
   src/dpl_evolve_agent
   scripts/agent/run_artifact.sh
 )
@@ -183,7 +183,7 @@ for required in \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/01-table4-qor/selected-programs/manifest.json" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/02-table5-composability/inputs/counterexamples.tsv" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/03-table6-cutrow/inputs/reviewdse.tsv" \
-  "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/04-aes-smoke/expected/ae_reproduction_lock.json" \
+  "${ARCHIVE_ROOT}/DPLEvolve-AE/tests/toolchain/aes-smoke/expected/ae_reproduction_lock.json" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/src/dpl_evolve_agent/baseline/run_baseline.sh" \
   "${ARCHIVE_ROOT}/MANIFEST.sha256"; do
   if ! grep -Fxq "${required}" "${LISTING}"; then

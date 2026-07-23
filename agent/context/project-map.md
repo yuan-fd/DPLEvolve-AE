@@ -2,43 +2,39 @@
 
 ```text
 artifacts/
-  01-table4-qor/          Table 4 records and 18 selected source programs
-  02-table5-composability/ Table 5 compact counterexamples
-  03-table6-cutrow/       Table 6 compact cut-row outcomes
-  04-aes-smoke/           Optional one-case toolchain diagnostic
-  05-figures/             Figure 4/5 reproduction wrapper
-  06-reviewdse-search/    Level 1/2 search wrapper
-  07-ariane-diagnostic/   Six-source diagnostic wrapper
-configs/reproduction/     Paper experiment contract and case plan
-src/
-  dpl_evolve_agent/       Bundled research implementation
+  01-table4-qor/           Table 4 default, BO, and selected-source replay
+  02-table5-composability/ Table 5 stage-composability experiment
+  03-table6-cutrow/        Table 6 cut-row legality experiment
+  04-figures/              Figure 4/5 renderer
+  05-reviewdse-search/     Level 1 and Teacher/Student search
+  06-ariane-diagnostic/    Ariane six-source diagnostic
+configs/reproduction/      Machine-readable paper experiment contract
+src/dpl_evolve_agent/      ReviewDSE implementation
 scripts/
-  reproduce/              Fresh paper experiment entry points
-  human/                  Environment preparation for reviewers
-  agent/                  Stable machine dispatcher and validation
-  shared/                 Cross-path runtime utilities
-  maintenance/            Provenance, token, and release tooling
-docs/                      Human-facing guides
-agent/                     Machine-facing instructions and schemas
-schemas/                   Public experiment-config schema
-provenance/                Source locks and integrity records
-paper/                     Paper metadata (PDF not tracked)
+  human/                   Host setup and environment preparation
+  reproduce/               Experiment implementations and summarizers
+  agent/                   Fixed machine dispatcher and inspection
+  shared/                  Shared environment/configuration utilities
+docs/                      Human-facing detailed documentation
+agent/                     Agent rules, task recipes, context, and schemas
+tests/toolchain/aes-smoke/ Non-paper EDA toolchain test
+provenance/                Pinned upstream source revisions
 ```
 
-## Entry points
+## Stable entry points
 
 | Intent | Entry point |
 |---|---|
-| Prepare paper inputs | `make prepare-paper-inputs` |
-| Table 4 default/BO/replay | `make reproduce-table4` |
-| Table 6 cut-row replay | `make reproduce-table6` |
-| Small real DSE | `make run-dse-small` |
-| Environment inspection | `scripts/agent/inspect_environment.sh` |
+| Inspect environment | `bash scripts/agent/inspect_environment.sh` |
+| Prepare pinned EDA tools and inputs | `make reviewer-prepare THREADS=8` |
+| Table 4 | `bash scripts/agent/run_artifact.sh --artifact table4` |
+| Table 5 | `bash scripts/agent/run_artifact.sh --artifact table5` |
+| Table 6 | `bash scripts/agent/run_artifact.sh --artifact table6` |
+| Figures 4/5 | `bash scripts/agent/run_artifact.sh --artifact figures` |
+| ReviewDSE plan | `bash scripts/agent/run_artifact.sh --artifact search` |
+| Ariane diagnostic | `bash scripts/agent/run_artifact.sh --artifact ariane` |
 | Repository validation | `make test` |
-| Release-package check | `make zenodo-audit` |
 
-## Dependency direction
-
-Archive verifiers read only their own bundles. Fresh reproduction wrappers call
-the bundled framework and sibling ORFS workspace and write generated state only
-outside immutable expected-value directories.
+All experiment wrappers call the root Make interface. Fresh outputs go to the
+sibling ORFS workspace or `DPL_EVOLVE_STATE_ROOT`; agents never write generated
+results into `artifacts/*/inputs/` or `artifacts/*/expected/`.

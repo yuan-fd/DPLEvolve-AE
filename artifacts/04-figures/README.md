@@ -6,8 +6,8 @@ completed Table 4 BO campaign and a completed ReviewDSE search with the same
 run prefix.
 
 ```bash
-bash artifacts/05-figures/reproduce.sh
-bash artifacts/05-figures/reproduce.sh --fresh --run-prefix review_run_01
+bash artifacts/04-figures/reproduce.sh
+bash artifacts/04-figures/reproduce.sh --fresh --run-prefix review_run_01
 ```
 
 The retained Figure 4 source contains 96 observed points. The three missing

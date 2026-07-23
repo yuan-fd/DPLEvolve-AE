@@ -15,11 +15,11 @@
   "properties": {
     "artifact": {
       "type": "string",
-      "enum": ["table4", "table5", "table6", "figures", "search", "ariane", "smoke"]
+      "enum": ["prepare", "table4", "table5", "table6", "figures", "search", "ariane", "smoke"]
     },
     "status": {
       "type": "string",
-      "enum": ["PASS", "FAIL"]
+      "enum": ["PASS", "BLOCKED", "FAIL"]
     },
     "exit_code": {
       "type": "integer",
