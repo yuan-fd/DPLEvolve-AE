@@ -702,50 +702,25 @@ async def ssh_connect(config: SSHConfig):
 
 
 TASKS: dict[str, tuple[str, list[str]]] = {
-    # Invoke Doctor directly so the web UI can diagnose a missing GNU Make.
-    "doctor": (
-        "Reviewer Environment Doctor",
-        ["bash", "scripts/human/doctor.sh"],
-    ),
-    "check": ("Environment Check", ["make", "check"]),
+    # Invoke Doctor directly so a missing GNU Make can still be diagnosed.
+    "doctor": ("Environment Doctor", ["bash", "scripts/human/doctor.sh"]),
     "bootstrap": ("Bootstrap Pinned Workspace", ["make", "bootstrap"]),
     "build-tools": ("Build Pinned EDA Tools", ["make", "build-tools"]),
-    "prepare-inputs": ("Prepare Nine Paper Inputs", ["make", "prepare-paper-inputs"]),
-    "validate-evaluator": ("Validate Protected Evaluator", ["make", "validate-evaluator"]),
-    "default": ("Reproduce Table 4 Defaults", ["make", "reproduce-default"]),
-    "setup-bo": ("Install BO Python Environment", ["make", "setup-bo"]),
-    "bo": ("Reproduce Table 4 BO", ["make", "reproduce-bo"]),
-    "replay-hpwl": ("Replay ReviewDSE HPWL Programs", ["make", "replay-reviewdse", "TRACK=hpwl"]),
-    "replay-ghr": ("Replay ReviewDSE GHR Programs", ["make", "replay-reviewdse", "TRACK=ghr"]),
-    "table4-fresh": ("Reproduce Complete Table 4", ["make", "reproduce-table4"]),
-    "figures-retained": ("Rebuild Figures 4 and 5", ["make", "reproduce-figures"]),
-    "ariane-source-check": ("Check Ariane Diagnostic Sources", ["make", "check-ariane-diagnostic-sources"]),
-    "ariane-diagnostic": ("Reproduce Ariane Diagnostic", ["make", "reproduce-ariane-diagnostic"]),
-    "fetch-table6-data": ("Download Verified Table 6 Data", ["make", "fetch-table6-data"]),
-    "table6-data-check": ("Check Table 6 Replay Data", ["make", "check-table6-data"]),
-    "table5-data-check": ("Check Table 5 Recovery Data", ["make", "check-table5-data"]),
-    "paper-data-check": ("Report All Paper-Data Status", ["make", "paper-data-check"]),
-    "prepare-table5-inputs": ("Regenerate Table 5 Dense Inputs", ["make", "prepare-table5-inputs"]),
+    "check": ("Inspect Prepared Environment", ["make", "check"]),
+    "prepare-inputs": ("Prepare Table 4 Inputs", ["make", "prepare-paper-inputs"]),
+    "fetch-table6-data": ("Download Table 6 Inputs", ["make", "fetch-table6-data"]),
+    "table5-data-check": ("Check Table 5 Inputs", ["make", "check-table5-data"]),
+    "table4-fresh": ("Reproduce Table 4", ["make", "reproduce-table4"]),
     "table5-fresh": ("Reproduce Table 5", ["make", "reproduce-table5"]),
     "table6-fresh": ("Reproduce Table 6", ["make", "reproduce-table6"]),
-    "table6-one": (
-        "Run One Table 6 ReviewDSE Row",
-        ["make", "reviewer-table6-one", "THREADS=10"],
+    "figures": ("Reproduce Figures 4 and 5", ["make", "reproduce-figures"]),
+    "ariane-diagnostic": (
+        "Reproduce Ariane Diagnostic",
+        ["make", "reproduce-ariane-diagnostic"],
     ),
-    "level1-plan": ("Print Level 1 Calibration Plan", ["make", "plan-level1"]),
-    "dse-plan": ("Print Full Paper DSE Plan", ["make", "plan-dse-paper"]),
-    "toolchain-smoke": ("Run Optional AES Toolchain Diagnostic", ["make", "toolchain-smoke"]),
-    "available-results": (
-        "Reproduce All Currently Available Results",
-        ["make", "reproduce-available-results"],
-    ),
-    "reviewer-aes": (
-        "Run AES Default and ReviewDSE Replay",
-        ["make", "reviewer-aes-result", "THREADS=8"],
-    ),
-    "full": (
-        "Prepare One-Target Reviewer Environment",
-        ["make", "reviewer-prepare", "THREADS=8"],
+    "search-paper": (
+        "Run Complete ReviewDSE Search",
+        ["make", "reproduce-paper-search", "ACKNOWLEDGE_LLM_COST=yes"],
     ),
 }
 
@@ -760,36 +735,6 @@ async def run_named_task(task_name: str, req: RunRequest):
         raise HTTPException(status_code=404, detail=f"Unknown task: {task_name}")
     label, command = task
     return await _enqueue(label, command, req.ssh)
-
-
-@app.post("/api/run/env-check")
-async def run_env_check(req: RunRequest):
-    label, command = TASKS["check"]
-    return await _enqueue(label, command, req.ssh)
-
-
-@app.post("/api/run/install")
-async def run_install(req: RunRequest):
-    return await _enqueue(
-        "Install Dependencies",
-        ["bash", "-c", "make bootstrap && make build-tools"],
-        req.ssh,
-    )
-
-
-@app.post("/api/run/minimal")
-async def run_minimal(req: RunRequest):
-    label, command = TASKS["validate-evaluator"]
-    return await _enqueue(label, command, req.ssh)
-
-
-@app.post("/api/run/full")
-async def run_full(req: RunRequest):
-    return await _enqueue(
-        "Prepare and Validate Paper Evaluator",
-        ["bash", "-c", "make bootstrap && make build-tools && make prepare-paper-inputs && make validate-evaluator"],
-        req.ssh,
-    )
 
 
 @app.post("/api/run/cancel")

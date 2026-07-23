@@ -96,57 +96,41 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
 
     def test_core_tasks_are_fixed_commands(self):
         self.assertEqual(server.TASKS["doctor"][1], ["bash", "scripts/human/doctor.sh"])
-        self.assertEqual(
-            server.TASKS["validate-evaluator"][1],
-            ["make", "validate-evaluator"],
-        )
+        self.assertEqual(server.TASKS["bootstrap"][1], ["make", "bootstrap"])
+        self.assertEqual(server.TASKS["build-tools"][1], ["make", "build-tools"])
+        self.assertEqual(server.TASKS["check"][1], ["make", "check"])
+        self.assertEqual(server.TASKS["prepare-inputs"][1], ["make", "prepare-paper-inputs"])
         self.assertEqual(server.TASKS["fetch-table6-data"][1], ["make", "fetch-table6-data"])
-        self.assertEqual(server.TASKS["prepare-table5-inputs"][1], ["make", "prepare-table5-inputs"])
+        self.assertEqual(server.TASKS["table5-data-check"][1], ["make", "check-table5-data"])
         self.assertEqual(server.TASKS["table4-fresh"][1], ["make", "reproduce-table4"])
-        self.assertEqual(server.TASKS["figures-retained"][1], ["make", "reproduce-figures"])
+        self.assertEqual(server.TASKS["table5-fresh"][1], ["make", "reproduce-table5"])
+        self.assertEqual(server.TASKS["table6-fresh"][1], ["make", "reproduce-table6"])
+        self.assertEqual(server.TASKS["figures"][1], ["make", "reproduce-figures"])
         self.assertEqual(
             server.TASKS["ariane-diagnostic"][1],
             ["make", "reproduce-ariane-diagnostic"],
         )
         self.assertEqual(
-            server.TASKS["available-results"][1],
-            ["make", "reproduce-available-results"],
+            server.TASKS["search-paper"][1],
+            ["make", "reproduce-paper-search", "ACKNOWLEDGE_LLM_COST=yes"],
         )
 
-    def test_full_reproduction_uses_documented_order(self):
-        self.assertEqual(
-            server.TASKS["full"][1],
-            ["make", "reviewer-prepare", "THREADS=8"],
-        )
-
-    def test_reviewer_simulation_tasks_are_bounded(self):
-        self.assertEqual(
-            server.TASKS["reviewer-aes"][1],
-            ["make", "reviewer-aes-result", "THREADS=8"],
-        )
-        self.assertEqual(
-            server.TASKS["table6-one"][1],
-            ["make", "reviewer-table6-one", "THREADS=10"],
-        )
-
-    def test_ui_explains_fresh_clone_paths(self):
+    def test_ui_is_a_two_stage_reviewer_console(self):
         html = (WEB_DEMO_ROOT / "templates" / "index.html").read_text(encoding="utf-8")
-        self.assertIn("Fresh clone: prepare the experiment", html)
+        self.assertIn("1. Prepare the Environment and Inputs", html)
+        self.assertIn("2. Run the Paper Experiments", html)
         self.assertIn("prepare-paper-inputs", html)
-        self.assertIn("reproduce-bo", html)
-        self.assertIn("six missing candidate sources", html)
-        self.assertIn("config_dense2.mk", html)
-        self.assertIn("does not need the deleted ODBs", html)
-        self.assertIn("Every experiment button invokes a fixed Make command", html)
-        self.assertIn("Table 5 is the only blocked reported table", html)
-        self.assertIn("explicit relative-result tolerances", html)
+        self.assertIn("fetch-table6-data", html)
+        self.assertIn("reproduce-table4", html)
+        self.assertIn("reproduce-table5", html)
+        self.assertIn("reproduce-table6", html)
+        self.assertIn("reproduce-paper-search", html)
         self.assertIn("reproduce-ariane-diagnostic", html)
-        self.assertIn("reproduce-available-results", html)
-        self.assertIn("96 observed points", html)
-        self.assertIn("hashed Markdown/JSON evidence packet", html)
-        self.assertIn("7200-second cap", html)
-        self.assertIn("Prepare one target", html)
-        self.assertIn("Run AES result", html)
+        self.assertIn("paper-scale token budget", html)
+        self.assertNotIn('data-task="reviewer-aes"', html)
+        self.assertNotIn('class="path-grid"', html)
+        self.assertNotIn('id="view-slides"', html)
+        self.assertNotIn('id="view-guide"', html)
 
     def test_ui_exposes_every_fixed_reviewer_task(self):
         html = (WEB_DEMO_ROOT / "templates" / "index.html").read_text(encoding="utf-8")
