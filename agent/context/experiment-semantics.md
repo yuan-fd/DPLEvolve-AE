@@ -12,14 +12,13 @@
 - `run-dse-small` and `run-dse-paper` invoke the real Teacher/Student source
   exploration loop. The paper profile is 1 GPT-5.5 xhigh Teacher, 4 GPT-5.4
   xhigh Students, 10 iterations, and a 2x runtime gate.
-- `reproduce-table5` and `reproduce-table6` are fresh replay paths, but require
-  the exact external data declared in `docs/paper-data-layout.md`.
+- `reproduce-table6` is a fresh replay path after the published external data
+  is fetched. `reproduce-table5` is implemented but remains blocked by missing
+  recovery assets declared in `docs/paper-data-layout.md`.
 
-## Archived support
-
-`table4`, `table5`, and `table6` beneath `artifacts/` recompute compact archived
-records. `make audit-archive` dispatches them. These commands perform no fresh
-EDA execution and must never be presented as reproduction.
+Paper-time hashes strengthen provenance but are not the scientific pass/fail
+criterion. Fresh execution, legality, canonical metrics, and numerical or
+qualitative acceptance are mandatory.
 
 ## Toolchain diagnostic
 

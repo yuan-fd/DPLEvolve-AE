@@ -11,9 +11,9 @@ stable `paper9_place` flow variant. Exact paper-time input
 snapshots may instead be installed under the variant recorded in the selected
 program manifest.
 
-The manifest is not an expected-value checker. Public reproduction commands
-must execute OpenROAD and produce new `metrics.json` records. Archived expected
-values remain under `artifacts/` and are used only by `make audit-archive`.
+The public reproduction commands execute OpenROAD and produce new
+`metrics.json` records. Reference values under `artifacts/*/expected/` are used
+by the fresh summarizers only to apply the documented numerical tolerances.
 
 `table6-replay.tsv` records the retained cut-row data identifiers, design names,
 macro LEF/Liberty dependencies, and 7200-second caps. `table5-sources.tsv`

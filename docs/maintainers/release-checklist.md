@@ -29,8 +29,8 @@ inspect archive composition. The missing Table 5 SWERV config and six sources
 remain a required prominent limitation; the release must not describe Table 5
 as reproduced.
 
-The packaging script runs the compact archive audit, includes the Table 4 BO
-campaign records, 18 frozen programs, framework, execution scripts,
+The packaging script runs repository and configuration tests, includes the
+Table 4 BO campaign records, 18 frozen programs, framework, execution scripts,
 documentation, and provenance, then creates `MANIFEST.sha256` and checks
 excluded state. The paper PDF is distributed by the publisher and is not
 duplicated in the repository.
@@ -43,12 +43,16 @@ is not a complete Table 5 reproduction package.
 Before upload:
 
 - inspect the reported archive path, size, and SHA-256;
-- extract it in a clean temporary directory and run `make test`,
-  `make validate-configs`, and `make audit-archive`;
+- extract it in a clean temporary directory and run `make test` and
+  `make validate-configs`;
 - run the one-case fresh path through `make validate-evaluator` on the Rocky
   Linux reference environment;
 - verify the separately distributed Table 6 archive, checksum, and public URL;
 - confirm every public page discloses the unrecovered Table 5 config/source gap;
+- confirm every paper experiment directory contains an executable
+  `reproduce.sh`, `inputs/`, `expected/`, and `output/` contract;
+- confirm `make reviewer-prepare`, `make reviewer-aes-result`, and
+  `make reviewer-table6-one` remain bounded reviewer paths;
 - confirm `.zenodo.json` and `CITATION.cff` use the camera-ready order;
 - upload to Zenodo, reserve/finalize the DOI, and add the DOI to the paper's
   artifact appendix and repository metadata.

@@ -1,22 +1,43 @@
-# Paper-data layout and recovery status
+# External paper data
 
-Large physical-design inputs live outside Git.  The reproduction scripts use
-`paper-data/` by default; set `PAPER_DATA_ROOT` to use another location.  Every
-external file is enumerated by a SHA-256 manifest, and unsigned extra files are
-rejected.
+Large physical-design inputs are stored outside Git. The default location is
+`paper-data/`; set `PAPER_DATA_ROOT` to use another filesystem. Every published
+file is covered by a SHA-256 manifest so corrupted or incomplete downloads are
+rejected before EDA execution.
 
-## Table 6: retained and exportable
+Hashes are used here to validate the distributed package. They are not a
+requirement that every regenerated Table 4 ODB be bit-identical to an
+author-time file.
 
-The nine paper-time `3_4_place_resized.odb` files were deleted with the larger
-experiment workspace.  Table 6 does **not** need them.  The final Innovus
-`cutRow` products survived in the original author workspace:
+## Table 6: available
 
-- one exact `cutrows.def` and `cutrows.v` for each of nine patterns;
-- one `handoff.sdc` for each of the three designs;
-- one complete evolved-negotiation `dpl_evolve` source tree used on all nine
-  patterns.
+The original Table 6 ODB workspaces were deleted, but the experiment does not
+need them. The final cut-row handoff products survived:
 
-The data-package contract is:
+- nine exact `cutrows.def` and `cutrows.v` pairs;
+- one `handoff.sdc` per design; and
+- one complete evolved-negotiation `dpl_evolve` source tree.
+
+Install and validate the published package:
+
+```bash
+make fetch-table6-data
+make check-table6-data
+```
+
+Published archive:
+
+```text
+https://github.com/yuan-fd/DPLEvolve-AE/releases/download/paper-data-v1/dplevolve-table6-paper-data-20260722.tar.gz
+```
+
+Archive SHA-256:
+
+```text
+c73f84c6008ddf578bce9c2708dbe1eff55b2a8e96dada95376369afe9008b63
+```
+
+The unpacked layout is:
 
 ```text
 paper-data/
@@ -36,92 +57,39 @@ paper-data/
     └── programs/evolved_negotiation/dpl_evolve/...
 ```
 
-Maintainers create this package directly from the retained experiment:
+Run one row and then the complete matrix:
 
 ```bash
-bash scripts/maintenance/export_table6_data.sh \
-  --source-root /path/to/original/Agenticflow \
-  --output /tmp/dplevolve-paper-data \
-  --archive /tmp/dplevolve-table6-paper-data.tar.gz
-```
-
-The exporter was exercised on the author workspace on 2026-07-22.  It produced
-114 checksummed files, a 225 MiB unpacked data directory, and a 200,849,117-byte
-archive with SHA-256
-`c73f84c6008ddf578bce9c2708dbe1eff55b2a8e96dada95376369afe9008b63`.
-The package was also consumed by the public Tcl replay: evolved-negotiation
-completed Ariane `center_band_8`, and strict `check_placement` passed.
-
-The published archive is:
-
-```text
-https://github.com/yuan-fd/DPLEvolve-AE/releases/download/paper-data-v1/dplevolve-table6-paper-data-20260722.tar.gz
-```
-
-GitHub returns 404 for anonymous release downloads while this repository is
-private. A collaborator should run `gh auth login` first; the fetch target
-automatically retries through the authenticated GitHub CLI. The same command
-uses anonymous `curl` after the repository becomes public.
-
-The easiest verified installation is:
-
-```bash
-make fetch-table6-data
-make check-table6-data
+make reproduce-table6 CASE=ariane133_placebatch \
+  PATTERN=center_band_8 ROLE=reviewdse THREADS=10
 make reproduce-table6 THREADS=10
 ```
 
-For a short real-path check before the 27-run matrix:
+Reviewers do not need Innovus. The exact Innovus `cutRow` products are inputs;
+all replay execution is open-source OpenROAD.
 
-```bash
-make reproduce-table6 CASE=ariane133_placebatch PATTERN=center_band_8 ROLE=reviewdse THREADS=10
-```
+While the GitHub repository is private, release downloads may require
+`gh auth login`. The fetch script tries anonymous `curl` first and then the
+authenticated GitHub CLI. A public repository needs no authentication.
 
-For a manual installation:
+## Table 5: unavailable recovery assets
 
-```bash
-mkdir -p paper-data
-tar -xzf dplevolve-table6-paper-data-20260722.tar.gz -C paper-data
-PAPER_DATA_ROOT=$PWD/paper-data make reproduce-table6 THREADS=10
-```
+The Table 5 dense ODBs were deleted. Two generation recipes survived:
 
-The script decompresses the exact DEF/Verilog, builds the frozen source, and
-runs Diamond, Negotiation, and ReviewDSE for all nine patterns.  The original
-cut-row construction used Innovus; reviewers do not need Innovus because its
-exact outputs are the replay inputs.  The OpenROAD replay itself is fully open
-source.
-
-Every fresh replay uses the public 7200-second timeout. The retained
-`fixed_routes.tsv` keeps the author record exactly as found, including the
-Ariane center-10 Negotiation timeout captured by an earlier 600-second run.
-That historical value is provenance, not a fabricated 7200-second measurement;
-the fresh result reports whatever the new 7200-second execution observes.
-
-## Table 5: incomplete input recipe and six source commits missing
-
-The paper-time dense ODBs were deleted. They are not distributed as if they
-still existed. Two generation recipes survived, but the third did not:
-
-| Row | Case/flow variant | Reconstruction |
+| Row | Flow variant | Input status |
 |---|---|---|
-| AES dense N45 | `aes_dense_nangate45`, `DENSE` | fixed AES floorplan |
-| JPEG dense N45 | `jpeg_util90_nangate45`, `DENSE` | `CORE_UTILIZATION=90` |
-| SWERV dense N45 | `swerv_wrapper_nangate45`, `DENSE_2` | **blocked:** untracked `config_dense2.mk` was deleted |
+| AES dense Nangate45 | `DENSE` | Regenerable |
+| JPEG UTIL=90 Nangate45 | `DENSE` | Regenerable |
+| SWERV dense Nangate45 | `DENSE_2` | **Blocked:** `config_dense2.mk` missing |
 
-The retained SWERV cut-row handoff includes an ODB derived from the deleted
-snapshot, but it was re-emitted after loading `3_place.sdc`; Table 5's evaluator
-uses `2_floorplan.sdc`. It is useful provenance, not a validated exact
-replacement. The standard tracked `swerv_wrapper/config.mk` is also not the
-same file as the paper launch recorded in `run_flow.sh`, so the public script
-refuses to use it silently.
+The six complete selected/reference source trees are also missing. Retained
+result TSVs and source identities are not executable source code.
 
-The six complete candidate source trees selected for Table 5 are also absent
-from both the original repository and its retained 39 GiB state backup. The
-result TSVs, iteration reports, and commit identifiers survived, but those are
-not executable source. The missing input recipe and commits are recorded in
-`configs/reproduction/table5-inputs.tsv` and `table5-sources.tsv`.
+The SWERV cut-row handoff ODB is not substituted: it was re-emitted after
+loading a different SDC stage from the Table 5 evaluator. The standard tracked
+SWERV config is also not silently substituted for the deleted DENSE_2 config.
 
-If the source commits are recovered from another backup, install them as:
+If another backup is found, install it as:
 
 ```text
 paper-data/
@@ -133,22 +101,18 @@ paper-data/
     └── swerv_dense_n45/programs/{selected,reference}/dpl_evolve/...
 ```
 
-Then `make prepare-table5-inputs` regenerates the three inputs with the
-recovered config, and `make reproduce-table5` builds all six sources, executes
-the complete downstream flow, and derives a fresh Table 5. Until that recovery
-happens, both commands exit `BLOCKED`. Archived TSV values are never
-substituted for missing source code or configuration.
+Then the existing `make prepare-table5-inputs` and `make reproduce-table5`
+commands become executable without changing code. Until then they return
+`BLOCKED` before EDA work.
 
-## Manifest rule
-
-Each `MANIFEST.sha256` records paths relative to `paper-data/`, beginning with
-`table5/` or `table6/`.  Verify without launching EDA:
+## Manual Table 6 installation
 
 ```bash
-python3 scripts/reproduce/verify_data_manifest.py --root paper-data --scope table6
-bash scripts/reproduce/reproduce_table6.sh --check-paper-data
-bash scripts/reproduce/reproduce_table5.sh --check-paper-data
+mkdir -p paper-data
+tar -xzf dplevolve-table6-paper-data-20260722.tar.gz -C paper-data
+PAPER_DATA_ROOT=$PWD/paper-data make check-table6-data
+PAPER_DATA_ROOT=$PWD/paper-data make reproduce-table6 THREADS=10
 ```
 
-The checker rejects missing, modified, unsigned, absolute, parent-traversal,
-and symlinked content.
+The manifest checker rejects missing, modified, unsigned, absolute,
+parent-traversal, and symlinked content.

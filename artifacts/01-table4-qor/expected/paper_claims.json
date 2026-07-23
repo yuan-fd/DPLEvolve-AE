@@ -1,9 +1,0 @@
-{
-  "schema_version": 1,
-  "source": "paper Table 4 (paper hash recorded in paper/README.md)",
-  "bo_mean_reduction_percent": 0.38,
-  "reviewdse_hpwl_mean_reduction_percent": 1.78,
-  "reviewdse_ghr_mean_reduction_percent": 1.68,
-  "rounding_tolerance_percent": 0.0051,
-  "verification_status": "verified_from_archived_raw_evidence"
-}

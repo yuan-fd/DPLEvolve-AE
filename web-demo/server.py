@@ -728,17 +728,24 @@ TASKS: dict[str, tuple[str, list[str]]] = {
     "prepare-table5-inputs": ("Regenerate Table 5 Dense Inputs", ["make", "prepare-table5-inputs"]),
     "table5-fresh": ("Reproduce Table 5", ["make", "reproduce-table5"]),
     "table6-fresh": ("Reproduce Table 6", ["make", "reproduce-table6"]),
+    "table6-one": (
+        "Run One Table 6 ReviewDSE Row",
+        ["make", "reviewer-table6-one", "THREADS=10"],
+    ),
     "level1-plan": ("Print Level 1 Calibration Plan", ["make", "plan-level1"]),
     "dse-plan": ("Print Full Paper DSE Plan", ["make", "plan-dse-paper"]),
-    "audit-archive": ("Audit Packaged Records", ["make", "audit-archive"]),
     "toolchain-smoke": ("Run Optional AES Toolchain Diagnostic", ["make", "toolchain-smoke"]),
     "available-results": (
         "Reproduce All Currently Available Results",
         ["make", "reproduce-available-results"],
     ),
+    "reviewer-aes": (
+        "Run AES Default and ReviewDSE Replay",
+        ["make", "reviewer-aes-result", "THREADS=8"],
+    ),
     "full": (
-        "Prepare and Validate Paper Evaluator",
-        ["bash", "-c", "make bootstrap && make build-tools && make prepare-paper-inputs && make validate-evaluator"],
+        "Prepare One-Target Reviewer Environment",
+        ["make", "reviewer-prepare", "THREADS=8"],
     ),
 }
 

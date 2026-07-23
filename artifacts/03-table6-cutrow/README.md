@@ -1,37 +1,37 @@
-# Table 6: hard cut-row repair
+# Table 6: hard cut-row legality recovery
 
-This bundle checks the nine hard cut-row patterns reported in Table 6.
+This experiment executes Diamond, Negotiation, and one frozen ReviewDSE repair
+program on nine retained cut-row patterns.
 
-Run this compact archive audit:
+## Fresh reproduction
 
 ```bash
-bash artifacts/03-table6-cutrow/run.sh
+make fetch-table6-data
+make check-table6-data
+make reproduce-table6 THREADS=10
+# or fetch and run through this directory:
+bash artifacts/03-table6-cutrow/reproduce.sh --fetch --threads 10
 ```
 
-The verifier compares the archived Diamond and Negotiation outcomes, selected
-ReviewDSE status, runtime, and archived legality result with the Table 6
-transcription in `expected/table6.json`.
+The complete matrix contains 27 OpenROAD jobs. Every fresh execution uses a
+7200-second cap, canonical log HPWL, displacement metrics, and strict
+`check_placement` legality.
 
-Success is reported as:
+Start with one row:
 
-```text
-[PASS] 9/9 archived cut-row rows match paper Table 6
+```bash
+bash artifacts/03-table6-cutrow/reproduce.sh \
+  --case ariane133_placebatch --pattern center_band_8 \
+  --role reviewdse --threads 10
 ```
 
-The two TSV files are compact extracts of the original fail-search and
-candidate summaries. The exact cut-row DEF/Verilog/SDC inputs and complete
-evolved source are distributed as separate checksummed paper data. This
-command therefore verifies the
-archived summary; it does not rerun OpenROAD or `check_placement`.
+The exact DEF/Verilog/SDC inputs and evolved source are distributed in the
+published Table 6 data package. Paper-time ODBs and Innovus are not required.
 
-The fresh execution path is `make reproduce-table6`. It executes Diamond,
-Negotiation, and the same ReviewDSE source on every exact DEF/V/SDC dataset
-with the 7200-second cap and
-derives outcomes from new flow status and legality reports. It exits `BLOCKED`
-until the external data in `docs/paper-data-layout.md` is installed.
+## Directory contents
 
-- `inputs/fixed_routes.tsv`: fixed-source outcomes.
-- `inputs/reviewdse.tsv`: selected ReviewDSE outcomes.
-- `inputs/provenance.json`: original summary paths and hashes.
-- `expected/table6.json`: paper transcription.
-- `output/`: generated CSV and JSON reports.
+- `inputs/fixed_routes.tsv`: fixed-source reference outcomes for comparison.
+- `inputs/reviewdse.tsv`: ReviewDSE reference outcomes for comparison.
+- `inputs/provenance.json`: retained-record provenance.
+- `expected/table6.json`: paper qualitative pattern.
+- `output/`: output-contract placeholder; fresh runs live under the state root.

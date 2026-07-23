@@ -15,7 +15,7 @@
   "properties": {
     "artifact": {
       "type": "string",
-      "enum": ["table4", "table5", "table6", "smoke"]
+      "enum": ["table4", "table5", "table6", "figures", "search", "ariane", "smoke"]
     },
     "status": {
       "type": "string",

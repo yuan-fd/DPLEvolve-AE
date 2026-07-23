@@ -1,38 +1,28 @@
 # Table 5: stage-composability counterexamples
 
-This bundle checks the three examples in which a legalizer improves
-post-legalization HPWL but produces a worse final post-DPL HPWL after the
-downstream optimization stages.
+Table 5 studies cases where a legalizer improves post-legalization HPWL
+`H_lg`, but the complete downstream flow produces worse final HPWL `H_f`.
 
-Run this compact archive audit:
+## Fresh reproduction
 
 ```bash
-bash artifacts/02-table5-composability/run.sh
+make check-table5-data
+make reproduce-table5 THREADS=10
+# or
+bash artifacts/02-table5-composability/reproduce.sh --threads 10
 ```
 
-The verifier reads the four archived HPWL values for each case, recomputes the
-legalization and final percentage changes, checks that the stage improves while
-the final flow regresses, and compares the results with the Table 5
-transcription in `expected/table5.json`.
+The runner is implemented to regenerate inputs, build six selected/reference
+source trees, execute legalization + DPO + final mirroring, and derive the
+three counterexamples from new metrics.
 
-Success is reported as:
+Current status is **BLOCKED**. SWERV's untracked `config_dense2.mk` and all six
+complete source trees were not retained. The command stops before EDA and does
+not substitute the standard SWERV config or archived values.
 
-```text
-[PASS] 3/3 stage-local counterexamples match paper Table 5
-```
+## Directory contents
 
-The input TSV is a compact extract of the original article-staging summary.
-The original per-run EDA logs are not packaged, so this is archived-summary
-verification rather than a fresh OpenROAD execution.
-
-The fresh execution path is `make reproduce-table5`. It builds and executes
-both complete candidates for each row and derives `H_lg` and `H_f` from new
-metrics. `make prepare-table5-inputs` has retained AES/JPEG recipes but exits
-`BLOCKED` because SWERV's untracked `config_dense2.mk` was deleted. The full
-command also requires six currently missing exact source commits; it never
-uses this TSV or the standard SWERV config as a fresh result.
-
-- `inputs/counterexamples.tsv`: archived HPWL values.
-- `inputs/provenance.json`: source description and original summary hash.
-- `expected/table5.json`: paper transcription.
-- `output/summary.json`: generated machine-readable report.
+- `inputs/counterexamples.tsv`: retained paper values for result interpretation.
+- `inputs/provenance.json`: retained-record origin.
+- `expected/table5.json`: paper comparison target.
+- `output/`: output-contract placeholder; fresh EDA products use the state root.

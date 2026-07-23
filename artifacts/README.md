@@ -1,20 +1,18 @@
-# Archived evidence bundles
+# Experiment packages
 
-These directories preserve compact paper records, expected values, provenance,
-and the 18 selected Table 4 source trees. Their `run.sh` files audit archived
-data; they are not the primary fresh-experiment interface. Use the root
-`Makefile` and `scripts/reproduce/` for paper reproduction.
+Each reported experiment has a self-contained directory with a human README,
+fresh-execution wrapper, input description/data, expected interpretation, and
+output contract. Use the root `Makefile` for the shortest reviewer commands.
 
-| Bundle | Paper item | Command | Typical time |
-|---|---|---|---:|
-| [`01-table4-qor/`](01-table4-qor/) | Table 4 QoR comparison and selected programs | `bash artifacts/01-table4-qor/run.sh` | Under 1 second |
-| [`02-table5-composability/`](02-table5-composability/) | Table 5 stage-composability counterexamples | `bash artifacts/02-table5-composability/run.sh` | Under 1 second |
-| [`03-table6-cutrow/`](03-table6-cutrow/) | Table 6 hard cut-row repair | `bash artifacts/03-table6-cutrow/run.sh` | Under 1 second |
-| [`04-aes-smoke/`](04-aes-smoke/) | Optional AES toolchain diagnostic | `bash artifacts/04-aes-smoke/run.sh --run` | Machine dependent |
+| Directory | Experiment | Direct entry point |
+|---|---|---|
+| [`01-table4-qor/`](01-table4-qor/) | Table 4 default, BO, and ReviewDSE QoR | `reproduce.sh` |
+| [`02-table5-composability/`](02-table5-composability/) | Table 5 stage composability | `reproduce.sh` |
+| [`03-table6-cutrow/`](03-table6-cutrow/) | Table 6 hard cut-row legality | `reproduce.sh` |
+| [`05-figures/`](05-figures/) | Figures 4 and 5 | `reproduce.sh` |
+| [`06-reviewdse-search/`](06-reviewdse-search/) | ReviewDSE search | `reproduce.sh` |
+| [`07-ariane-diagnostic/`](07-ariane-diagnostic/) | Ariane diagnostic | `reproduce.sh` |
 
-The first three bundles inspect packaged records and require no EDA tools. The
-smoke bundle invokes EDA but does not reproduce a reported paper experiment.
-
-Generated files stay in each bundle's `output/` directory, except for the
-smoke flow, whose EDA products are written to a new timestamped directory in
-the sibling ORFS workspace.
+`04-aes-smoke/` is an optional toolchain diagnostic and is not a reported paper
+experiment. Fresh EDA outputs are written under the sibling ORFS workspace or
+`$DPL_EVOLVE_STATE_ROOT`, not copied from packaged reference files.

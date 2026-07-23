@@ -1,100 +1,50 @@
-# Token cost and artifact-evaluation scope
+# Model-token scope
 
-## What the archived logs support
+## Reviewer boundary
 
-The paper reports 2.15B logged and 0.10B active tokens per design. The copied
-server backup contains `codex_usage_summary.json` files, but those files are
-**cumulative snapshots of persistent Codex sessions**. Iteration 10 repeats the
-tokens already recorded at iterations 1-9. Summing every file therefore
-double-counts usage and must not be presented as an API total.
+No model API is needed for:
 
-For the archived 9-case, 4-student, 15-iteration alternate campaign, the two
-possible readings differ substantially:
+- Table 4 default and BO baselines;
+- replaying the 18 selected ReviewDSE source programs;
+- Table 6 cut-row experiments;
+- retained Figure 4/5 reconstruction; or
+- the Ariane diagnostic.
 
-| Accounting view | Mean logged/design | Mean active/design | Meaning |
-|---|---:|---:|---|
-| Sum every operation snapshot | 3.296B | 0.157B | Repeated cumulative snapshots; not a true total |
-| Keep final snapshot per session | 0.432B | 0.019B | Removes repetition, but may omit restarted/failed sessions |
+Model access is required only to generate new source proposals through Level 1
+or Level 2 ReviewDSE.
 
-Neither view reproduces 2.15B/0.10B, and this is not the paper's 10-iteration
-campaign. We also inspected the two 10-iteration campaign families that supply
-the Table 4 HPWL selections. Their per-case values do not consistently match
-the paper token column under either accounting view. Token cost therefore
-remains a reported paper claim, not an independently verified artifact claim.
+## Reported paper profile
 
-The AE archive needs the exact author-side aggregation script or a flat
-operation-local ledger for the paper campaign. A valid ledger should state
-whether retries are included and must not add cumulative session snapshots.
+The Level 2 paper profile uses one GPT-5.5 xhigh Teacher, four GPT-5.4 xhigh
+Students, ten iterations, and nine targets. The paper reports a mean of 2.15B
+logged and 0.10B active tokens per target, or approximately 19.35B logged and
+0.90B active tokens over nine targets.
 
-The aggregation can be repeated on the copied backup with:
+These are reported paper figures, not a guaranteed billable total. Retained
+usage files include cumulative snapshots of persistent sessions, so blindly
+summing every snapshot double-counts tokens. A trustworthy monetary cost would
+also require dated provider prices, cached-input rates, retries, credits, and
+the exact author-side ledger.
 
-```bash
-python3 scripts/maintenance/summarize_token_usage.py /path/to/dpl_evolve_state_backup \
-  --output token_usage_by_design.csv
-```
+## Evaluation tiers
 
-The output deliberately includes both `snapshot_*` and `session_*` columns so
-the ambiguity is visible rather than hidden in one total.
+| Tier | Command | Purpose | Model use |
+|---|---|---|---:|
+| T1 | `make reproduce-table4`, `make reproduce-table6` | fresh reported-result execution | None |
+| T2 | `make run-dse-small` | bounded real Teacher/Student method check | Small |
+| T3 | `make reproduce-paper-search ACKNOWLEDGE_LLM_COST=yes` | complete Level 1 + Level 2 search | Very large |
 
-## Cost must not be inferred from token count alone
+T0 is not paper reproduction. T1 is the recommended scientific review path.
+T2 demonstrates that the generative method operates end-to-end. T3 is runnable
+for an authorized author/reviewer but is not a reasonable mandatory AE cost.
 
-The previous version of this document claimed that 0.10B active tokens cost
-`$1-3/design`. That estimate was not backed by an invoice, model price, or raw
-usage manifest and has been removed. A reproducible cost statement needs:
+## Safety controls
 
-1. the exact model used by each Teacher and Student operation;
-2. input, cached-input, and output token counts from the same paper run;
-3. the provider price and date, including the cached-input rate; and
-4. the formula and any subscription credits or negotiated discounts.
+- `make plan-level1` and `make plan-dse-paper` print launches without API calls.
+- Full Level 1/2 commands require explicit `ACKNOWLEDGE_LLM_COST=yes`.
+- The Web Demo does not expose a one-click paid full-search action.
+- API credentials are external and must never be committed.
 
-Without those fields, the artifact should report tokens and wall time only.
-
-## What the token requirement blocks
-
-The cost is not merely an inconvenience for reviewers. It blocks independent
-validation of several scientific claims:
-
-- **Main effect size:** a reviewer cannot cheaply test whether the reported
-  1.78% mean improvement is typical or a selected run.
-- **Variance:** multi-seed confidence intervals multiply an already large
-  experiment budget; the current launcher has no deterministic seed input.
-- **Ablations:** Level 1 and Teacher/Student necessity require several full
-  counterfactual searches. The main Level 1/2 launchers exist, but dedicated
-  ablation profiles and their budgets are not part of the reported protocol.
-- **Model drift:** the launcher depends on a remotely served model name. A later
-  reviewer may receive a different model or lose access to the recorded one.
-- **Failure recovery:** the archived rerun contains failed operations; retries
-  and partial runs affect both cost and selection bias.
-- **Reusable badge:** users cannot evaluate or extend the method with ordinary
-  academic compute and a bounded API budget.
-
-## Recommended tiered evaluation
-
-The artifact should separate four levels instead of treating a full search as
-the only validation path:
-
-| Tier | Purpose | LLM calls |
-|---|---|---:|
-| T0 | Audit archived metrics, patches, prompts, and usage summaries | 0 |
-| T1 | Rebuild and evaluate the paper's selected source patches on 9 cases | 0 |
-| T2 | One-design, 1-iteration, 1-Student end-to-end method run | Small |
-| T3 | Full paper search: 9 cases, 4 Students, 10 review iterations | Very large |
-
-T1 is implemented by `make replay-reviewdse TRACK=hpwl|ghr`; it validates the
-selected source mechanisms without paying the search cost again. T2 is
-implemented by `make run-dse-small`. T3 is implemented but remains optional
-and requires `ACKNOWLEDGE_LLM_COST=yes`; `make plan-dse-paper` prints the full
-launch without API calls.
-
-## Camera-ready requirements
-
-Before using cost or caching as a rebuttal, export the exact paper-run evidence:
-
-- per-operation model, elapsed time, return code, and token fields;
-- per-design totals and mean/standard deviation;
-- a documented cost formula using dated provider prices;
-- counts of failed/retried operations; and
-- results for a reduced-budget search to show the quality/cost frontier.
-
-Until then, describe 2.15B/0.10B as a reported search budget, not as a verified
-usage total, billable total, or inexpensive cost.
+Search is stochastic. A fresh campaign should report its newly observed
+trajectory and operation ledger rather than claim the same proposal sequence or
+exact token count as the author run.

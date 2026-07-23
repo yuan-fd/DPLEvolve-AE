@@ -1,132 +1,130 @@
 # Troubleshooting
 
-## Start with the read-only preflight
+## Web Demo cannot be opened
+
+Start the service on the evaluation server:
+
+```bash
+bash web-demo/start.sh
+```
+
+For a remote server, the browser must connect through a tunnel created on the
+reviewer's laptop:
+
+```bash
+ssh -N -L 8080:127.0.0.1:8080 USER@SERVER
+```
+
+Then open `http://127.0.0.1:8080` locally. If port 8080 is occupied, choose a
+different server port and tunnel it explicitly:
+
+```bash
+DPLEVOLVE_WEB_PORT=8090 bash web-demo/start.sh
+ssh -N -L 8090:127.0.0.1:8090 USER@SERVER
+```
+
+Do not expose the console directly to the Internet.
+
+## Doctor reports missing tools
 
 ```bash
 make doctor
 ```
 
-Doctor works before ORFS or the EDA binaries exist. It never installs packages.
-On Rocky/RHEL-family systems it prints commands for missing dependencies; review
-them with the system administrator before running `sudo`.
+Doctor never installs packages. Review its Rocky/RHEL-family suggestion and
+use the site's normal administrator process. SWIG, bison, flex, CMake, GCC/G++,
+rsync, Python venv, and Git are common missing prerequisites.
 
-## Environment preparation
-
-### ORFS is missing
+## ORFS or pinned binaries are missing
 
 ```bash
 make bootstrap
-```
-
-This needs network access to fetch pinned upstream repositories. Configure the
-site Git proxy first when working behind a firewall.
-
-### A pinned binary is missing or compilation fails
-
-```bash
 make build-tools THREADS=16
-```
-
-Check `docs/environment.md` and the first compiler error. On a memory-constrained
-host, reduce `THREADS`; do not rely on the obsolete 8/16 GiB smoke estimate.
-The authors used Rocky Linux 8.10 with 314 GiB RAM.
-
-### A non-default workspace layout is used
-
-Set paths on the command or in an untracked `env.local.sh`:
-
-```bash
-ORFS_ROOT=/path/to/OpenROAD-flow-scripts \
-DPL_EVOLVE_STATE_ROOT=/path/to/dpl_evolve_state \
 make check
 ```
 
-`make check` is for an already prepared environment. On a clean checkout use
-`make doctor` first.
+Bootstrap requires network access. If compilation runs out of memory, lower
+`THREADS`. The complete campaign should not be planned around obsolete 8/16 GiB
+memory estimates.
 
-## Fresh Table 4 failures
-
-### Input ODB not found
+## A Table 4 input ODB is missing
 
 ```bash
 make prepare-paper-inputs CASE=aes_nangate45 THREADS=8
 ```
 
-Remove `CASE=...` to generate all nine. Products are under the stable
-`paper9_place` flow variant. The preparation command records ODB hashes and
-ORFS/OpenROAD revisions.
+Remove `CASE=` to prepare all nine. Inputs are written to the stable
+`paper9_place` flow variant.
 
-### BO environment is missing
+## BO environment is missing
 
 ```bash
 make setup-bo
 make reproduce-bo CASE=aes_nangate45 THREADS=8
 ```
 
-BO is large: the complete run performs 3,600 placements. Reduce
-`MAX_CONCURRENT_CASES` or run one `CASE=` at a time if memory is tight.
+The complete BO experiment runs 3,600 placements. Start with one case and
+reduce concurrency if the host is constrained.
 
-### Frozen-source replay reports an input checksum mismatch
+## A fresh result differs numerically
 
-Do not bypass the check. Confirm the flow variant and pinned revisions, rerun
-`make prepare-paper-inputs`, and compare the hash record under
-`$DPL_EVOLVE_STATE_ROOT/paper_reproduction/inputs/`. Only AES Nangate45 has a
-retained paper-time input hash; report the other eight generated hashes with the
-revision record.
+Do not edit `artifacts/*/expected/`. Preserve the fresh metrics and record:
 
-### Fresh Table 4 differs from the reference
+- case and exact command;
+- input path and available hash;
+- compiler, ORFS/OpenROAD revision, and thread count;
+- fresh HPWL delta, runtime ratio, legality, and configured tolerance.
 
-Keep the fresh TSV and all underlying metrics. Record the compiler, host,
-thread count, input ODB hash, ORFS/OpenROAD revisions, and exact per-case delta.
-Do not modify `artifacts/*/expected/` or substitute `make audit-archive` for the
-failed execution.
+Missing paper-time hashes do not by themselves invalidate a run. The important
+questions are whether the execution was complete and legal and whether the new
+result lies within the documented scientific window.
 
-## Table 5/6 reports `BLOCKED`
-
-This is intentional when exact paper data is missing:
+## Table 6 reports missing data
 
 ```bash
-make paper-data-check
+make fetch-table6-data
+make check-table6-data
 ```
 
-For Table 6, run `make fetch-table6-data` to install the retained
-DEF/V/SDC + evolved-source archive. Table 5 has a known recovery gap: the
-untracked SWERV `config_dense2.mk` and six paper source commits are absent from
-the retained author workspace. The commands never fall back to the standard
-SWERV config or packaged TSV/JSON.
+For a private GitHub repository, authenticate with `gh auth login` if anonymous
+release download returns 404. The fetch target retries through the GitHub CLI.
 
-## ReviewDSE search failures
+## Table 5 reports BLOCKED
 
-### Paper profile refuses to start
+This is the expected current status. The SWERV DENSE_2 config and six complete
+source trees were not retained. See `docs/paper-data-layout.md`. Do not replace
+them with the standard SWERV config or archived TSV values.
 
-Run Level 1 first:
+## Paper-profile search refuses to start
+
+First create the public Level 1 reconstruction packet:
 
 ```bash
 make reproduce-level1 ACKNOWLEDGE_LLM_COST=yes
 ```
 
-The paper Level 2 profile requires an immutable Level 1 evidence packet. Use
-`make plan-level1` and `make plan-dse-paper` to inspect commands without model
-calls.
+Then launch Level 2 with a stable prefix:
 
-### API authentication or budget failure
+```bash
+make run-dse-paper ACKNOWLEDGE_LLM_COST=yes \
+  DSE_RUN_PREFIX=review_run_01
+```
 
-Verify the model provider configuration outside the repository and start with
-`make run-dse-small`. Never commit API keys. The full paper profile is
-deliberately gated by `ACKNOWLEDGE_LLM_COST=yes` because it is extremely costly.
+The launcher validates the Level 1 Markdown/JSON packet before starting. Use
+`make plan-level1` and `make plan-dse-paper` to inspect both commands without
+model calls.
 
-## Archive audit failures
+## API authentication or budget failure
 
-`make audit-archive` checks the integrity of packaged records. A digest mismatch
-usually means the checkout is modified or corrupt. Inspect `git status` and
-restore from a clean clone; do not edit expected values to silence the check.
+Configure the model provider outside the repository and test
+`make run-dse-small` first. Never commit API keys. The full search is
+deliberately gated because its reported token budget is very large.
 
-## Optional toolchain diagnostic
+## Need only an installation diagnostic
 
 ```bash
 make toolchain-smoke THREADS=8
 ```
 
-Use this only to diagnose one AES default flow. It does not run BO, selected
-ReviewDSE programs, or the paper search and therefore cannot replace a paper
-experiment.
+This exercises one AES default path. It does not run BO, selected ReviewDSE
+programs, Table 6, or the Teacher/Student search.

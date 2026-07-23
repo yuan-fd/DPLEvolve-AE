@@ -313,7 +313,7 @@
         <header class="page-head">
           <p class="eyebrow">Artifact evaluation · MLCAD 2026</p>
           <h1>Run the paper experiments, not just the archived arithmetic.</h1>
-          <p class="lead">Prepare the pinned detailed-placement environment, execute the protected evaluator, reproduce baselines, and rebuild the selected ReviewDSE programs. The archive audit is clearly separated from fresh EDA work.</p>
+          <p class="lead">Follow a one-case reviewer simulation first, then choose the complete Table 4, Table 6, figure, or optional search paths. Every experiment button invokes a fixed Make command and produces new outputs.</p>
         </header>
 
         <div class="card connection-card">
@@ -355,7 +355,7 @@
             <div class="clone-path">
               <strong>One-target fresh validation</strong>
               <code>doctor → bootstrap → build-tools → prepare-paper-inputs → validate-evaluator</code>
-              <span>Runs the real protected detailed-placement measurement path. Start with one CASE from a terminal if machine capacity is limited.</span>
+              <span>Runs the real protected detailed-placement measurement path on AES Nangate45 before any large campaign.</span>
             </div>
             <div class="clone-path">
               <strong>Table 4 reproduction</strong>
@@ -380,16 +380,16 @@
             <button class="button primary run-task" data-task="doctor">Run make doctor</button>
           </article>
           <article class="path-card">
-            <div class="path-step">STEP 02</div><h3>Prepare the pinned tools and inputs</h3>
-            <p>Checkout patched ORFS/OpenROAD, build the toolchain, then generate the nine incoming placement snapshots.</p>
-            <div class="path-meta"><span class="tag">Network + compilation</span><span class="tag">Server resources</span></div>
-            <button class="button run-task" data-task="full" data-confirm="Build the pinned tools and generate all nine placement inputs? This is a substantial server job.">Prepare and validate</button>
+            <div class="path-step">STEP 02</div><h3>Prepare one paper target</h3>
+            <p>Checkout and build the pinned tools, generate AES Nangate45, and run the protected evaluator on that input.</p>
+            <div class="path-meta"><span class="tag">Network + compilation</span><span class="tag">One target</span></div>
+            <button class="button run-task" data-task="full" data-confirm="Run make reviewer-prepare to build the pinned tools and prepare/validate AES Nangate45?">Prepare one target</button>
           </article>
           <article class="path-card">
             <div class="path-step">STEP 03</div><h3>Reproduce a reported result</h3>
-            <p>Run the default reference, public-knob BO, or rebuild and replay one of the two ReviewDSE selection tracks.</p>
-            <div class="path-meta"><span class="tag">Fresh OpenROAD</span><span class="tag">Machine dependent</span></div>
-            <button class="button run-task" data-task="replay-hpwl" data-confirm="Build and replay all nine HPWL-selected source programs?">Replay HPWL programs</button>
+            <p>Run the AES default reference, rebuild its HPWL-selected ReviewDSE program, and compare newly generated metrics.</p>
+            <div class="path-meta"><span class="tag">Fresh OpenROAD</span><span class="tag">No LLM</span></div>
+            <button class="button run-task" data-task="reviewer-aes" data-confirm="Run make reviewer-aes-result for the AES default and one frozen ReviewDSE source replay?">Run AES result</button>
           </article>
         </div>
 
@@ -416,9 +416,9 @@
           <div class="command-row"><code class="command-name">make prepare-table5-inputs</code><span class="command-description">Rebuild AES/JPEG and, only after exact config recovery, SWERV DENSE_2.</span><button class="button subtle run-task" data-task="prepare-table5-inputs" data-confirm="Prepare the Table 5 dense inputs? This blocks if the exact SWERV DENSE_2 config is absent.">Queue</button></div>
           <div class="command-row"><code class="command-name">make reproduce-table5</code><span class="command-description">Build and execute six exact candidates if their missing source trees are recovered.</span><button class="button subtle run-task" data-task="table5-fresh">Queue</button></div>
           <div class="command-row"><code class="command-name">make reproduce-table6</code><span class="command-description">Execute 27 fresh cut-row legality runs with a 7200-second cap from retained DEF/V/SDC data.</span><button class="button subtle run-task" data-task="table6-fresh">Queue</button></div>
+          <div class="command-row"><code class="command-name">make reproduce-table6 CASE=ariane133_placebatch PATTERN=center_band_8 ROLE=reviewdse</code><span class="command-description">Run one real Table 6 row before the complete 27-job matrix.</span><button class="button subtle run-task" data-task="table6-one">Queue</button></div>
           <div class="command-row"><code class="command-name">make plan-level1</code><span class="command-description">Print the three-case public Level 1 reconstruction without model calls; a real run freezes a hashed packet for Level 2.</span><button class="button subtle run-task" data-task="level1-plan">Queue</button></div>
           <div class="command-row"><code class="command-name">make plan-dse-paper</code><span class="command-description">Print the full nine-case, high-token search configuration without API calls.</span><button class="button subtle run-task" data-task="dse-plan">Queue</button></div>
-          <div class="command-row"><code class="command-name">make audit-archive</code><span class="command-description">Secondary no-EDA audit of packaged records; not reproduction.</span><button class="button subtle run-task" data-task="audit-archive">Queue</button></div>
           <div class="command-row"><code class="command-name">make toolchain-smoke</code><span class="command-description">Optional AES toolchain diagnostic; not a reported paper experiment.</span><button class="button subtle run-task" data-task="toolchain-smoke">Queue</button></div>
           <div class="command-row"><code class="command-name">make reproduce-available-results</code><span class="command-description">Run every currently executable result path; Table 5 is explicitly excluded and remains BLOCKED.</span><button class="button subtle run-task" data-task="available-results" data-confirm="Start Table 4, Table 6, Ariane diagnostic, and retained figure reconstruction? This is a large campaign.">Queue</button></div>
         </div>
@@ -443,7 +443,7 @@
       <section class="view" id="view-slides">
         <header class="page-head">
           <p class="eyebrow">Paper and artifact presentation</p><h1>From black-box tuning to source-mechanism exploration.</h1>
-          <p class="lead">An architecture-led presentation of the proposed method, the AE package, the verification flow, and the observed DSE effects. Use the arrow keys to move through the slides.</p>
+          <p class="lead">An architecture-led presentation of the method, experiment packages, reproduction workflow, paper mapping, resource plan, and observed DSE effects. Use the arrow keys to move through the slides.</p>
         </header>
         <div class="card results-shell">
           <div id="slides"></div>
@@ -458,7 +458,7 @@
       <section class="view" id="view-guide">
         <header class="page-head">
           <p class="eyebrow">Reviewer guide</p><h1>Connect safely, then run a real paper case.</h1>
-          <p class="lead">A seconds-long archive comparison is useful provenance, but the core AE path builds OpenROAD and produces fresh detailed-placement metrics.</p>
+          <p class="lead">The core AE path builds OpenROAD and produces fresh detailed-placement metrics.</p>
         </header>
         <div class="guide-layout">
           <div class="guide-stack">
@@ -508,7 +508,6 @@ make doctor</div>
                   <tr><td><code>make replay-reviewdse TRACK=hpwl|ghr</code></td><td>Builds complete frozen selected sources and executes their full trajectories.</td><td>Nine builds/runs per track</td><td>State and ORFS outputs</td></tr>
                   <tr><td><code>make run-dse-small</code></td><td>Runs a real bounded Teacher/Student source exploration.</td><td>Model tokens + EDA</td><td>API and state output</td></tr>
                   <tr><td><code>make plan-dse-paper</code></td><td>Prints the exact 1-Teacher/4-Student/10-iteration protocol.</td><td>No model calls</td><td>No experiment output</td></tr>
-                  <tr><td><code>make audit-archive</code></td><td>Audits compact packaged records; explicitly not fresh reproduction.</td><td>Seconds</td><td>Compact local output</td></tr>
                   <tr><td><code>make test</code></td><td>Runs artifact structure, integration, and Python unit tests for maintainers.</td><td>Varies</td><td>May create test output</td></tr>
                   <tr><td><code>make clean</code></td><td>Removes generated artifact-bundle output while preserving archived inputs and expected values.</td><td>Seconds</td><td>Destructive to generated output</td></tr>
                 </tbody>
@@ -521,12 +520,12 @@ make doctor</div>
             <ol class="checklist">
               <li>Test the This machine or SSH connection.</li>
               <li>Run <code>make doctor</code>; copy any suggested install command into a normal SSH terminal.</li>
-              <li>Bootstrap and build the pinned ORFS/OpenROAD environment.</li>
-              <li>Prepare one paper target and run <code>make validate-evaluator</code>.</li>
-              <li>Replay one frozen ReviewDSE source and inspect its new <code>metrics.json</code>.</li>
+              <li>Use <strong>Prepare one target</strong> to build the pinned environment and validate AES Nangate45.</li>
+              <li>Use <strong>Run AES result</strong> to execute the default and one frozen ReviewDSE source.</li>
+              <li>Inspect the new <code>metrics.json</code> and replay <code>results.tsv</code>.</li>
               <li>If resources permit, run all default, BO, and selected-program Table 4 paths.</li>
-              <li>Run <code>make paper-data-check</code> before attempting Tables 5/6.</li>
-              <li>Use <code>make audit-archive</code> only as a supporting provenance check.</li>
+              <li>Fetch Table 6 data and run its one-row ReviewDSE check before all 27 jobs.</li>
+              <li>Expect Table 5 to report <code>BLOCKED</code>; it is the only blocked reported table.</li>
               <li>Export the session JSON for the review record.</li>
             </ol>
             <h3>Expected evaluator artifacts</h3>
@@ -812,33 +811,45 @@ make doctor</div>
       },
       {
         kicker: '04 · AE project architecture',
-        title: 'The artifact exposes the real experiment implementations through stable commands',
-        lead: 'A reviewer can prepare pinned tools, execute the paper baselines, and rebuild selected source mechanisms through the protected evaluator.',
-        body: `<div class="architecture-layers"><div class="architecture-layer"><span class="layer-name">Reviewer interface</span><span class="layer-detail">web-demo/ · Makefile · scripts/reproduce/ · live logs</span></div><div class="architecture-layer"><span class="layer-name">Paper experiment contract</span><span class="layer-detail">Nine Table 4 targets · Level 1 calibration · Table 5/6 patterns · exact model and BO budgets</span></div><div class="architecture-layer"><span class="layer-name">Execution engines</span><span class="layer-detail">Protected evaluator · Optuna TPE · Teacher/Student loop · fixed-source matrix replay</span></div><div class="architecture-layer"><span class="layer-name">Reproducibility locks</span><span class="layer-detail">Pinned ORFS, OpenROAD, Yosys revisions · source and input checksums</span></div><div class="architecture-layer"><span class="layer-name">Fresh outputs</span><span class="layer-detail">H_g → H_lg → H_ip → H_f · legality · displacement · runtime · liveness</span></div></div>`,
+        title: 'Each paper experiment has a direct reviewer package and a stable Make command',
+        lead: 'Human guidance, machine guidance, experiment implementations, and maintenance tools are deliberately separated.',
+        body: `<div class="architecture-layers"><div class="architecture-layer"><span class="layer-name">Human interface</span><span class="layer-detail">README · reviewer walkthrough · Web Demo · make help</span></div><div class="architecture-layer"><span class="layer-name">Experiment packages</span><span class="layer-detail">artifacts/01 Table 4 · 02 Table 5 · 03 Table 6 · 05 figures · 06 search · 07 diagnostic</span></div><div class="architecture-layer"><span class="layer-name">Execution implementations</span><span class="layer-detail">scripts/reproduce/ · protected evaluator · Optuna TPE · Teacher/Student loop</span></div><div class="architecture-layer"><span class="layer-name">Machine interface</span><span class="layer-detail">agent/ rules and schemas · scripts/agent fixed dispatcher</span></div><div class="architecture-layer"><span class="layer-name">Fresh products</span><span class="layer-detail">ORFS + state root · H_g → H_lg → H_ip → H_f · legality · displacement · runtime</span></div></div>`,
       },
       {
-        kicker: '05 · Verification architecture',
-        title: 'Preparation, baseline search, and source replay form one reproducible path',
-        lead: 'Each stage produces new inputs or metrics; missing tools and exact paper data are reported as preparation blockers.',
-        body: `<div class="verification-flow"><div class="verification-node accent"><h3>1. Prepare</h3><p>Diagnose Rocky/Linux, checkout pinned sources, build tools, and generate the incoming placement ODBs.</p></div><div class="verification-arrow">→</div><div class="verification-node"><h3>2. Execute</h3><p>Run default DPL, 400-trial TPE, or rebuild a complete selected ReviewDSE source through the protected evaluator.</p></div><div class="verification-arrow">→</div><div class="verification-node"><h3>3. Review</h3><p>Compare newly produced H_g/H_lg/H_ip/H_f, legality, displacement, runtime, and liveness records.</p></div></div>`,
+        kicker: '05 · Reproduction workflow',
+        title: 'Preparation, fresh execution, and numerical review form one path',
+        lead: 'Hashes strengthen provenance, while complete legal execution and accepted numerical results decide scientific reproduction.',
+        body: `<div class="verification-flow"><div class="verification-node accent"><h3>1. Prepare</h3><p>Diagnose Rocky Linux, build pinned ORFS/OpenROAD/Yosys, and generate or install physical-design inputs.</p></div><div class="verification-arrow">→</div><div class="verification-node"><h3>2. Execute</h3><p>Run default, 400-trial BO, rebuilt source programs, cut-row jobs, or the optional Teacher/Student loop.</p></div><div class="verification-arrow">→</div><div class="verification-node"><h3>3. Accept</h3><p>Review fresh H_g/H_lg/H_ip/H_f, strict legality, displacement, runtime, and configured tolerance verdicts.</p></div></div>`,
       },
       {
-        kicker: '06 · DSE effect',
+        kicker: '06 · Paper-to-artifact map',
+        title: 'Every reported result points to one executable reviewer entry',
+        lead: 'Table 5 is the only blocked reported table; the other result paths have fresh Make commands.',
+        body: `<table class="result-table"><thead><tr><th>Paper item</th><th>Reviewer entry</th><th>Status</th></tr></thead><tbody><tr><td>Table 4</td><td>make reproduce-table4</td><td>Runnable · no LLM replay</td></tr><tr><td>Table 5</td><td>make reproduce-table5</td><td>BLOCKED · missing config/sources</td></tr><tr><td>Table 6</td><td>make reproduce-table6</td><td>Runnable after data fetch</td></tr><tr><td>Figures 4/5</td><td>make reproduce-figures</td><td>Retained or fresh products</td></tr><tr><td>ReviewDSE search</td><td>make run-dse-small / run-dse-paper</td><td>Model cost applies</td></tr></tbody></table>`,
+      },
+      {
+        kicker: '07 · DSE effect',
         title: 'Source-mechanism exploration improves QoR with modest runtime overhead',
         lead: 'Table 4 compares the black-box BO-DSE baseline with objective-specific ReviewDSE programs.',
         body: `<div class="effect-list"><div class="effect-row"><span class="effect-label">BO-DSE · HPWL</span><div class="effect-track"><div class="effect-fill" style="width:21%;opacity:.42"></div></div><span class="effect-value">0.38%</span></div><div class="effect-row"><span class="effect-label">ReviewDSE · HPWL</span><div class="effect-track"><div class="effect-fill" style="width:100%"></div></div><span class="effect-value">1.78%</span></div><div class="effect-row"><span class="effect-label">ReviewDSE · GHR</span><div class="effect-track"><div class="effect-fill" style="width:94%"></div></div><span class="effect-value">1.68%</span></div></div><table class="result-table" style="margin-top:28px"><thead><tr><th>Program objective</th><th>Observed effect</th><th>Runtime vs. default</th></tr></thead><tbody><tr><td>ReviewDSE-HPWL</td><td>1.78% mean final-HPWL reduction</td><td>1.34×</td></tr><tr><td>ReviewDSE-GHR</td><td>1.68% mean final-HPWL reduction</td><td>1.11×</td></tr></tbody></table>`,
       },
       {
-        kicker: '07 · Mechanism evidence',
+        kicker: '08 · Mechanism evidence',
         title: 'The artifact tests whether source-level programs compose and repair hard placement cases',
         lead: 'Tables 5 and 6 focus on behavior that a parameter-only result table cannot explain.',
         body: `<div class="slide-grid"><div class="metric"><div class="metric-value">3</div><div class="metric-label">Composability counterexamples expose when individually useful steps cannot be safely combined.</div></div><div class="metric"><div class="metric-value">9</div><div class="metric-label">Cut-row cases across Ariane133, SWERV, and BPQUAD exercise mechanism-level repair.</div></div><div class="metric"><div class="metric-value">18</div><div class="metric-label">Table 4 selected source-program trees preserve transformations that can be rebuilt and replayed.</div></div></div><ul class="slide-list" style="margin-top:22px"><li>Table 6 is replayable from retained DEF/V/SDC plus one evolved source; no paper-time ODB is required.</li><li>Table 5 remains explicitly blocked because six candidate sources and the exact SWERV DENSE_2 config are missing.</li></ul>`,
       },
       {
-        kicker: '08 · Reproducibility boundary',
+        kicker: '09 · Reproducibility boundary',
         title: 'Replay and search are separate cost tiers, but both have real launchers',
         lead: 'Reviewers need not buy a multi-billion-token rerun; they should still be able to rebuild selected programs and run the evaluator.',
         body: `<div class="boundary-grid"><div class="boundary-card"><h3>No-LLM fresh reproduction</h3><ul><li>Generate nine Table 4 target ODBs</li><li>Run default and 400-trial BO baselines</li><li>Build 18 selected source-program trees</li><li>Execute 27 Table 6 cut-row replays</li><li>Report the unrecovered Table 5 config/source gap</li></ul></div><div class="boundary-card"><h3>Cost-gated search rerun</h3><ul><li>One GPT-5.5 xhigh Teacher</li><li>Four GPT-5.4 xhigh Students</li><li>10 iterations on each of nine targets</li><li>About 19.35B logged / 0.90B active tokens total</li><li>Explicit acknowledgement required</li></ul></div></div>`,
+      },
+      {
+        kicker: '10 · Hardware and software',
+        title: 'Use a server-class Linux host and scale concurrency to capacity',
+        lead: 'The author machine is a reference, not a claim that every command consumes all resources.',
+        body: `<div class="slide-grid"><div class="metric"><div class="metric-value">128</div><div class="metric-label">Logical CPU cores on the Rocky Linux 8.10 author server (64 physical).</div></div><div class="metric"><div class="metric-value">314</div><div class="metric-label">GiB RAM; large cases and concurrent BO require real headroom.</div></div><div class="metric"><div class="metric-value">22</div><div class="metric-label">TiB home filesystem; generated ODB, build, and campaign state stays outside Git.</div></div></div><ul class="slide-list" style="margin-top:22px"><li>No GPU or commercial EDA license is required.</li><li>Start with one AES case and reduce THREADS on smaller machines.</li><li>The complete campaign is not advertised for 8/16 GiB RAM or 10 GiB disk.</li></ul>`,
       },
     ];
 

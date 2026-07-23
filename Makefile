@@ -29,6 +29,7 @@ export AE_ROOT DPL_EVOLVE_AGENT_ROOT ORFS_ROOT DPL_EVOLVE_STATE_ROOT
 export DPL_EVOLVE_PYTHON THREADS
 
 .PHONY: help doctor bootstrap build-tools setup check prepare-paper-inputs
+.PHONY: reviewer-prepare reviewer-aes-result reviewer-table6-one
 .PHONY: validate-evaluator reproduce-default setup-bo reproduce-bo replay-reviewdse
 .PHONY: plan-level1 reproduce-level1
 .PHONY: reproduce-table4 summarize-table4 prepare-table5-inputs reproduce-table5 reproduce-table6
@@ -37,7 +38,6 @@ export DPL_EVOLVE_PYTHON THREADS
 .PHONY: reproduce-available-results reproduce-paper-results reproduce-paper-search
 .PHONY: run-dse-small plan-dse-paper run-dse-paper summarize-dse-paper paper-data-check paper-data-check-available
 .PHONY: fetch-table6-data check-table5-data check-table6-data
-.PHONY: audit-archive evidence table4 table5 table6
 .PHONY: toolchain-smoke smoke smoke-check doctor-smoke
 .PHONY: test test-structure test-integration test-unit test-web validate-configs
 .PHONY: provenance zenodo zenodo-audit clean
@@ -46,6 +46,11 @@ export DPL_EVOLVE_PYTHON THREADS
 
 help:
 	@echo "DPLEvolve — paper experiment reproduction"
+	@echo ""
+	@echo "Reviewer walkthrough (bounded fresh execution):"
+	@echo "  make reviewer-prepare THREADS=8   Build tools, prepare AES, validate evaluator"
+	@echo "  make reviewer-aes-result THREADS=8  Run AES default + one HPWL source replay"
+	@echo "  make reviewer-table6-one THREADS=10 Fetch data + run one Table 6 row"
 	@echo ""
 	@echo "1. Prepare the pinned execution environment:"
 	@echo "  make doctor                 Inspect this Rocky/Linux host"
@@ -86,7 +91,6 @@ help:
 	@echo "  make check-table6-data      Verify Table 6 DEF/V/SDC/source package"
 	@echo "  make check-table5-data      Report Table 5 source/config recovery status"
 	@echo "  make paper-data-check       Run both external-data status checks"
-	@echo "  make audit-archive          Recompute packaged TSV/JSON summaries"
 	@echo "  make toolchain-smoke        Optional AES toolchain exercise"
 	@echo "  make test                   Repository regression tests"
 
@@ -104,6 +108,22 @@ build-tools setup:
 
 check:
 	@bash "$(HUMAN_SCRIPTS)/check_environment.sh"
+
+reviewer-prepare:
+	@$(MAKE) bootstrap
+	@$(MAKE) build-tools THREADS="$(THREADS)"
+	@$(MAKE) prepare-paper-inputs CASE=aes_nangate45 THREADS="$(THREADS)"
+	@$(MAKE) validate-evaluator CASE=aes_nangate45 THREADS="$(THREADS)"
+
+reviewer-aes-result:
+	@$(MAKE) reproduce-default CASE=aes_nangate45 THREADS="$(THREADS)"
+	@$(MAKE) replay-reviewdse CASE=aes_nangate45 TRACK=hpwl THREADS="$(THREADS)"
+
+reviewer-table6-one:
+	@$(MAKE) fetch-table6-data
+	@$(MAKE) check-table6-data
+	@$(MAKE) reproduce-table6 CASE=ariane133_placebatch \
+	  PATTERN=center_band_8 ROLE=reviewdse THREADS="$(THREADS)"
 
 prepare-paper-inputs:
 	@bash "$(REPRO_SCRIPTS)/prepare_paper_inputs.sh" --threads "$(THREADS)" $(if $(CASE),--case "$(CASE)",)
@@ -249,26 +269,6 @@ paper-data-check-available:
 	@$(MAKE) check-table6-data
 	@$(MAKE) check-ariane-diagnostic-sources
 
-# Archived arithmetic/integrity checks. These do not invoke OpenROAD and do not
-# count as reproducing a paper experiment.
-audit-archive: table4 table5 table6
-	@echo ""
-	@echo "[PASS] Packaged archive audit passed (no fresh EDA execution)"
-
-evidence:
-	@echo "[NOTICE] 'make evidence' is a compatibility alias for 'make audit-archive'."
-	@echo "[NOTICE] It does not reproduce the paper experiments."
-	@$(MAKE) audit-archive
-
-table4:
-	@bash "$(ARTIFACTS_DIR)/01-table4-qor/run.sh"
-
-table5:
-	@bash "$(ARTIFACTS_DIR)/02-table5-composability/run.sh"
-
-table6:
-	@bash "$(ARTIFACTS_DIR)/03-table6-cutrow/run.sh"
-
 toolchain-smoke smoke:
 	@echo "[NOTICE] AES smoke is a toolchain exercise, not a paper reproduction."
 	@bash "$(ARTIFACTS_DIR)/04-aes-smoke/run.sh" --run --threads "$(THREADS)"
@@ -308,7 +308,7 @@ zenodo-audit:
 	  --allow-placeholder-authors --allow-incomplete-paper-data
 
 clean:
-	@echo "Removing generated compact archive-audit outputs only..."
+	@echo "Removing generated artifact scratch outputs only..."
 	@find "$(ARTIFACTS_DIR)" -type d -name output -exec \
 	  find {} -mindepth 1 ! -name .gitkeep -delete \;
 	@echo "Fresh reproduction state under $(DPL_EVOLVE_STATE_ROOT) was preserved."

@@ -6,38 +6,39 @@ The paper experiments were run on:
 
 - Rocky Linux 8.10, x86-64;
 - 2 × Intel Xeon Platinum 8462Y+;
-- 64 physical / 128 logical CPU cores total;
+- 64 physical / 128 logical CPU cores;
 - 314 GiB RAM;
 - 22 TiB `/home` filesystem;
-- no GPU requirement.
+- no GPU and no commercial EDA license.
 
-This is a reproducibility reference, not a minimum specification. Peak use
-depends strongly on the target size and selected parallelism. OpenROAD alone
-can exceed 2 GiB; parallel compilation, four concurrent BO trials, multiple
-cases, and large Ariane/SWERV/BPQUAD inputs require substantially more memory
-and disk than the old 8/16 GiB and 10 GiB smoke recommendations.
+This is a reproducibility reference, not a fixed minimum. Resource use varies
+substantially by design and concurrency. OpenROAD alone can exceed 2 GiB on a
+modest case; parallel compilation, four concurrent BO trials, and large
+Ariane/SWERV/BPQUAD inputs require server-class memory and storage. The complete
+campaign is not advertised for an 8/16 GiB RAM or 10 GiB disk host.
 
-On a smaller machine, reproduce one `CASE=` at a time and lower script
-parallelism. Record CPU model, physical/logical cores, RAM, filesystem, thread
-count, and observed peak memory in the evaluation report.
+On a smaller machine:
 
-## Host tools
+- start with `CASE=aes_nangate45`;
+- reduce `THREADS`;
+- run one case at a time;
+- avoid concurrent BO/case execution; and
+- monitor peak memory and free disk.
 
-`make doctor` is read-only and checks the host before ORFS is present. The
-pinned build requires a modern C++ compiler, CMake, GNU Make, Bash, Python,
-Git, rsync, bison, flex, SWIG, and the OpenROAD/Yosys build dependencies.
-Doctor prints a Rocky/RHEL-family `dnf` suggestion when commands are missing;
-the artifact never runs `sudo`.
+## Required host software
 
-Exact revisions are recorded in `provenance/source-commits.json`:
+The pinned build uses Bash 4+, GNU Make 4+, Python 3.11+, Git, rsync, CMake,
+GCC/G++, bison, flex, SWIG, and the OpenROAD/Yosys build dependencies.
 
-- OpenROAD-flow-scripts prepared tree;
-- OpenROAD prepared tree;
-- Yosys commit;
-- framework base commit;
-- Python/PyYAML version.
+```bash
+make doctor
+```
 
-Prepare and inspect them with:
+Doctor is read-only and prints Rocky/RHEL-family package suggestions for
+missing commands. The artifact never invokes `sudo`; reviewers should inspect
+the suggestion and use their normal administrator process.
+
+## Pinned EDA workspace
 
 ```bash
 make bootstrap
@@ -45,12 +46,37 @@ make build-tools THREADS=16
 make check
 ```
 
-## Storage locations
+`bootstrap` creates the sibling ORFS/OpenROAD workspace at revisions recorded
+in `provenance/source-commits.json` and applies the DPLEvolve patches.
+`build-tools` compiles Yosys/OpenROAD and prepares Python environments. `check`
+inspects the prepared revisions, binaries, and shared libraries.
 
-- ORFS input and experiment products: `$ORFS_ROOT/flow/{results,reports,logs}`
-- builds, DSE rounds, BO sweeps, and summaries: `$DPL_EVOLVE_STATE_ROOT`
-- retained Table 6 DEF/V/SDC/source data and any future Table 5 config/source
-  recovery: `$PAPER_DATA_ROOT`
-- compact immutable archive inputs/expected values: `artifacts/`
+## Path configuration
 
-Fresh reproduction never overwrites `artifacts/*/expected/`.
+Defaults are sibling directories of the repository:
+
+```text
+ORFS_ROOT=../OpenROAD-flow-scripts
+DPL_EVOLVE_STATE_ROOT=../dpl_evolve_state
+PAPER_DATA_ROOT=./paper-data
+```
+
+Override them on the command line or in an untracked `env.local.sh`:
+
+```bash
+export ORFS_ROOT=/path/to/OpenROAD-flow-scripts
+export DPL_EVOLVE_STATE_ROOT=/path/to/dpl_evolve_state
+export PAPER_DATA_ROOT=/path/to/paper-data
+```
+
+Generated ODBs and OpenROAD logs live under `$ORFS_ROOT/flow`. Builds, BO
+trials, DSE rounds, and summaries live under `$DPL_EVOLVE_STATE_ROOT`. External
+Table 6 data lives under `$PAPER_DATA_ROOT`. Fresh experiments never overwrite
+`artifacts/*/expected/`.
+
+## Record for an evaluation report
+
+Record the Git commit, OS, CPU model, physical/logical cores, RAM, filesystem,
+thread count, external-data version, and observed peak resource use. Numerical
+drift should be reported with the fresh metrics rather than hidden by changing
+an expected value.

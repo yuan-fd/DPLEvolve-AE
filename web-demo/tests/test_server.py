@@ -100,7 +100,6 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
             server.TASKS["validate-evaluator"][1],
             ["make", "validate-evaluator"],
         )
-        self.assertEqual(server.TASKS["audit-archive"][1], ["make", "audit-archive"])
         self.assertEqual(server.TASKS["fetch-table6-data"][1], ["make", "fetch-table6-data"])
         self.assertEqual(server.TASKS["prepare-table5-inputs"][1], ["make", "prepare-table5-inputs"])
         self.assertEqual(server.TASKS["table4-fresh"][1], ["make", "reproduce-table4"])
@@ -117,11 +116,17 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
     def test_full_reproduction_uses_documented_order(self):
         self.assertEqual(
             server.TASKS["full"][1],
-            [
-                "bash",
-                "-c",
-                "make bootstrap && make build-tools && make prepare-paper-inputs && make validate-evaluator",
-            ],
+            ["make", "reviewer-prepare", "THREADS=8"],
+        )
+
+    def test_reviewer_simulation_tasks_are_bounded(self):
+        self.assertEqual(
+            server.TASKS["reviewer-aes"][1],
+            ["make", "reviewer-aes-result", "THREADS=8"],
+        )
+        self.assertEqual(
+            server.TASKS["table6-one"][1],
+            ["make", "reviewer-table6-one", "THREADS=10"],
         )
 
     def test_ui_explains_fresh_clone_paths(self):
@@ -132,7 +137,7 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("six missing candidate sources", html)
         self.assertIn("config_dense2.mk", html)
         self.assertIn("does not need the deleted ODBs", html)
-        self.assertIn("archive audit is clearly separated", html)
+        self.assertIn("Every experiment button invokes a fixed Make command", html)
         self.assertIn("Table 5 is the only blocked reported table", html)
         self.assertIn("explicit relative-result tolerances", html)
         self.assertIn("reproduce-ariane-diagnostic", html)
@@ -140,6 +145,8 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("96 observed points", html)
         self.assertIn("hashed Markdown/JSON evidence packet", html)
         self.assertIn("7200-second cap", html)
+        self.assertIn("Prepare one target", html)
+        self.assertIn("Run AES result", html)
 
     def test_ui_exposes_every_fixed_reviewer_task(self):
         html = (WEB_DEMO_ROOT / "templates" / "index.html").read_text(encoding="utf-8")

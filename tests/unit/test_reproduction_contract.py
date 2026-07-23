@@ -147,10 +147,10 @@ class ReproductionContractTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("unsigned files", result.stdout)
 
-    def test_archive_alias_is_labeled_non_reproduction(self):
+    def test_public_makefile_exposes_fresh_reproduction_only(self):
         makefile = (ROOT / "Makefile").read_text()
-        self.assertIn("does not reproduce the paper experiments", makefile)
-        self.assertIn("audit-archive", makefile)
+        self.assertNotIn("audit-archive", makefile)
+        self.assertNotIn("\nevidence:", makefile)
         self.assertIn("reproduce-paper-results: paper-data-check", makefile)
         for target in ("reproduce-table4", "reproduce-table5", "reproduce-table6"):
             self.assertIn(f"$(MAKE) {target}", makefile)

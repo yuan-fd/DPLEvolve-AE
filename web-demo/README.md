@@ -1,62 +1,62 @@
 # DPLEvolve reviewer console
 
-The console is an optional browser frontend to the same paper-experiment Make
-targets documented in the root README. It does not contain a separate
-verification logic and it does not turn archived-number checks into fresh
-reproduction.
+The Web Demo is an optional browser frontend to the repository's fixed
+environment and fresh-experiment Make targets. It does not contain separate
+verification logic or accept arbitrary shell commands.
 
-## Start
+## Start locally
+
+From the repository root:
 
 ```bash
-cd DPLEvolve-AE
 bash web-demo/start.sh
 ```
 
-Open `http://127.0.0.1:8080`. On a remote server, keep the service bound to
-loopback and tunnel it from the reviewer's laptop:
+Open `http://127.0.0.1:8080`.
+
+## Open a remote server safely
+
+Keep the service bound to loopback. On the reviewer's laptop:
 
 ```bash
 ssh -N -L 8080:127.0.0.1:8080 USER@SERVER
 ```
 
-Do not expose the console to the public Internet: it can launch builds and
-experiments.
+Then open `http://127.0.0.1:8080` on the laptop. Do not expose this service to
+the public Internet because it can launch builds and experiments.
 
-## Recommended order
+## Recommended reviewer simulation
 
-1. Run `make doctor`.
-2. Run `bootstrap`, `build-tools`, and `prepare-paper-inputs`.
-3. Run `validate-evaluator` to produce a fresh four-stage metric trajectory.
-4. Run a Table 4 default, BO, or ReviewDSE fixed-source replay.
-5. Use `fetch-table6-data`, `check-table6-data`, and `table6-fresh` for the
-   retained cut-row experiment; Table 5 still lacks its SWERV DENSE_2 config
-   and six sources.
-6. Use `figures-retained` to rebuild Figures 4/5 and `ariane-diagnostic` for
-   the fresh six-source Ariane run.
-7. Use `available-results` for the complete currently executable subset;
-   Table 5 is explicitly excluded.
-8. Use `audit-archive` only as a secondary integrity check.
+1. Run **Reviewer Environment Doctor**.
+2. Run **Prepare one target**. This bootstraps/builds the pinned tools, prepares
+   AES Nangate45, and validates its protected evaluator trajectory.
+3. Run **Run AES result**. This executes the same-case default and rebuilds one
+   HPWL-selected ReviewDSE source program.
+4. Inspect the new `metrics.json` and replay `results.tsv` in the live log.
+5. Run **Download Table 6 data**, then the one-row Ariane center-8 ReviewDSE
+   task before attempting all 27 Table 6 jobs.
+6. Export the session JSON for the evaluation record.
 
-Full BO is 3,600 placements. Full ReviewDSE search is not exposed as a one-click
-browser action because it requires an explicit token-cost acknowledgement; use
-`make plan-dse-paper` and the guarded terminal command from the root README.
-The retained Figure 4 source has 96 observed points and emits a machine-readable
-three-point gap list. Level 1 is a fresh public reconstruction whose Markdown
-packet and JSON manifest are validated before Level 2; the author-time packet
-and exact breadth were not retained. Every fresh Table 6 job uses 7200 seconds,
-while the archived Ariane center-10 Negotiation row truthfully retains its
-earlier 600-second timeout.
+Only after the bounded path succeeds should a reviewer start complete Table 4
+(3,600 BO placements), all 27 Table 6 jobs, or the available-results aggregate.
 
-## Fixed API task names
+## Cost and data boundaries
 
-The backend accepts only predefined tasks:
+- Default, BO, selected-source replay, figures, Table 6, and the Ariane
+  diagnostic require no LLM.
+- Full ReviewDSE search is not a one-click browser task. The terminal command
+  requires explicit `ACKNOWLEDGE_LLM_COST=yes`.
+- Table 5 is the only blocked reported table because its SWERV config and six
+  source trees are missing.
+- Figure 4 retained mode reports 96 observed points and three gaps.
+- Missing paper-time hashes do not block numerical reproduction; fresh legal
+  metrics and tolerance checks are the scientific criterion.
 
-`doctor`, `check`, `bootstrap`, `build-tools`, `prepare-inputs`,
-`validate-evaluator`, `default`, `setup-bo`, `bo`, `replay-hpwl`, `replay-ghr`,
-`table4-fresh`, `figures-retained`, `ariane-source-check`, `ariane-diagnostic`,
-`paper-data-check`, `table5-fresh`, `table6-fresh`, `dse-plan`, `level1-plan`,
-`audit-archive`, `toolchain-smoke`, `available-results`, and `full`.
+## Backend safety
 
-Commands are serialized, streamed over WebSocket, and recorded in the in-memory
-session history. SSH mode runs those same fixed commands on the selected remote
-repository path.
+The backend accepts predefined task names only. Commands are serialized,
+streamed over WebSocket, and recorded in in-memory session history. SSH mode
+runs those same fixed commands on the selected remote repository path.
+
+Credentials remain in server memory while tasks exist and are not included in
+status or exported session data.

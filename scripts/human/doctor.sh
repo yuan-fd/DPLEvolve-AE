@@ -140,7 +140,7 @@ printf '\n'
 if [[ "$(uname -s)" == "Linux" ]]; then
   ok 'Linux host detected'
 else
-  warn 'Archive audit may work, but fresh paper experiments support Linux only'
+  warn 'Fresh paper experiments support Linux only'
   SMOKE_ERRORS=$((SMOKE_ERRORS + 1))
 fi
 

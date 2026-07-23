@@ -39,16 +39,15 @@ reports/results trees, never in an expected-value directory.
 
 ## Claim boundaries
 
-- `make audit-archive` (and compatibility alias `make evidence`) checks compact
-  packaged records. It does not run EDA and is not paper reproduction.
 - `make toolchain-smoke` exercises one AES toolchain path. It is not a paper
   experiment and must not be called RTL-to-GDS.
 - Table 4 selected-program replay is a fresh OpenROAD experiment when its
   prepared ODB is present.
 - A full ReviewDSE search is supported by `make run-dse-paper`, but it must
   retain the explicit LLM-cost acknowledgement.
-- Table 5/6 fresh replay remains blocked until the exact assets described in
-  `docs/paper-data-layout.md` are installed. Never substitute archived TSV/JSON
+- Table 6 is runnable after `make fetch-table6-data` installs the published
+  exact package. Table 5 remains blocked until the assets described in
+  `docs/paper-data-layout.md` are recovered. Never substitute archived TSV/JSON
   rows and label the result fresh.
 
 ## Validation sequence
@@ -61,7 +60,6 @@ bash scripts/reproduce/run_bo.sh --case aes_nangate45 --dry-run
 bash scripts/reproduce/replay_selected.sh --track hpwl --case aes_nangate45 --dry-run
 make test
 make validate-configs
-make audit-archive
 ```
 
 Run a live EDA case only when the pinned workspace is available. Run a paid LLM

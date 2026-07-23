@@ -77,8 +77,9 @@ echo "============================================"
 echo " DPLEvolve AE - Zenodo Archive Preparation"
 echo "============================================"
 echo ""
-echo "[1/5] Running archive-audit gates..."
-make -C "${AE_ROOT}" audit-archive
+echo "[1/5] Running repository and configuration gates..."
+make -C "${AE_ROOT}" test
+make -C "${AE_ROOT}" validate-configs
 
 STAMP="$(date +%Y%m%d-%H%M%S)"
 STAGING="$(mktemp -d /tmp/dplevolve-zenodo.XXXXXX)"
@@ -144,12 +145,6 @@ make validate-evaluator CASE=aes_nangate45
 This builds the pinned environment, generates one paper input, and runs the
 actual protected detailed-placement evaluator. Use the root README for the
 nine-case default, BO, selected-source replay, and cost-gated DSE commands.
-
-For the optional compact archived-record audit:
-
-```bash
-make audit-archive
-```
 
 ## Contents
 

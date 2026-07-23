@@ -6,6 +6,9 @@ artifacts/
   02-table5-composability/ Table 5 compact counterexamples
   03-table6-cutrow/       Table 6 compact cut-row outcomes
   04-aes-smoke/           Optional one-case toolchain diagnostic
+  05-figures/             Figure 4/5 reproduction wrapper
+  06-reviewdse-search/    Level 1/2 search wrapper
+  07-ariane-diagnostic/   Six-source diagnostic wrapper
 configs/reproduction/     Paper experiment contract and case plan
 src/
   dpl_evolve_agent/       Bundled research implementation
@@ -28,11 +31,11 @@ paper/                     Paper metadata (PDF not tracked)
 |---|---|
 | Prepare paper inputs | `make prepare-paper-inputs` |
 | Table 4 default/BO/replay | `make reproduce-table4` |
+| Table 6 cut-row replay | `make reproduce-table6` |
 | Small real DSE | `make run-dse-small` |
-| Archived records | `make audit-archive` |
 | Environment inspection | `scripts/agent/inspect_environment.sh` |
 | Repository validation | `make test` |
-| Archive audit | `make zenodo-audit` |
+| Release-package check | `make zenodo-audit` |
 
 ## Dependency direction
 

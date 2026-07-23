@@ -5,7 +5,8 @@
 3. Run `make replay-reviewdse TRACK=hpwl CASE=<case>`.
 4. Confirm the source digest, build, protected evaluator status, legality, and
    new `results.tsv` all pass.
-5. Report the generated ODB hash and whether a paper-time hash was available.
+5. Report the fresh legality, HPWL/runtime result, generated ODB hash when
+   available, and whether the numerical acceptance window passed.
 
 `scripts/agent/run_artifact.sh --artifact table4` is only the compact archive
 audit and must not be reported as replay.

@@ -11,25 +11,28 @@ digest_inputs() {
 
 before="$(digest_inputs)"
 
-bash artifacts/01-table4-qor/run.sh
-bash artifacts/02-table5-composability/run.sh
-bash artifacts/03-table6-cutrow/run.sh
+bash scripts/agent/run_artifact.sh --artifact table4 --dry-run | grep -F 'artifacts/01-table4-qor/reproduce.sh' >/dev/null
+bash scripts/agent/run_artifact.sh --artifact figures --dry-run | grep -F 'artifacts/05-figures/reproduce.sh' >/dev/null
+bash scripts/agent/run_artifact.sh --artifact search --dry-run | grep -F -- '--plan' >/dev/null
+bash scripts/agent/run_artifact.sh --artifact smoke --dry-run | grep -F -- '--check-only' >/dev/null
+
+for wrapper in \
+  artifacts/01-table4-qor/reproduce.sh \
+  artifacts/02-table5-composability/reproduce.sh \
+  artifacts/03-table6-cutrow/reproduce.sh \
+  artifacts/05-figures/reproduce.sh \
+  artifacts/06-reviewdse-search/reproduce.sh \
+  artifacts/07-ariane-diagnostic/reproduce.sh; do
+  bash "${wrapper}" --help >/dev/null
+done
 
 after="$(digest_inputs)"
 if [[ "${before}" != "${after}" ]]; then
-  echo '[FAIL] An evidence command modified packaged inputs or expected values.' >&2
+  echo '[FAIL] A help or dry-run command modified experiment inputs or expected values.' >&2
   exit 1
 fi
 
-for output in \
-  artifacts/01-table4-qor/output/summary.json \
-  artifacts/02-table5-composability/output/summary.json \
-  artifacts/03-table6-cutrow/output/summary.json; do
-  [[ -s "${output}" ]] || { echo "[FAIL] Missing generated report: ${output}" >&2; exit 1; }
-done
-
-bash scripts/agent/run_artifact.sh --artifact table4 --dry-run | grep -F 'artifacts/01-table4-qor/run.sh' >/dev/null
-bash scripts/agent/run_artifact.sh --artifact smoke --dry-run | grep -F -- '--check-only' >/dev/null
+python3 -m json.tool agent/schemas/run-manifest.schema.json >/dev/null
 
 missing_orfs="$(mktemp -d)/OpenROAD-flow-scripts"
 smoke_check_output="$(ORFS_ROOT="${missing_orfs}" bash artifacts/04-aes-smoke/run.sh --check-only)"
@@ -68,4 +71,4 @@ if bash scripts/agent/run_artifact.sh --artifact unsupported --dry-run >/dev/nul
   exit 1
 fi
 
-echo '[PASS] Independent evidence bundles and machine dispatcher work as expected.'
+echo '[PASS] Fresh experiment wrappers and machine dispatcher work as expected.'

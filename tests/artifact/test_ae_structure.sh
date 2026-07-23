@@ -13,9 +13,6 @@ for path in "${required_root[@]}"; do
 done
 
 bundles=(
-  artifacts/01-table4-qor
-  artifacts/02-table5-composability
-  artifacts/03-table6-cutrow
   artifacts/04-aes-smoke
 )
 for bundle in "${bundles[@]}"; do
@@ -29,20 +26,37 @@ for bundle in "${bundles[@]}"; do
     || fail "not executable: ${bundle}/run.sh"
 done
 
+experiment_bundles=(
+  artifacts/01-table4-qor
+  artifacts/02-table5-composability
+  artifacts/03-table6-cutrow
+  artifacts/05-figures
+  artifacts/06-reviewdse-search
+  artifacts/07-ariane-diagnostic
+)
+for bundle in "${experiment_bundles[@]}"; do
+  for path in README.md reproduce.sh inputs expected output; do
+    [[ -e "${ROOT}/${bundle}/${path}" ]] \
+      && pass "experiment path: ${bundle}/${path}" \
+      || fail "missing experiment path: ${bundle}/${path}"
+  done
+  [[ -x "${ROOT}/${bundle}/reproduce.sh" ]] \
+    && pass "executable: ${bundle}/reproduce.sh" \
+    || fail "not executable: ${bundle}/reproduce.sh"
+done
+
 required_files=(
-  artifacts/01-table4-qor/verify.py
   artifacts/01-table4-qor/config/baseline_9case.yaml
   artifacts/01-table4-qor/inputs/bo_paper/aes_asap7.trials.tsv
   artifacts/01-table4-qor/selected-programs/manifest.json
   artifacts/01-table4-qor/selected-programs/run.sh
-  artifacts/02-table5-composability/verify.py
   artifacts/02-table5-composability/inputs/counterexamples.tsv
-  artifacts/03-table6-cutrow/verify.py
   artifacts/03-table6-cutrow/inputs/reviewdse.tsv
   artifacts/04-aes-smoke/check.sh
   artifacts/04-aes-smoke/config/aes_nangate45.yaml
   artifacts/04-aes-smoke/expected/ae_reproduction_lock.json
   scripts/agent/run_artifact.sh
+  scripts/README.md
   scripts/shared/env_vars.sh
   scripts/shared/validate_config.py
   scripts/maintenance/prepare_zenodo.sh
@@ -80,6 +94,7 @@ required_files=(
   artifacts/01-table4-qor/inputs/diagnostics/MANIFEST.sha256
   artifacts/01-table4-qor/diagnostics/ariane-warmstart/README.md
   images/dplevolve-architecture.png
+  docs/reviewer-walkthrough.md
 )
 for path in "${required_files[@]}"; do
   [[ -f "${ROOT}/${path}" ]] && pass "file: ${path}" || fail "missing file: ${path}"

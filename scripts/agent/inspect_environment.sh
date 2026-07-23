@@ -16,7 +16,8 @@ dpl_ae_resolve_env
 # shellcheck source=/dev/null
 source "${AE_ROOT}/scripts/shared/utils.sh"
 
-OUTPUT="${1:-${AE_ROOT}/provenance/current-machine.json}"
+OUTPUT="${1:-${DPL_EVOLVE_STATE_ROOT}/agent_runs/current-machine.json}"
+mkdir -p "$(dirname "${OUTPUT}")"
 
 dpl_ae_info "Capturing environment state..."
 
