@@ -173,3 +173,23 @@ written under:
 │   └── ariane_diagnostic_*/ariane-diagnostic-fresh.tsv
 └── experiment_batches/<RUN_PREFIX>_paper9_place/
 ```
+
+## Web Demo
+
+Start the browser interface from the repository root:
+
+```bash
+bash web-demo/start.sh
+```
+
+Open `http://127.0.0.1:8080`. The Web Demo provides visual controls and live
+logs for the same environment setup, experiment reproduction, and result
+evaluation commands described above. It can be used in place of the terminal
+Make commands.
+
+For a remote evaluation server, run the following command on the local machine
+and then open the same address in the local browser:
+
+```bash
+ssh -N -L 8080:127.0.0.1:8080 USER@SERVER
+```
