@@ -129,7 +129,7 @@ if grep -Fq '[Paper link](https://arxiv.org/abs/2607.11294)' "${ROOT}/README.md"
 else
   fail "README paper link is missing"
 fi
-if rg -n 'Optional ReviewDSE|## More information|The released environment was tested' \
+if grep -En 'Optional ReviewDSE|## More information|The released environment was tested' \
     "${ROOT}/README.md" >/dev/null; then
   fail "README contains deprecated guide prose"
 else
@@ -148,15 +148,16 @@ else
   fail "extras/unsupported is not excluded from Git"
 fi
 
-if rg -nP '\p{Han}' \
-    "${ROOT}/README.md" "${ROOT}/artifacts" "${ROOT}/docs" "${ROOT}/agent" \
-    -g '*.md' -g '*.txt' -g '*.json' -g '*.yaml' >/dev/null; then
+if grep -RInP --include='*.md' --include='*.txt' --include='*.json' --include='*.yaml' \
+    '\p{Han}' "${ROOT}/README.md" "${ROOT}/artifacts" "${ROOT}/docs" \
+    "${ROOT}/agent" >/dev/null; then
   fail "public documentation or data contains Chinese characters"
 else
   pass "public text is English-only"
 fi
 
-if rg -n '鈥|鈹|碌m|AUTHOR (LIST|INFORMATION) REQUIRED' \
+if grep -RInE --include='*.md' --include='*.txt' --include='*.json' --include='*.yaml' \
+    '鈥|鈹|碌m|AUTHOR (LIST|INFORMATION) REQUIRED' \
     "${ROOT}/README.md" "${ROOT}/artifacts" "${ROOT}/docs" "${ROOT}/agent" >/dev/null; then
   fail "public text contains mojibake or release placeholders"
 else
