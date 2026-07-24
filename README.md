@@ -5,6 +5,8 @@ mechanisms in OpenROAD detailed placement.
 
 [Paper link](https://arxiv.org/abs/2607.11294)
 
+<img src="images/reviewdse-workflow.png" width="100%">
+
 ## Code Structure
 
 ```text
