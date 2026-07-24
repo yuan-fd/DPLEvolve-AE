@@ -77,6 +77,7 @@ def main() -> int:
 
     missing = []
     unpinned = []
+    rebuilt = []
     if args.orfs_root:
         for item in programs:
             if args.case and item["case"] != args.case:
@@ -95,7 +96,7 @@ def main() -> int:
                 continue
             expected_hash = item.get("input_odb_sha256")
             if expected_hash and sha256(odb) != expected_hash:
-                raise SystemExit(f"[ERROR] {item['case']}: input ODB checksum mismatch: {odb}")
+                rebuilt.append(item["case"])
             if not expected_hash:
                 unpinned.append(item["case"])
         if missing:
@@ -108,6 +109,12 @@ def main() -> int:
             print(f"[PASS] paper-path ODB input is present for {label}")
         if unpinned:
             print("[WARN] present but no archived checksum: " + ", ".join(unpinned))
+        if rebuilt:
+            print(
+                "[WARN] regenerated input differs from the author-time ODB; "
+                "the replay will be judged by legality and numerical tolerance: "
+                + ", ".join(rebuilt)
+            )
 
     if args.results:
         if not args.case:

@@ -626,6 +626,13 @@ async def ssh_connect(config: SSHConfig):
             "host": "localhost",
         }
 
+    if not config.root_path:
+        return {
+            "success": False,
+            "message": "Repository path is required for remote execution",
+            "host": config.host,
+        }
+
     if not _HAS_PARAMIKO:
         return {
             "success": False,
@@ -702,8 +709,7 @@ async def ssh_connect(config: SSHConfig):
 
 
 TASKS: dict[str, tuple[str, list[str]]] = {
-    # Invoke Doctor directly so a missing GNU Make can still be diagnosed.
-    "doctor": ("Environment Doctor", ["bash", "scripts/human/doctor.sh"]),
+    "doctor": ("Environment Doctor", ["make", "doctor"]),
     "bootstrap": ("Bootstrap Pinned Workspace", ["make", "bootstrap"]),
     "build-tools": ("Build Pinned EDA Tools", ["make", "build-tools"]),
     "check": ("Inspect Prepared Environment", ["make", "check"]),
@@ -728,6 +734,13 @@ TASKS: dict[str, tuple[str, list[str]]] = {
 @app.post("/api/run/task/{task_name}")
 async def run_named_task(task_name: str, req: RunRequest):
     """Run one of the reviewer-facing, fixed Make targets."""
+    if req.ssh and not _is_local(req.ssh) and not req.ssh.root_path:
+        from fastapi import HTTPException
+
+        raise HTTPException(
+            status_code=400,
+            detail="Repository path is required for remote execution",
+        )
     task = TASKS.get(task_name)
     if task is None:
         from fastapi import HTTPException

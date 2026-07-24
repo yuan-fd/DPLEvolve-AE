@@ -98,6 +98,7 @@ rsync -a \
   --exclude='*.zip' \
   --exclude='env.local.sh' \
   --exclude='**/environment.local.sh' \
+  --exclude='web-demo/.venv/' \
   --exclude='provenance/current-machine.json' \
   --exclude='extras/' \
   --exclude='artifacts/*/output/*' \
@@ -191,7 +192,7 @@ for required in \
     exit 1
   fi
 done
-if grep -Eq '/\.git/|/__pycache__/|/\.dpl_evolve_state/|/extras/|/output/[^/]+$' "${LISTING}"; then
+if grep -Eq '/\.git/|/__pycache__/|/\.dpl_evolve_state/|/web-demo/\.venv/|/extras/|/artifacts/[^/]+/(selected-programs/)?output/[^/]+$' "${LISTING}"; then
   echo "[ERROR] Archive contains excluded generated or repository state." >&2
   exit 1
 fi

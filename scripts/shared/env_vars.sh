@@ -105,6 +105,11 @@ dpl_ae_resolve_env() {
   fi
   if [[ -n "${caller_openroad_set}" ]]; then
     OPENROAD_EXE="${caller_openroad}"
+  elif [[ -n "${OPENROAD_EXE:-}" && ! -x "${OPENROAD_EXE}" ]]; then
+    # Ignore a stale path loaded from a machine-local environment file.  This
+    # commonly occurs when bootstrap recreates the same prepared source tree
+    # with a different local commit ID.
+    unset OPENROAD_EXE
   fi
 
   # Resolve Yosys binary (requires state root)
@@ -119,8 +124,16 @@ dpl_ae_resolve_env() {
 
   # Resolve OpenROAD binary (requires state root)
   if [[ -z "${OPENROAD_EXE:-}" && -n "${DPL_EVOLVE_STATE_ROOT:-}" ]]; then
-    local candidate
-    candidate="${DPL_EVOLVE_STATE_ROOT}/openroad_core/d5ff63a/install/OpenROAD/bin/openroad"
+    local candidate openroad_anchor
+    candidate=""
+    openroad_anchor=""
+    if [[ -n "${ORFS_ROOT:-}" ]] \
+       && git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse --git-dir >/dev/null 2>&1; then
+      openroad_anchor="$(git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse --short HEAD 2>/dev/null || true)"
+    fi
+    if [[ -n "${openroad_anchor}" ]]; then
+      candidate="${DPL_EVOLVE_STATE_ROOT}/openroad_core/${openroad_anchor}/install/OpenROAD/bin/openroad"
+    fi
     if [[ -x "${candidate}" ]]; then
       OPENROAD_EXE="${candidate}"
     fi

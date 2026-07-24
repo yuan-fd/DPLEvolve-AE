@@ -1,8 +1,24 @@
 cff-version: 1.2.0
-# Release blocker: add the ordered paper authors before the Zenodo deposit.
 message: "If you use this artifact, please cite the MLCAD 2026 paper."
 title: "From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA"
 type: conference-paper
+authors:
+  - family-names: Zheng
+    given-names: Zhiyu
+    affiliation: Fudan University
+    email: zyzheng24@m.fudan.edu.cn
+  - family-names: Du
+    given-names: Yiming
+    affiliation: Fudan University
+    email: iiamadoga@163.com
+  - family-names: Wang
+    given-names: Ziyi
+    affiliation: The Chinese University of Hong Kong
+    email: zeayw1@gmail.com
+  - family-names: Wang
+    given-names: Zhiang
+    affiliation: Fudan University
+    email: zhiangwang@fudan.edu.cn
 conference: "2026 ACM/IEEE Workshop on Machine Learning for CAD (MLCAD)"
 year: 2026
 url: "https://arxiv.org/abs/2607.11294"

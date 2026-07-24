@@ -67,7 +67,9 @@ LOCK="${AE_ROOT}/provenance/source-commits.json"
 if [[ -f "${LOCK}" ]]; then
   AGENT_COMMIT="$(dpl_ae_json_get "${LOCK}" "repositories.dpl_evolve_agent.base_commit" 2>/dev/null || echo '')"
   ORFS_COMMIT="$(dpl_ae_json_get "${LOCK}" "repositories.openroad_flow_scripts.prepared_commit" 2>/dev/null || echo '')"
+  ORFS_TREE="$(dpl_ae_json_get "${LOCK}" "repositories.openroad_flow_scripts.prepared_tree" 2>/dev/null || echo '')"
   OR_COMMIT="$(dpl_ae_json_get "${LOCK}" "repositories.openroad.prepared_commit" 2>/dev/null || echo '')"
+  OR_TREE="$(dpl_ae_json_get "${LOCK}" "repositories.openroad.prepared_tree" 2>/dev/null || echo '')"
 
   if [[ -n "${AGENT_COMMIT}" && -d "${DPL_EVOLVE_AGENT_ROOT}/.git" ]]; then
     ac="$(git -C "${DPL_EVOLVE_AGENT_ROOT}" rev-parse HEAD)"
@@ -80,20 +82,22 @@ if [[ -f "${LOCK}" ]]; then
 
   if [[ -n "${ORFS_COMMIT}" && -d "${ORFS_ROOT}/.git" ]]; then
     oc="$(git -C "${ORFS_ROOT}" rev-parse HEAD)"
-    if [[ "${oc}" == "${ORFS_COMMIT}" ]]; then
-      dpl_ae_ok "ORFS: ${oc:0:8}"
+    ot="$(git -C "${ORFS_ROOT}" rev-parse 'HEAD^{tree}')"
+    if [[ "${oc}" == "${ORFS_COMMIT}" || "${ot}" == "${ORFS_TREE}" ]]; then
+      dpl_ae_ok "ORFS prepared source tree: ${ot:0:8}"
     else
-      dpl_ae_warn "ORFS: expected ${ORFS_COMMIT:0:8}, got ${oc:0:8}"
+      dpl_ae_warn "ORFS source mismatch: expected tree ${ORFS_TREE:0:8}, got ${ot:0:8}"
     fi
   fi
 
   if [[ -n "${OR_COMMIT}" ]] && \
      git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse --git-dir >/dev/null 2>&1; then
     orc="$(git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse HEAD)"
-    if [[ "${orc}" == "${OR_COMMIT}" ]]; then
-      dpl_ae_ok "OpenROAD: ${orc:0:8}"
+    ort="$(git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse 'HEAD^{tree}')"
+    if [[ "${orc}" == "${OR_COMMIT}" || "${ort}" == "${OR_TREE}" ]]; then
+      dpl_ae_ok "OpenROAD prepared source tree: ${ort:0:8}"
     else
-      dpl_ae_warn "OpenROAD: expected ${OR_COMMIT:0:8}, got ${orc:0:8}"
+      dpl_ae_warn "OpenROAD source mismatch: expected tree ${OR_TREE:0:8}, got ${ort:0:8}"
     fi
   fi
 fi
@@ -114,7 +118,11 @@ echo ""
 
 # --- OpenROAD ---
 echo "--- OpenROAD ---"
-OR_BIN="${OPENROAD_EXE:-${DPL_EVOLVE_STATE_ROOT}/openroad_core/d5ff63a/install/OpenROAD/bin/openroad}"
+OPENROAD_ANCHOR_ID=""
+if git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse --git-dir >/dev/null 2>&1; then
+  OPENROAD_ANCHOR_ID="$(git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse --short HEAD)"
+fi
+OR_BIN="${OPENROAD_EXE:-${DPL_EVOLVE_STATE_ROOT}/openroad_core/${OPENROAD_ANCHOR_ID:-unknown}/install/OpenROAD/bin/openroad}"
 if [[ -x "${OR_BIN}" ]]; then
   echo "  Path:    ${OR_BIN}"
   echo "  Version: $("${OR_BIN}" -version 2>&1 | head -1 || echo 'unknown')"

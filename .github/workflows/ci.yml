@@ -56,6 +56,20 @@ jobs:
       - name: Validate all configs
         run: python3 scripts/shared/validate_config.py --all
 
+  web-tests:
+    name: Web Console Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install web dependencies
+        run: pip install -r web-demo/requirements.txt
+      - name: Run web tests
+        run: PYTHONPATH="$PWD" python3 -m unittest discover -s web-demo/tests/ -v
+
   shellcheck:
     name: ShellCheck Lint
     runs-on: ubuntu-latest

@@ -3,7 +3,20 @@
   "description": "Artifact Evaluation repository for 'From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA'. Provides pinned EDA setup, fresh Table 4 and Table 6 experiment runners, 18 selected ReviewDSE source programs, ReviewDSE search scripts, figure generation, and numerical evaluation.",
   "creators": [
     {
-      "name": "DPLEvolve Contributors"
+      "name": "Zheng, Zhiyu",
+      "affiliation": "Fudan University"
+    },
+    {
+      "name": "Du, Yiming",
+      "affiliation": "Fudan University"
+    },
+    {
+      "name": "Wang, Ziyi",
+      "affiliation": "The Chinese University of Hong Kong"
+    },
+    {
+      "name": "Wang, Zhiang",
+      "affiliation": "Fudan University"
     }
   ],
   "license": "BSD-3-Clause",
@@ -24,5 +37,5 @@
     }
   ],
   "language": "eng",
-  "notes": "A clean OpenROAD-flow-scripts workspace can be prepared with make bootstrap at the revisions recorded in provenance/source-commits.json. The paper run used a Teacher and four Student agents for 10 review iterations. See docs/claims-to-artifacts.md for the exact reproduction limits. Replace the placeholder creator with the paper's ordered author list before deposit."
+  "notes": "A clean OpenROAD-flow-scripts workspace can be prepared with make bootstrap at the revisions recorded in provenance/source-commits.json. The paper run used a Teacher and four Student agents for 10 review iterations. Table 5 is documented as unavailable because its exact SWERV configuration and six generated source trees were not retained."
 }

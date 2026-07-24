@@ -134,6 +134,8 @@ run_case() {
   metrics_path="$(sed -n 's/^[[:space:]]*metrics:[[:space:]]*//p' "${log}" | tail -1)"
   if [[ -z "${metrics_path}" ]]; then
     metrics_path="$(metrics_path_for_case "${case_id}")"
+  elif [[ "${metrics_path}" != /* ]]; then
+    metrics_path="${ORFS_ROOT}/flow/${metrics_path#./}"
   fi
 
   if [[ "${rc}" -eq 0 ]]; then
@@ -212,8 +214,8 @@ with summary_path.open("w", encoding="utf-8", newline="") as stream:
                     "hpwl_global": stages.get("global_micron") or hpwl.get("before_micron") or "",
                     "hpwl_final": hpwl.get("after_micron") or "",
                     "runtime_s": metrics.get("runtime_seconds") or "",
-                    "avg_disp": (metrics.get("displacement") or {}).get("avg_micron") or "",
-                    "max_disp": (metrics.get("displacement") or {}).get("max_micron") or "",
+                    "avg_disp": (metrics.get("displacement") or {}).get("average_displacement_micron") or "",
+                    "max_disp": (metrics.get("displacement") or {}).get("max_displacement_micron") or "",
                     "violations": legality.get("placement_violations", ""),
                 }
             )

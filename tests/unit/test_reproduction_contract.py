@@ -24,6 +24,122 @@ class ReproductionContractTests(unittest.TestCase):
             check=True,
         )
 
+    def test_interrupted_bootstrap_branch_resumes_only_from_clean_anchor(self):
+        helper = (
+            ROOT
+            / "src/dpl_evolve_agent/scripts/workspace/git_prepare_helpers.sh"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory) / "repo"
+            repo.mkdir()
+            env = {
+                **os.environ,
+                "GIT_AUTHOR_NAME": "AE Test",
+                "GIT_AUTHOR_EMAIL": "ae-test@example.invalid",
+                "GIT_COMMITTER_NAME": "AE Test",
+                "GIT_COMMITTER_EMAIL": "ae-test@example.invalid",
+            }
+            subprocess.run(["git", "init", "-q", repo], check=True, env=env)
+            (repo / "README").write_text("anchor\n")
+            subprocess.run(["git", "-C", repo, "add", "README"], check=True, env=env)
+            subprocess.run(
+                ["git", "-C", repo, "commit", "-qm", "anchor"], check=True, env=env
+            )
+            anchor = subprocess.check_output(
+                ["git", "-C", repo, "rev-parse", "HEAD"], text=True
+            ).strip()
+            branch = "dplevolve-ae-prepared"
+            subprocess.run(
+                ["git", "-C", repo, "checkout", "-qb", branch], check=True
+            )
+
+            probe = (
+                f'source "{helper}"; '
+                'dpl_prepare_branch_is_resumable "$1" "$2" "$3"'
+            )
+            clean = subprocess.run(
+                ["bash", "-c", probe, "resume-test", repo, branch, anchor]
+            )
+            self.assertEqual(clean.returncode, 0)
+
+            (repo / "README").write_text("local change\n")
+            dirty = subprocess.run(
+                ["bash", "-c", probe, "resume-test", repo, branch, anchor]
+            )
+            self.assertNotEqual(dirty.returncode, 0)
+
+            subprocess.run(
+                ["git", "-C", repo, "checkout", "--", "README"], check=True
+            )
+            wrong_commit = subprocess.run(
+                ["bash", "-c", probe, "resume-test", repo, branch, f"{anchor}^{{}}x"]
+            )
+            self.assertNotEqual(wrong_commit.returncode, 0)
+
+    def test_reproduction_runtime_resolves_openroad_from_prepared_checkout_head(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            orfs = root / "OpenROAD-flow-scripts"
+            openroad = orfs / "tools" / "OpenROAD"
+            (orfs / "flow").mkdir(parents=True)
+            openroad.mkdir(parents=True)
+            env = {
+                **os.environ,
+                "GIT_AUTHOR_NAME": "AE Test",
+                "GIT_AUTHOR_EMAIL": "ae-test@example.invalid",
+                "GIT_COMMITTER_NAME": "AE Test",
+                "GIT_COMMITTER_EMAIL": "ae-test@example.invalid",
+            }
+            subprocess.run(["git", "init", "-q", openroad], check=True, env=env)
+            (openroad / "README").write_text("prepared tree\n")
+            subprocess.run(
+                ["git", "-C", openroad, "add", "README"], check=True, env=env
+            )
+            subprocess.run(
+                ["git", "-C", openroad, "commit", "-qm", "prepared"],
+                check=True,
+                env=env,
+            )
+            anchor = subprocess.check_output(
+                ["git", "-C", openroad, "rev-parse", "--short", "HEAD"],
+                text=True,
+            ).strip()
+            state = root / "state"
+            binary = state / "openroad_core" / anchor / "install/OpenROAD/bin/openroad"
+            binary.parent.mkdir(parents=True)
+            binary.write_text("#!/bin/sh\nexit 0\n")
+            binary.chmod(0o755)
+
+            probe_env = {
+                key: value
+                for key, value in os.environ.items()
+                if key not in {"OPENROAD_EXE", "YOSYS_EXE"}
+            }
+            probe_env.update(
+                {
+                    "AE_ROOT": str(ROOT),
+                    "DPL_EVOLVE_AGENT_ROOT": str(ROOT / "src/dpl_evolve_agent"),
+                    "ORFS_ROOT": str(orfs),
+                    "DPL_EVOLVE_STATE_ROOT": str(state),
+                    "DPL_EVOLVE_PYTHON": sys.executable,
+                }
+            )
+            result = subprocess.run(
+                [
+                    "bash",
+                    "-c",
+                    "source scripts/reproduce/common.sh; "
+                    "repro_require_runtime; printf '%s\\n' \"$OPENROAD_EXE\"",
+                ],
+                cwd=ROOT,
+                env=probe_env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=True,
+            )
+            self.assertEqual(result.stdout.strip(), str(binary))
+
     def test_paper_protocol_matches_manuscript(self):
         manifest = json.loads(
             (ROOT / "configs/reproduction/paper-experiments.json").read_text()
@@ -155,6 +271,7 @@ class ReproductionContractTests(unittest.TestCase):
         for target in ("reproduce-table4", "reproduce-table5", "reproduce-table6"):
             self.assertIn(f"$(MAKE) {target}", makefile)
         self.assertIn("reproduce-paper-search", makefile)
+        self.assertIn("../.venvs/dplevolve/bin/python", makefile)
 
     def test_bo_space_matches_manifest_and_archived_trial_columns(self):
         manifest = json.loads(
@@ -289,6 +406,15 @@ class ReproductionContractTests(unittest.TestCase):
             self.assertEqual(len(rows), 10)
             self.assertEqual(rows[-1]["case"], "Mean")
 
+    def test_default_baseline_sweep_resolves_reported_metrics_paths(self):
+        launcher = (
+            ROOT
+            / "src/dpl_evolve_agent/experiments/launchers/run_openroad_dpl_9case_baselines.sh"
+        ).read_text()
+        self.assertIn('metrics_path="${ORFS_ROOT}/flow/${metrics_path#./}"', launcher)
+        self.assertIn('get("average_displacement_micron")', launcher)
+        self.assertIn('get("max_displacement_micron")', launcher)
+
     def test_selected_replay_distinguishes_pinned_and_rebuilt_inputs(self):
         selected_root = ROOT / "artifacts/01-table4-qor/selected-programs"
         manifest = json.loads((selected_root / "manifest.json").read_text())
@@ -360,6 +486,44 @@ class ReproductionContractTests(unittest.TestCase):
         pinned_result = run("aes_nangate45", pinned_hpwl)
         self.assertNotEqual(pinned_result.returncode, 0)
         self.assertIn("input-checksum-pinned rebuilt replay HPWL drift", pinned_result.stdout)
+
+    def test_selected_replay_accepts_a_regenerated_input_for_numerical_review(self):
+        selected_root = ROOT / "artifacts/01-table4-qor/selected-programs"
+        manifest = json.loads((selected_root / "manifest.json").read_text())
+        item = next(row for row in manifest["programs"] if row["case"] == "aes_nangate45")
+        with tempfile.TemporaryDirectory() as directory:
+            orfs = Path(directory)
+            input_dir = (
+                orfs
+                / "flow/results"
+                / item["platform"]
+                / item["design"]
+                / manifest["flow_variant"]
+            )
+            input_dir.mkdir(parents=True)
+            (input_dir / manifest["input_stage"]).write_bytes(b"fresh rebuilt ODB")
+            (input_dir / manifest["constraint_stage"]).write_text("create_clock\n")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(selected_root / "verify.py"),
+                    "--root",
+                    str(selected_root),
+                    "--orfs-root",
+                    str(orfs),
+                    "--case",
+                    "aes_nangate45",
+                    "--objective",
+                    "hpwl",
+                    "--require-inputs",
+                ],
+                cwd=ROOT,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout)
+            self.assertIn("judged by legality and numerical tolerance", result.stdout)
 
     def test_table5_summary_derives_counterexamples_from_fresh_rows(self):
         with tempfile.TemporaryDirectory() as directory:

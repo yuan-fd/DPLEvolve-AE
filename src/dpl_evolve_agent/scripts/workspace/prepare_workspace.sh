@@ -5,6 +5,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BOOTSTRAP_AGENT_ROOT="${DPL_EVOLVE_AGENT_ROOT:-$(cd "${SCRIPT_DIR}/../.." && pwd)}"
 BOOTSTRAP_AGENT_ROOT="$(realpath -m "${BOOTSTRAP_AGENT_ROOT}")"
 source "${BOOTSTRAP_AGENT_ROOT}/scripts/runtime_env.sh"
+# shellcheck source=git_prepare_helpers.sh
+source "${SCRIPT_DIR}/git_prepare_helpers.sh"
 AGENT_ROOT="$(realpath -m "${BOOTSTRAP_AGENT_ROOT}")"
 export DPL_EVOLVE_AGENT_ROOT="${AGENT_ROOT}"
 dpl_source_local_env_preserving_overrides "${AGENT_ROOT}"
@@ -140,14 +142,18 @@ ensure_clean_or_reset() {
 
   if [[ -n "${target_branch}" ]]; then
     if git -C "${repo_root}" show-ref --verify --quiet "refs/heads/${target_branch}"; then
-      if [[ "${force}" -ne 1 ]]; then
+      if [[ "${force}" -eq 1 ]]; then
+        git -C "${repo_root}" checkout -B "${target_branch}" "${target_commit}"
+      elif dpl_prepare_branch_is_resumable "${repo_root}" "${target_branch}" "${target_commit}"; then
+        echo "[INFO] ${label}: resuming interrupted preparation on ${target_branch}"
+      else
         echo "[ERROR] Branch already exists in ${label}: ${target_branch}" >&2
         echo "[ERROR] Re-run with --force to reset it." >&2
         exit 1
       fi
+    else
+      git -C "${repo_root}" checkout -B "${target_branch}" "${target_commit}"
     fi
-
-    git -C "${repo_root}" checkout -B "${target_branch}" "${target_commit}"
   elif [[ "${force}" -eq 1 ]]; then
     git -C "${repo_root}" reset --hard "${target_commit}"
   elif [[ "$(git -C "${repo_root}" rev-parse HEAD)" != "${target_commit}" ]]; then

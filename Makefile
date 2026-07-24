@@ -13,7 +13,8 @@ MAINTENANCE_SCRIPTS := $(AE_ROOT)/scripts/maintenance
 DPL_EVOLVE_AGENT_ROOT ?= $(AE_ROOT)/src/dpl_evolve_agent
 ORFS_ROOT ?= $(AE_ROOT)/../OpenROAD-flow-scripts
 DPL_EVOLVE_STATE_ROOT ?= $(AE_ROOT)/../dpl_evolve_state
-DPL_EVOLVE_PYTHON ?= python3
+DPL_EVOLVE_PYTHON ?= $(if $(wildcard $(AE_ROOT)/../.venvs/dplevolve/bin/python),$(AE_ROOT)/../.venvs/dplevolve/bin/python,python3)
+WEB_DEMO_PYTHON ?= $(if $(wildcard $(AE_ROOT)/web-demo/.venv/bin/python),$(AE_ROOT)/web-demo/.venv/bin/python,$(DPL_EVOLVE_PYTHON))
 THREADS ?= 10
 TRACK ?= hpwl
 FIGURE_SOURCE ?= retained
@@ -291,7 +292,7 @@ test-unit:
 	 PYTHONPATH="$(AE_ROOT)" "$(DPL_EVOLVE_PYTHON)" -m unittest discover -s "$(AE_ROOT)/tests/unit/" -v
 
 test-web:
-	@PYTHONPATH="$(AE_ROOT)" "$(DPL_EVOLVE_PYTHON)" -m unittest \
+	@PYTHONPATH="$(AE_ROOT)" "$(WEB_DEMO_PYTHON)" -m unittest \
 	  discover -s "$(AE_ROOT)/web-demo/tests/" -v
 
 validate-configs:

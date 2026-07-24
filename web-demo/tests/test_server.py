@@ -94,8 +94,17 @@ class ServerRegressionTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(any("make doctor" in item for item in report["suggestions"]))
         self.assertTrue(any("does not install" in item for item in report["suggestions"]))
 
+    async def test_remote_execution_requires_an_explicit_repository_root(self):
+        config = server.SSHConfig(host="eda.example.edu", root_path="")
+        probe = await server.ssh_connect(config)
+        self.assertFalse(probe["success"])
+        self.assertIn("Repository path is required", probe["message"])
+
+        with self.assertRaisesRegex(Exception, "Repository path is required"):
+            await server.run_named_task("doctor", server.RunRequest(ssh=config))
+
     def test_core_tasks_are_fixed_commands(self):
-        self.assertEqual(server.TASKS["doctor"][1], ["bash", "scripts/human/doctor.sh"])
+        self.assertEqual(server.TASKS["doctor"][1], ["make", "doctor"])
         self.assertEqual(server.TASKS["bootstrap"][1], ["make", "bootstrap"])
         self.assertEqual(server.TASKS["build-tools"][1], ["make", "build-tools"])
         self.assertEqual(server.TASKS["check"][1], ["make", "check"])

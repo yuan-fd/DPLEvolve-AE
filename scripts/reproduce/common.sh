@@ -44,6 +44,14 @@ repro_require_runtime() {
   [[ -d "${ORFS_ROOT}/flow" ]] || repro_die "ORFS workspace missing: ${ORFS_ROOT}; run 'make bootstrap'"
   [[ -x "${DPL_EVOLVE_PYTHON}" ]] || command -v "${DPL_EVOLVE_PYTHON}" >/dev/null 2>&1 \
     || repro_die "Python is not executable: ${DPL_EVOLVE_PYTHON}"
+
+  # Resolve the binaries produced by make build-tools.  ORFS otherwise falls
+  # back to tools/install/OpenROAD, which is not where this artifact installs
+  # its pinned common-core binary.
+  # shellcheck source=../shared/env_vars.sh
+  source "${AE_ROOT}/scripts/shared/env_vars.sh"
+  dpl_ae_resolve_env || repro_die "prepared environment could not be resolved"
+  export OPENROAD_EXE YOSYS_EXE
 }
 
 repro_positive_integer() {

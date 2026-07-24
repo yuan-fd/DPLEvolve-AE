@@ -277,7 +277,11 @@ else
 fi
 
 YOSYS_BIN="${YOSYS_EXE:-${STATE_ROOT}/yosys/8449dd470/bin/yosys}"
-OPENROAD_BIN="${OPENROAD_EXE:-${STATE_ROOT}/openroad_core/d5ff63a/install/OpenROAD/bin/openroad}"
+OPENROAD_ANCHOR_ID=""
+if git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse --git-dir >/dev/null 2>&1; then
+  OPENROAD_ANCHOR_ID="$(git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse --short HEAD)"
+fi
+OPENROAD_BIN="${OPENROAD_EXE:-${STATE_ROOT}/openroad_core/${OPENROAD_ANCHOR_ID:-unknown}/install/OpenROAD/bin/openroad}"
 
 if [[ -x "${YOSYS_BIN}" ]]; then
   ok "Pinned Yosys binary found: ${YOSYS_BIN}"

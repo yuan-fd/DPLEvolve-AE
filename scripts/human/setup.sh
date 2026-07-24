@@ -81,9 +81,18 @@ OR_TREE="$(dpl_ae_json_get "${LOCK}" "repositories.openroad.prepared_tree")"
 YOSYS_COMMIT="$(dpl_ae_json_get "${LOCK}" "submodules.yosys.commit")"
 
 dpl_ae_info "Verifying repository versions..."
-dpl_ae_check_git_commit "${DPL_EVOLVE_AGENT_ROOT}" "${AGENT_COMMIT}" "dpl_evolve_agent" || {
-  dpl_ae_warn "Agent repo commit mismatch. Continuing anyway..."
-}
+if [[ -d "${DPL_EVOLVE_AGENT_ROOT}/.git" ]]; then
+  dpl_ae_check_git_commit "${DPL_EVOLVE_AGENT_ROOT}" "${AGENT_COMMIT}" "dpl_evolve_agent" || {
+    dpl_ae_warn "Agent repo commit mismatch. Continuing with the requested checkout..."
+  }
+elif [[ "$(realpath -m "${DPL_EVOLVE_AGENT_ROOT}")" == "$(realpath -m "${AE_ROOT}/src/dpl_evolve_agent")" \
+     && -f "${DPL_EVOLVE_AGENT_ROOT}/metadata/anchors.json" \
+     && -f "${DPL_EVOLVE_AGENT_ROOT}/scripts/runtime_env.sh" ]]; then
+  dpl_ae_ok "Bundled dpl_evolve_agent snapshot found (recorded source ${AGENT_COMMIT:0:8})"
+else
+  dpl_ae_error "dpl_evolve_agent source tree is incomplete: ${DPL_EVOLVE_AGENT_ROOT}"
+  exit 1
+fi
 ORFS_ACTUAL_COMMIT="$(git -C "${ORFS_ROOT}" rev-parse HEAD)"
 ORFS_ACTUAL_TREE="$(git -C "${ORFS_ROOT}" rev-parse 'HEAD^{tree}')"
 if [[ "${ORFS_ACTUAL_COMMIT}" == "${ORFS_COMMIT}" || "${ORFS_ACTUAL_TREE}" == "${ORFS_TREE}" ]]; then
@@ -105,6 +114,7 @@ else
   dpl_ae_error "Actual commit/tree:   ${OR_ACTUAL_COMMIT} / ${OR_ACTUAL_TREE}"
   exit 1
 fi
+OPENROAD_ANCHOR_ID="$(git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse --short HEAD)"
 echo ""
 
 # --- Initialize ORFS submodules (specifically Yosys) ---
@@ -158,7 +168,7 @@ fi
 echo ""
 
 # --- Build OpenROAD ---
-OR_PREFIX="${DPL_EVOLVE_STATE_ROOT}/openroad_core/d5ff63a/install/OpenROAD"
+OR_PREFIX="${DPL_EVOLVE_STATE_ROOT}/openroad_core/${OPENROAD_ANCHOR_ID}/install/OpenROAD"
 OR_BIN="${OR_PREFIX}/bin/openroad"
 if [[ -x "${OR_BIN}" ]]; then
   dpl_ae_ok "OpenROAD binary exists: ${OR_BIN}"
@@ -173,6 +183,11 @@ else
     dpl_ae_error "OpenROAD build script not found. Build manually and set OPENROAD_EXE."
     exit 1
   fi
+  if [[ ! -x "${OR_BIN}" ]]; then
+    dpl_ae_error "OpenROAD build finished but the binary was not found: ${OR_BIN}"
+    exit 1
+  fi
+  dpl_ae_ok "OpenROAD built: ${OR_BIN}"
 fi
 echo ""
 
