@@ -109,6 +109,27 @@ class ReproductionContractTests(unittest.TestCase):
             binary.parent.mkdir(parents=True)
             binary.write_text("#!/bin/sh\nexit 0\n")
             binary.chmod(0o755)
+            yosys = state / "yosys/8449dd470/bin/yosys"
+            yosys.parent.mkdir(parents=True)
+            yosys.write_text("#!/bin/sh\nexit 0\n")
+            yosys.chmod(0o755)
+
+            # Simulate a shared state directory whose environment file was
+            # generated from another clone.  Even executable stale paths must
+            # not leak into the current clone's resolved environment.
+            stale = root / "previous-clone-state"
+            stale_openroad = stale / "openroad"
+            stale_yosys = stale / "yosys"
+            for stale_binary in (stale_openroad, stale_yosys):
+                stale_binary.parent.mkdir(parents=True, exist_ok=True)
+                stale_binary.write_text("#!/bin/sh\nexit 0\n")
+                stale_binary.chmod(0o755)
+            environment = state / "ae/environment.sh"
+            environment.parent.mkdir(parents=True)
+            environment.write_text(
+                f'export OPENROAD_EXE="{stale_openroad}"\n'
+                f'export YOSYS_EXE="{stale_yosys}"\n'
+            )
 
             probe_env = {
                 key: value
@@ -129,7 +150,8 @@ class ReproductionContractTests(unittest.TestCase):
                     "bash",
                     "-c",
                     "source scripts/reproduce/common.sh; "
-                    "repro_require_runtime; printf '%s\\n' \"$OPENROAD_EXE\"",
+                    "repro_require_runtime; "
+                    "printf '%s\\n%s\\n' \"$OPENROAD_EXE\" \"$YOSYS_EXE\"",
                 ],
                 cwd=ROOT,
                 env=probe_env,
@@ -138,7 +160,7 @@ class ReproductionContractTests(unittest.TestCase):
                 stderr=subprocess.STDOUT,
                 check=True,
             )
-            self.assertEqual(result.stdout.strip(), str(binary))
+            self.assertEqual(result.stdout.splitlines(), [str(binary), str(yosys)])
 
     def test_paper_protocol_matches_manuscript(self):
         manifest = json.loads(
