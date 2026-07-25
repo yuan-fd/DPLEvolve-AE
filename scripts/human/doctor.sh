@@ -266,6 +266,11 @@ printf '\n%s\n' '--- Prepared workspace state ---'
 
 if [[ -d "${ORFS_ROOT}/flow" && -d "${ORFS_ROOT}/tools/OpenROAD" ]]; then
   ok "ORFS workspace found: ${ORFS_ROOT}"
+  if [[ -w "${ORFS_ROOT}/flow" ]]; then
+    ok "ORFS flow directory is writable"
+  else
+    missing_smoke "ORFS flow directory is not writable: ${ORFS_ROOT}/flow"
+  fi
   if [[ -x "${ORFS_ROOT}/etc/DependencyInstaller.sh" ]]; then
     ok 'Pinned ORFS dependency installer is available'
   else
@@ -285,9 +290,27 @@ OPENROAD_BIN="${OPENROAD_EXE:-${STATE_ROOT}/openroad_core/${OPENROAD_ANCHOR_ID:-
 
 if [[ -x "${YOSYS_BIN}" ]]; then
   ok "Pinned Yosys binary found: ${YOSYS_BIN}"
+  YOSYS_SLANG_PLUGIN="$(dirname "$(dirname "${YOSYS_BIN}")")/share/yosys/plugins/slang.so"
+  if [[ -f "${YOSYS_SLANG_PLUGIN}" ]]; then
+    ok "Pinned yosys-slang plugin found: ${YOSYS_SLANG_PLUGIN}"
+  else
+    missing_smoke "Pinned yosys-slang plugin is missing: ${YOSYS_SLANG_PLUGIN}"
+  fi
 else
   warn "Pinned Yosys binary is not built: ${YOSYS_BIN}"
   SMOKE_ERRORS=$((SMOKE_ERRORS + 1))
+fi
+
+if [[ -d "${STATE_ROOT}" ]]; then
+  if [[ -w "${STATE_ROOT}" ]]; then
+    ok "Experiment state directory is writable: ${STATE_ROOT}"
+  else
+    missing_smoke "Experiment state directory is not writable: ${STATE_ROOT}"
+  fi
+elif [[ -w "$(dirname "${STATE_ROOT}")" ]]; then
+  ok "Experiment state directory can be created: ${STATE_ROOT}"
+else
+  missing_smoke "Experiment state directory cannot be created: ${STATE_ROOT}"
 fi
 
 if [[ -x "${OPENROAD_BIN}" ]]; then

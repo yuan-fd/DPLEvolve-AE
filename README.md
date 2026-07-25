@@ -44,6 +44,8 @@ DPLEvolve-AE/
 
 ## 1. Install the Environment
 
+Review the host and filesystem checklist in [docs/requirements.md](docs/requirements.md).
+
 ```bash
 git clone https://github.com/yuan-fd/DPLEvolve-AE.git
 cd DPLEvolve-AE
@@ -76,15 +78,15 @@ Result:
 
 ### Table 5: Stage Composability
 
+The exact SWERV `DENSE_2` configuration and six generated source trees were
+not retained, so this experiment is not presented as runnable. Check the
+released inputs and recovery status with:
+
 ```bash
-bash artifacts/02-table5-composability/reproduce.sh --threads 10
+make table5-status
 ```
 
-Result:
-
-```text
-../dpl_evolve_state/paper_reproduction/table5_*/table5-fresh.tsv
-```
+See [docs/table5-status.md](docs/table5-status.md).
 
 ### Table 6: Hard Cut-Row Legality
 
@@ -169,7 +171,6 @@ written under:
 ../dpl_evolve_state/
 ├── paper_reproduction/
 │   ├── table4/table4-fresh.tsv
-│   ├── table5_*/table5-fresh.tsv
 │   ├── table6_*/table6-fresh.tsv
 │   ├── figures/{retained,fresh}/
 │   └── ariane_diagnostic_*/ariane-diagnostic-fresh.tsv

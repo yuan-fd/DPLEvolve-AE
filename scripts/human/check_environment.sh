@@ -16,6 +16,8 @@ dpl_ae_resolve_env
 # shellcheck source=/dev/null
 source "${AE_ROOT}/scripts/shared/utils.sh"
 
+CHECK_ERRORS=0
+
 echo "=============================================="
 echo " DPLEvolve Artifact Evaluation — Environment"
 echo "=============================================="
@@ -59,6 +61,18 @@ echo "  AE_ROOT:                  ${AE_ROOT}"
 echo "  DPL_EVOLVE_AGENT_ROOT:    ${DPL_EVOLVE_AGENT_ROOT:-NOT SET}"
 echo "  ORFS_ROOT:                ${ORFS_ROOT:-NOT SET}"
 echo "  DPL_EVOLVE_STATE_ROOT:    ${DPL_EVOLVE_STATE_ROOT:-NOT SET}"
+if [[ -w "${ORFS_ROOT}/flow" ]]; then
+  dpl_ae_ok "ORFS flow directory is writable"
+else
+  dpl_ae_error "ORFS flow directory is not writable: ${ORFS_ROOT}/flow"
+  CHECK_ERRORS=$((CHECK_ERRORS + 1))
+fi
+if [[ -d "${DPL_EVOLVE_STATE_ROOT}" && -w "${DPL_EVOLVE_STATE_ROOT}" ]]; then
+  dpl_ae_ok "Experiment state directory is writable"
+else
+  dpl_ae_error "Experiment state directory is missing or not writable: ${DPL_EVOLVE_STATE_ROOT}"
+  CHECK_ERRORS=$((CHECK_ERRORS + 1))
+fi
 echo ""
 
 # --- Repository commits ---
@@ -110,9 +124,17 @@ if [[ -x "${YOSYS_BIN}" ]]; then
   echo "  Path:    ${YOSYS_BIN}"
   echo "  Version: $("${YOSYS_BIN}" -V 2>&1 | head -1 || echo 'unknown')"
   echo "  SHA-256: $(sha256sum "${YOSYS_BIN}" | awk '{print $1}')"
+  YOSYS_SLANG_PLUGIN="$(dirname "$(dirname "${YOSYS_BIN}")")/share/yosys/plugins/slang.so"
+  if [[ -f "${YOSYS_SLANG_PLUGIN}" ]]; then
+    dpl_ae_ok "yosys-slang plugin: ${YOSYS_SLANG_PLUGIN}"
+  else
+    dpl_ae_error "yosys-slang plugin is missing: ${YOSYS_SLANG_PLUGIN}"
+    CHECK_ERRORS=$((CHECK_ERRORS + 1))
+  fi
 else
   dpl_ae_warn "Yosys binary not found at: ${YOSYS_BIN}"
   dpl_ae_warn "Run 'make build-tools' to build it."
+  CHECK_ERRORS=$((CHECK_ERRORS + 1))
 fi
 echo ""
 
@@ -130,6 +152,7 @@ if [[ -x "${OR_BIN}" ]]; then
 else
   dpl_ae_warn "OpenROAD binary not found at: ${OR_BIN}"
   dpl_ae_warn "Run 'make build-tools' to build it."
+  CHECK_ERRORS=$((CHECK_ERRORS + 1))
 fi
 echo ""
 
@@ -141,6 +164,7 @@ if [[ -x "${OR_BIN}" ]]; then
     if [[ -n "${missing}" ]]; then
       dpl_ae_warn "Missing shared libraries:"
       echo "${missing}"
+      CHECK_ERRORS=$((CHECK_ERRORS + 1))
     else
       dpl_ae_ok "All shared libraries resolved"
     fi
@@ -153,3 +177,7 @@ echo " Environment check complete."
 echo " Run 'make build-tools' if an EDA binary is missing."
 echo " Run 'make prepare-paper-inputs' and 'make validate-evaluator' next."
 echo "=============================================="
+if (( CHECK_ERRORS > 0 )); then
+  dpl_ae_error "Environment check failed with ${CHECK_ERRORS} blocking issue(s)."
+  exit 1
+fi

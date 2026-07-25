@@ -3,7 +3,8 @@
 The root README is the execution guide. Use these documents only when a step
 needs additional detail:
 
-- `environment.md`: system packages, pinned tool revisions, and build details.
+- `requirements.md`: reviewer host, software, storage, access, and writable-path checklist.
+- `environment.md`: pinned tool revisions and environment details.
 - `reviewer-walkthrough.md`: clean-machine terminal and Web Demo walkthrough.
 - `expected-results.md`: generated fields and numerical acceptance rules.
 - `paper-data-layout.md`: external and regenerated paper inputs.

@@ -38,7 +38,7 @@ export DPL_EVOLVE_PYTHON THREADS
 .PHONY: check-ariane-diagnostic-sources reproduce-ariane-diagnostic
 .PHONY: reproduce-available-results reproduce-paper-results reproduce-paper-search
 .PHONY: run-dse-small plan-dse-paper run-dse-paper summarize-dse-paper paper-data-check paper-data-check-available
-.PHONY: fetch-table6-data check-table5-data check-table6-data
+.PHONY: fetch-table6-data table5-status check-table5-data check-table6-data
 .PHONY: toolchain-smoke smoke smoke-check doctor-smoke
 .PHONY: test test-structure test-integration test-unit test-web validate-configs
 .PHONY: provenance zenodo zenodo-audit clean
@@ -238,6 +238,14 @@ fetch-table6-data:
 
 check-table5-data:
 	@bash "$(REPRO_SCRIPTS)/reproduce_table5.sh" --check-paper-data
+
+table5-status:
+	@rc=0; bash "$(REPRO_SCRIPTS)/reproduce_table5.sh" --check-paper-data || rc=$$?; \
+	 if [[ $$rc -eq 3 ]]; then \
+	   echo "[NOTICE] Table 5 reproduction is unavailable; see docs/table5-status.md."; \
+	   exit 0; \
+	 fi; \
+	 exit $$rc
 
 check-table6-data:
 	@bash "$(REPRO_SCRIPTS)/reproduce_table6.sh" --check-paper-data

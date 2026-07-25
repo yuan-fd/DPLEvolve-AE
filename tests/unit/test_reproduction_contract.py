@@ -176,6 +176,15 @@ class ReproductionContractTests(unittest.TestCase):
         self.assertEqual(table4["reviewdse"]["iterations"], 10)
         self.assertEqual(manifest["paper"]["runtime_gate"], 2.0)
 
+        sources = json.loads((ROOT / "provenance/source-commits.json").read_text())
+        self.assertEqual(
+            sources["submodules"]["yosys_slang"]["commit"],
+            "64b44616a3798f07453b14ea03e4ac8a16b77313",
+        )
+        setup = (ROOT / "scripts/human/setup.sh").read_text()
+        self.assertIn("tools/yosys-slang", setup)
+        self.assertIn("share/yosys/plugins/slang.so", setup)
+
     def test_paper_dse_plan_is_non_mutating_and_exact(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -436,6 +445,16 @@ class ReproductionContractTests(unittest.TestCase):
         self.assertIn('metrics_path="${ORFS_ROOT}/flow/${metrics_path#./}"', launcher)
         self.assertIn('get("average_displacement_micron")', launcher)
         self.assertIn('get("max_displacement_micron")', launcher)
+
+    def test_bo_resolves_reported_metrics_under_orfs_flow(self):
+        runner = (
+            ROOT / "src/dpl_evolve_agent/scripts/bo/bo_tune_case.py"
+        ).read_text()
+        self.assertIn(
+            'workspace_root = env.get("ORFS_BUILD_ROOT") or env.get("ORFS_ROOT")',
+            runner,
+        )
+        self.assertIn('metrics_path = (flow_home / raw).resolve()', runner)
 
     def test_selected_replay_distinguishes_pinned_and_rebuilt_inputs(self):
         selected_root = ROOT / "artifacts/01-table4-qor/selected-programs"

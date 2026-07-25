@@ -79,6 +79,7 @@ ORFS_TREE="$(dpl_ae_json_get "${LOCK}" "repositories.openroad_flow_scripts.prepa
 OR_COMMIT="$(dpl_ae_json_get "${LOCK}" "repositories.openroad.prepared_commit")"
 OR_TREE="$(dpl_ae_json_get "${LOCK}" "repositories.openroad.prepared_tree")"
 YOSYS_COMMIT="$(dpl_ae_json_get "${LOCK}" "submodules.yosys.commit")"
+YOSYS_SLANG_COMMIT="$(dpl_ae_json_get "${LOCK}" "submodules.yosys_slang.commit")"
 
 dpl_ae_info "Verifying repository versions..."
 if [[ -d "${DPL_EVOLVE_AGENT_ROOT}/.git" ]]; then
@@ -117,9 +118,9 @@ fi
 OPENROAD_ANCHOR_ID="$(git -C "${ORFS_ROOT}/tools/OpenROAD" rev-parse --short HEAD)"
 echo ""
 
-# --- Initialize ORFS submodules (specifically Yosys) ---
-dpl_ae_info "Initializing ORFS Yosys submodule..."
-git -C "${ORFS_ROOT}" submodule update --init --recursive tools/yosys
+# --- Initialize ORFS synthesis submodules ---
+dpl_ae_info "Initializing ORFS Yosys and yosys-slang submodules..."
+git -C "${ORFS_ROOT}" submodule update --init --recursive tools/yosys tools/yosys-slang
 YOSYS_ACTUAL="$(git -C "${ORFS_ROOT}/tools/yosys" rev-parse HEAD)"
 if [[ "${YOSYS_ACTUAL}" != "${YOSYS_COMMIT}" ]]; then
   dpl_ae_error "Yosys submodule commit mismatch!"
@@ -129,6 +130,14 @@ if [[ "${YOSYS_ACTUAL}" != "${YOSYS_COMMIT}" ]]; then
   exit 1
 fi
 dpl_ae_ok "Yosys submodule: ${YOSYS_COMMIT:0:8}"
+YOSYS_SLANG_ACTUAL="$(git -C "${ORFS_ROOT}/tools/yosys-slang" rev-parse HEAD)"
+if [[ "${YOSYS_SLANG_ACTUAL}" != "${YOSYS_SLANG_COMMIT}" ]]; then
+  dpl_ae_error "yosys-slang submodule commit mismatch!"
+  dpl_ae_error "  expected: ${YOSYS_SLANG_COMMIT}"
+  dpl_ae_error "  actual:   ${YOSYS_SLANG_ACTUAL}"
+  exit 1
+fi
+dpl_ae_ok "yosys-slang submodule: ${YOSYS_SLANG_COMMIT:0:8}"
 echo ""
 
 # --- Python virtual environment ---
@@ -164,6 +173,24 @@ else
     exit 1
   fi
   dpl_ae_ok "Yosys built: ${YOSYS_BIN}"
+fi
+
+SLANG_PLUGIN="${YOSYS_PREFIX}/share/yosys/plugins/slang.so"
+if [[ -f "${SLANG_PLUGIN}" ]]; then
+  dpl_ae_ok "yosys-slang plugin exists: ${SLANG_PLUGIN}"
+elif [[ "${SKIP_YOSYS}" -eq 1 ]]; then
+  dpl_ae_error "yosys-slang plugin missing and --skip-yosys requested: ${SLANG_PLUGIN}"
+  exit 1
+else
+  dpl_ae_info "Building yosys-slang (required by SystemVerilog paper inputs)..."
+  make -C "${ORFS_ROOT}/tools/yosys-slang" install -j"${JOBS}" \
+    YOSYS_PREFIX="${YOSYS_PREFIX}/bin/" \
+    CMAKE_FLAGS="-DYOSYS_SLANG_REVISION=unknown -DSLANG_REVISION=unknown"
+  if [[ ! -f "${SLANG_PLUGIN}" ]]; then
+    dpl_ae_error "yosys-slang build finished but the plugin was not found: ${SLANG_PLUGIN}"
+    exit 1
+  fi
+  dpl_ae_ok "yosys-slang built: ${SLANG_PLUGIN}"
 fi
 echo ""
 

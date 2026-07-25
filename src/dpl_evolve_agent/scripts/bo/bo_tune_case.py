@@ -552,7 +552,18 @@ def run_baseline(
             raw = line_text.split(":", 1)[1].strip()
             metrics_path = Path(raw)
             if not metrics_path.is_absolute():
-                metrics_path = (agent_root.parent / "OpenROAD-flow-scripts" / "flow" / raw).resolve()
+                # run_baseline.sh reports paths relative to FLOW_HOME.  The
+                # bundled agent lives under <AE>/src/dpl_evolve_agent, so
+                # resolving against agent_root.parent incorrectly points at
+                # <AE>/src/OpenROAD-flow-scripts and makes a successful
+                # reference run look like missing metrics.
+                workspace_root = env.get("ORFS_BUILD_ROOT") or env.get("ORFS_ROOT")
+                if workspace_root:
+                    flow_home = Path(workspace_root).expanduser().resolve() / "flow"
+                else:
+                    ae_root = agent_root.parents[1]
+                    flow_home = (ae_root.parent / "OpenROAD-flow-scripts" / "flow").resolve()
+                metrics_path = (flow_home / raw).resolve()
     return proc.returncode, metrics_path, proc.stdout
 
 

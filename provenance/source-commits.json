@@ -45,6 +45,11 @@
     "yosys_cxxopts": {
       "commit": "4bf61f08697b110d9e3991864650a405b3dd515d",
       "role": "Yosys C++ options library"
+    },
+    "yosys_slang": {
+      "url": "https://github.com/povik/yosys-slang",
+      "commit": "64b44616a3798f07453b14ea03e4ac8a16b77313",
+      "role": "SystemVerilog frontend required by the ASAP7 Ibex and SWERV paper inputs"
     }
   },
   "python": {

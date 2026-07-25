@@ -715,9 +715,8 @@ TASKS: dict[str, tuple[str, list[str]]] = {
     "check": ("Inspect Prepared Environment", ["make", "check"]),
     "prepare-inputs": ("Prepare Table 4 Inputs", ["make", "prepare-paper-inputs"]),
     "fetch-table6-data": ("Download Table 6 Inputs", ["make", "fetch-table6-data"]),
-    "table5-data-check": ("Check Table 5 Inputs", ["make", "check-table5-data"]),
+    "table5-status": ("Inspect Table 5 Availability", ["make", "table5-status"]),
     "table4-fresh": ("Reproduce Table 4", ["make", "reproduce-table4"]),
-    "table5-fresh": ("Reproduce Table 5", ["make", "reproduce-table5"]),
     "table6-fresh": ("Reproduce Table 6", ["make", "reproduce-table6"]),
     "figures": ("Reproduce Figures 4 and 5", ["make", "reproduce-figures"]),
     "ariane-diagnostic": (

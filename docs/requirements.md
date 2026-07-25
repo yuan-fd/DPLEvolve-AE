@@ -1,0 +1,96 @@
+# Reviewer requirements
+
+## Reference system
+
+The released environment was exercised on Rocky Linux 8.10 x86-64 with two
+Intel Xeon Platinum 8462Y+ processors, 314 GiB RAM, and a 22 TiB home
+filesystem. A GPU and commercial EDA licenses are not required.
+
+This is the author reference, not a universal minimum. A bounded AES run can
+use substantially less hardware. The complete nine-case input generation,
+3,600-trial BO campaign, 27-run Table 6 matrix, and ReviewDSE search need
+server-class memory and storage. Reviewers should reduce `THREADS` and execute
+one `CASE` at a time on smaller machines. Plan for at least 100 GiB of free
+space before building; complete campaigns can require much more as ODBs, build
+trees, logs, and trial directories accumulate.
+
+## Host software
+
+- Linux x86-64; Rocky Linux 8.10 is the tested release.
+- Bash 4 or newer and GNU Make 4 or newer.
+- Python 3.11 or newer with `venv` and `ensurepip`.
+- Git, rsync, curl, tar, and SHA-256 utilities.
+- GCC/G++ 9 or newer, CMake 3.16 or newer, Bison, Flex, SWIG, Tcl/Tk, Boost,
+  Eigen, spdlog, zlib, libffi, and the remaining OpenROAD build dependencies.
+- Network access during bootstrap, Python dependency installation, submodule
+  initialization, and Table 6 data download.
+- Authenticated model/API access and the paper-scale token budget only for the
+  live ReviewDSE search.
+
+The following versions were used for the final local reviewer-path check. The
+minimums are portability constraints; reviewers do not need identical host
+package versions when the pinned EDA sources build and `make check` passes.
+
+| Component | Tested | Required/pinned |
+| --- | --- | --- |
+| Rocky Linux | 8.10 x86-64 | Linux x86-64 |
+| Bash | 4.4.20 | 4.0 or newer |
+| GNU Make | 4.2.1 | 4.0 or newer |
+| Python | 3.12.13 | 3.11 or newer |
+| GCC/G++ | 13.3.1 | 9 or newer |
+| CMake | 3.26.5 | 3.16 or newer |
+| PyYAML | 6.0.3 | installed by setup |
+| Ray / Optuna / NumPy | 2.31.0 / 4.9.0 / 1.26.4 | installed by `make setup-bo` |
+| Yosys | 0.64, commit `8449dd470` | pinned by provenance |
+| yosys-slang | commit `64b44616` | pinned; plugin required for paper RTL |
+| OpenROAD | commit `d5ff63abe` | prepared source revision |
+
+Run the read-only host inspection first:
+
+```bash
+make doctor
+```
+
+Doctor prints Rocky/RHEL-family package suggestions but never invokes `sudo`.
+The complete dependency set is also available through the pinned ORFS
+`etc/DependencyInstaller.sh`; reviewers should inspect it and follow their
+normal administrator process.
+
+## Required writable paths
+
+By default, the artifact creates or reuses these sibling paths:
+
+```text
+../OpenROAD-flow-scripts/   # sources plus flow logs, objects, reports, ODBs
+../dpl_evolve_state/        # tool installs, variants, BO/DSE runs, summaries
+./paper-data/               # downloaded Table 6 package
+./web-demo/.venv/           # browser-console Python environment
+```
+
+The repository, ORFS `flow/` directory, state directory, and paper-data
+directory must be writable by the account running Make or the Web Demo. Do not
+run the console in a read-only container or mount while expecting experiments
+to execute. Custom locations can be supplied on the Make command line or in an
+untracked `env.local.sh`.
+
+```bash
+make bootstrap
+make build-tools THREADS=8
+make check
+```
+
+`make check` is successful only when the prepared source trees, Python
+environment, Yosys, the required `yosys-slang` SystemVerilog frontend,
+OpenROAD, shared libraries, and writable output roots are ready.
+
+## External data and known limitation
+
+Table 6 requires the approximately 200 MB release asset installed by
+`make fetch-table6-data`. While the repository is private, the reviewer must
+have repository access and an authenticated `gh` session; a public or Zenodo
+release needs no private GitHub credentials.
+
+Table 5 cannot be executed from the released artifact because its untracked
+SWERV DENSE_2 configuration and six generated source trees were not retained.
+This is reported by `make table5-status` and documented in
+`docs/table5-status.md`; it is not presented as a runnable Web experiment.

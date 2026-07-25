@@ -42,6 +42,14 @@ repro_run() {
 repro_require_runtime() {
   [[ -d "${DPL_EVOLVE_AGENT_ROOT}" ]] || repro_die "framework missing: ${DPL_EVOLVE_AGENT_ROOT}"
   [[ -d "${ORFS_ROOT}/flow" ]] || repro_die "ORFS workspace missing: ${ORFS_ROOT}; run 'make bootstrap'"
+  [[ -w "${ORFS_ROOT}/flow" ]] || repro_die "ORFS flow directory is not writable: ${ORFS_ROOT}/flow; experiments write logs, objects, reports, and ODBs there"
+  if [[ -e "${DPL_EVOLVE_STATE_ROOT}" ]]; then
+    [[ -d "${DPL_EVOLVE_STATE_ROOT}" && -w "${DPL_EVOLVE_STATE_ROOT}" ]] \
+      || repro_die "experiment state directory is not writable: ${DPL_EVOLVE_STATE_ROOT}"
+  else
+    [[ -w "$(dirname "${DPL_EVOLVE_STATE_ROOT}")" ]] \
+      || repro_die "cannot create experiment state directory: ${DPL_EVOLVE_STATE_ROOT}"
+  fi
   [[ -x "${DPL_EVOLVE_PYTHON}" ]] || command -v "${DPL_EVOLVE_PYTHON}" >/dev/null 2>&1 \
     || repro_die "Python is not executable: ${DPL_EVOLVE_PYTHON}"
 
