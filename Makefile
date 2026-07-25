@@ -37,7 +37,8 @@ export DPL_EVOLVE_PYTHON THREADS
 .PHONY: reproduce-figure4 reproduce-figure5 reproduce-figures
 .PHONY: check-ariane-diagnostic-sources reproduce-ariane-diagnostic
 .PHONY: reproduce-available-results reproduce-paper-results reproduce-paper-search
-.PHONY: run-dse-small plan-dse-paper run-dse-paper summarize-dse-paper paper-data-check paper-data-check-available
+.PHONY: run-dse-small demo-reviewdse plan-demo-reviewdse
+.PHONY: plan-dse-paper run-dse-paper summarize-dse-paper paper-data-check paper-data-check-available
 .PHONY: fetch-table6-data table5-status check-table5-data check-table6-data
 .PHONY: toolchain-smoke smoke smoke-check doctor-smoke
 .PHONY: test test-structure test-integration test-unit test-web validate-configs
@@ -82,6 +83,8 @@ help:
 	@echo "  make plan-level1             Print the three-case Level 1 calibration"
 	@echo "  make reproduce-level1 ACKNOWLEDGE_LLM_COST=yes"
 	@echo "  make run-dse-small CASE=aes_nangate45  Real 1-Student/1-iteration run"
+	@echo "  make demo-reviewdse          Live AES terminal demo (4 Students x 2 iterations)"
+	@echo "  make plan-demo-reviewdse     Print the demo launch without API/EDA work"
 	@echo "  make plan-dse-paper         Print exact 9-case paper launch; no API calls"
 	@echo "  make run-dse-paper ACKNOWLEDGE_LLM_COST=yes"
 	@echo "  make summarize-dse-paper DSE_RUN_PREFIX=NAME"
@@ -257,7 +260,37 @@ reproduce-level1:
 	@ACKNOWLEDGE_LLM_COST="$(ACKNOWLEDGE_LLM_COST)" bash "$(REPRO_SCRIPTS)/run_level1.sh" --threads "$(THREADS)" --children "$(or $(LEVEL1_CHILDREN),50)"
 
 run-dse-small:
-	@DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(REPRO_SCRIPTS)/run_dse.sh" --profile small --case "$(or $(CASE),aes_nangate45)" --threads "$(THREADS)" --children "$(or $(STUDENTS),1)" --iterations "$(or $(ITERATIONS),1)"
+	@DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" \
+	 TEACHER_MODEL="$(TEACHER_MODEL)" \
+	 TEACHER_REASONING_EFFORT="$(TEACHER_REASONING_EFFORT)" \
+	 STUDENT_MODEL="$(STUDENT_MODEL)" \
+	 STUDENT_REASONING_EFFORT="$(STUDENT_REASONING_EFFORT)" \
+	 bash "$(REPRO_SCRIPTS)/run_dse.sh" \
+	  --profile small --case "$(or $(CASE),aes_nangate45)" --threads "$(THREADS)" \
+	  --children "$(or $(STUDENTS),1)" --iterations "$(or $(ITERATIONS),1)"
+
+demo-reviewdse:
+	@DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(AE_ROOT)/scripts/demo/run_reviewdse_demo.sh" \
+	  --case "$(or $(CASE),aes_nangate45)" \
+	  --students "$(or $(STUDENTS),4)" \
+	  --iterations "$(or $(ITERATIONS),2)" \
+	  --threads "$(THREADS)" \
+	  --teacher-model "$(or $(TEACHER_MODEL),gpt-5.6-sol)" \
+	  --teacher-reasoning-effort "$(or $(TEACHER_REASONING_EFFORT),xhigh)" \
+	  --student-model "$(or $(STUDENT_MODEL),gpt-5.5-terra)" \
+	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),xhigh)"
+
+plan-demo-reviewdse:
+	@DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(AE_ROOT)/scripts/demo/run_reviewdse_demo.sh" \
+	  --case "$(or $(CASE),aes_nangate45)" \
+	  --students "$(or $(STUDENTS),4)" \
+	  --iterations "$(or $(ITERATIONS),2)" \
+	  --threads "$(THREADS)" \
+	  --teacher-model "$(or $(TEACHER_MODEL),gpt-5.6-sol)" \
+	  --teacher-reasoning-effort "$(or $(TEACHER_REASONING_EFFORT),xhigh)" \
+	  --student-model "$(or $(STUDENT_MODEL),gpt-5.5-terra)" \
+	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),xhigh)" \
+	  --dry-run
 
 plan-dse-paper:
 	@DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(REPRO_SCRIPTS)/run_dse.sh" --profile paper --threads "$(THREADS)" --dry-run

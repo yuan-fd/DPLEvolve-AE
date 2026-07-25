@@ -13,6 +13,10 @@ ITERATIONS="1"
 ACKNOWLEDGE_COST="${ACKNOWLEDGE_LLM_COST:-no}"
 LEVEL1_EVIDENCE="${LEVEL1_EVIDENCE:-${DPL_EVOLVE_STATE_ROOT}/calibrations/paper_level1/frozen/level1_evidence.md}"
 RUN_PREFIX="${DSE_RUN_PREFIX:-}"
+TEACHER_MODEL="${TEACHER_MODEL:-gpt-5.5}"
+TEACHER_REASONING_EFFORT="${TEACHER_REASONING_EFFORT:-xhigh}"
+STUDENT_MODEL="${STUDENT_MODEL:-gpt-5.4}"
+STUDENT_REASONING_EFFORT="${STUDENT_REASONING_EFFORT:-xhigh}"
 
 usage() {
   cat <<'EOF'
@@ -35,6 +39,12 @@ Options:
   --level1-evidence P   Frozen output of make reproduce-level1.
   --run-prefix NAME     Stable prefix used to locate this run when rebuilding
                         Figures 4/5. Can also be set with DSE_RUN_PREFIX.
+  --teacher-model NAME  Teacher model. Default: gpt-5.5.
+  --teacher-reasoning-effort E
+                        Teacher effort: low, medium, high, or xhigh.
+  --student-model NAME  Student model. Default: gpt-5.4.
+  --student-reasoning-effort E
+                        Student effort: low, medium, high, or xhigh.
   --dry-run             Print the exact launch configuration; no API/EDA work.
 EOF
 }
@@ -50,6 +60,10 @@ while [[ $# -gt 0 ]]; do
     --acknowledge-cost) ACKNOWLEDGE_COST=yes; shift ;;
     --level1-evidence) LEVEL1_EVIDENCE="$2"; shift 2 ;;
     --run-prefix) RUN_PREFIX="$2"; shift 2 ;;
+    --teacher-model) TEACHER_MODEL="$2"; shift 2 ;;
+    --teacher-reasoning-effort) TEACHER_REASONING_EFFORT="$2"; shift 2 ;;
+    --student-model) STUDENT_MODEL="$2"; shift 2 ;;
+    --student-reasoning-effort) STUDENT_REASONING_EFFORT="$2"; shift 2 ;;
     --dry-run) REPRO_DRY_RUN=1; shift ;;
     --help|-h) usage; exit 0 ;;
     *) repro_die "unknown argument: $1" ;;
@@ -64,10 +78,10 @@ args=(
   --threads "${THREADS}"
   --start-kind framework
   --runtime-multiplier 2.0
-  --teacher-model gpt-5.5
-  --teacher-reasoning-effort xhigh
-  --student-model gpt-5.4
-  --student-reasoning-effort xhigh
+  --teacher-model "${TEACHER_MODEL}"
+  --teacher-reasoning-effort "${TEACHER_REASONING_EFFORT}"
+  --student-model "${STUDENT_MODEL}"
+  --student-reasoning-effort "${STUDENT_REASONING_EFFORT}"
   --skip-core-build
 )
 if [[ -n "${RUN_PREFIX}" ]]; then
