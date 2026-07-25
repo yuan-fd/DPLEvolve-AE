@@ -84,7 +84,7 @@ help:
 	@echo "  make reproduce-level1 ACKNOWLEDGE_LLM_COST=yes"
 	@echo "  make run-dse-small CASE=aes_nangate45  Real 1-Student/1-iteration run"
 	@echo "  make check-demo-models       Probe the exact demo models; Student first"
-	@echo "  make demo-reviewdse          Live AES terminal demo (4 Students x 2 iterations)"
+	@echo "  make demo-reviewdse          Live Ariane133 terminal demo (4 Students x 2 iterations)"
 	@echo "  make plan-demo-reviewdse     Print the demo launch without API/EDA work"
 	@echo "  make plan-dse-paper         Print exact 9-case paper launch; no API calls"
 	@echo "  make run-dse-paper ACKNOWLEDGE_LLM_COST=yes"
@@ -280,7 +280,7 @@ check-demo-models:
 
 demo-reviewdse:
 	@DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(AE_ROOT)/scripts/demo/run_reviewdse_demo.sh" \
-	  --case "$(or $(CASE),aes_nangate45)" \
+	  --case "$(or $(CASE),ariane133_nangate45)" \
 	  --students "$(or $(STUDENTS),4)" \
 	  --iterations "$(or $(ITERATIONS),2)" \
 	  --threads "$(THREADS)" \
@@ -291,7 +291,7 @@ demo-reviewdse:
 
 plan-demo-reviewdse:
 	@DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(AE_ROOT)/scripts/demo/run_reviewdse_demo.sh" \
-	  --case "$(or $(CASE),aes_nangate45)" \
+	  --case "$(or $(CASE),ariane133_nangate45)" \
 	  --students "$(or $(STUDENTS),4)" \
 	  --iterations "$(or $(ITERATIONS),2)" \
 	  --threads "$(THREADS)" \

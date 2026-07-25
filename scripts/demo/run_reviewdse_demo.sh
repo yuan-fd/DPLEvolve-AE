@@ -6,7 +6,7 @@ AE_ROOT="${AE_ROOT:-$(cd "${SCRIPT_DIR}/../.." && pwd)}"
 # shellcheck source=../reproduce/common.sh
 source "${AE_ROOT}/scripts/reproduce/common.sh"
 
-CASE_ID="aes_nangate45"
+CASE_ID="ariane133_nangate45"
 STUDENTS="4"
 ITERATIONS="2"
 THREAD_COUNT="${THREADS:-10}"
@@ -28,7 +28,7 @@ Launch one real ReviewDSE closed loop and render its observable state in a
 recording-friendly terminal dashboard.
 
 Options:
-  --case ID                       Target. Default: aes_nangate45.
+  --case ID                       Target. Default: ariane133_nangate45.
   --students N                    Parallel Students. Default: 4.
   --iterations N                  Teacher/Student iterations. Default: 2.
   --threads N                     OpenROAD threads per evaluation. Default: 10.

@@ -293,6 +293,8 @@ class ReviewDSEDemoTests(unittest.TestCase):
         self.assertIn("gpt-5.6-sol", result.stdout)
         self.assertIn("gpt-5.6-terra", result.stdout)
         self.assertIn("high", result.stdout)
+        self.assertIn("case       : ariane133_nangate45", result.stdout)
+        self.assertIn("--case ariane133_nangate45", result.stdout)
         self.assertIn("--children 4", result.stdout)
         self.assertIn("--iterations 2", result.stdout)
         self.assertIn("--threads 3", result.stdout)
