@@ -43,8 +43,10 @@ class StudentView:
 class IterationView:
     number: int
     teacher_plan: str
+    teacher_plan_activity: str
     students: tuple[StudentView, ...]
     teacher_review: str
+    teacher_review_activity: str
 
 
 @dataclass(frozen=True)
@@ -189,6 +191,53 @@ def operation_text(operation_dir: Path) -> str:
         return ""
 
 
+def operation_activity(operation_dir: Path) -> str:
+    """Summarize visible Codex tool events without exposing hidden reasoning."""
+    events_path = operation_dir / "codex_events.jsonl"
+    try:
+        lines = events_path.read_text(encoding="utf-8", errors="replace").splitlines()
+        updated = time.strftime("%H:%M:%S", time.localtime(events_path.stat().st_mtime))
+    except OSError:
+        return ""
+
+    command_count = 0
+    last_command = ""
+    turn_done = False
+    for raw in lines:
+        try:
+            event = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        item = event.get("item") if isinstance(event.get("item"), dict) else {}
+        if event.get("type") == "item.completed" and item.get("type") == "command_execution":
+            command_count += 1
+            last_command = str(item.get("command", ""))
+        elif event.get("type") == "item.started" and item.get("type") == "command_execution":
+            last_command = str(item.get("command", ""))
+        elif event.get("type") == "turn.completed":
+            turn_done = True
+
+    detail = "working"
+    basename_matches = re.findall(
+        r"([A-Za-z0-9_.+-]+\.(?:cxx|cpp|cc|h|hpp|py|md|json|jsonl|tcl))",
+        last_command,
+        flags=re.IGNORECASE,
+    )
+    if basename_matches:
+        detail = f"inspecting {basename_matches[-1]}"
+    elif "query_knowledge" in last_command:
+        detail = "querying the mechanism knowledge index"
+    elif re.search(r"(?:^|\s)rg(?:\s|$)", last_command):
+        detail = "searching source evidence"
+    elif last_command:
+        detail = "running a repository tool"
+    if turn_done:
+        detail = "model turn completed"
+    age = max(0, int(time.time() - events_path.stat().st_mtime))
+    freshness = "active now" if age < 30 else f"last event {age}s ago"
+    return f"{updated} | {command_count} tools completed | {detail} | {freshness}"
+
+
 def provenance_state(payload: dict[str, Any] | None) -> str | None:
     if payload is None:
         return None
@@ -255,7 +304,7 @@ def student_view(
     elif build is None and build_seen:
         build = RUN
 
-    source_done = diff_has_content(diff_path) or source_commit is not None
+    source_done = diff_has_content(diff_path) or source_commit.is_file()
     if build in {RUN, DONE} or evaluate in {RUN, DONE}:
         source_done = True
     source = DONE if source_done else (RUN if op_state == RUN else WAIT)
@@ -355,8 +404,10 @@ def collect_view(
                 IterationView(
                     number=index,
                     teacher_plan=WAIT,
+                    teacher_plan_activity="",
                     students=tuple(StudentView(student=i) for i in range(1, students + 1)),
                     teacher_review=WAIT,
+                    teacher_review_activity="",
                 )
                 for index in range(1, iterations + 1)
             ),
@@ -377,6 +428,8 @@ def collect_view(
         iter_name = f"iter_{number:02d}"
         plan_id = f"{round_id}_{iter_name}_teacher_plan"
         review_id = f"{round_id}_{iter_name}_teacher_review"
+        plan_operation = operations_root / plan_id
+        review_operation = operations_root / review_id
         iteration_views.append(
             IterationView(
                 number=number,
@@ -387,6 +440,7 @@ def collect_view(
                     iteration=iter_name,
                     kind="plan",
                 ),
+                teacher_plan_activity=operation_activity(plan_operation),
                 students=tuple(
                     student_view(
                         round_id=round_id,
@@ -405,6 +459,7 @@ def collect_view(
                     iteration=iter_name,
                     kind="review",
                 ),
+                teacher_review_activity=operation_activity(review_operation),
             )
         )
     final = bool(result) or any(
@@ -513,6 +568,8 @@ def render(
     for iteration in view.iterations:
         lines.append(palette.paint(f"Iteration {iteration.number}", "1;37"))
         lines.append(f"  Teacher plan    {palette.state(iteration.teacher_plan)}")
+        if iteration.teacher_plan == RUN and iteration.teacher_plan_activity:
+            lines.append(f"  Live activity   {iteration.teacher_plan_activity}")
         lines.append("  Student     Source Build Eval  Legal          HPWL (um)    delta    runtime")
         for student in iteration.students:
             lines.append(
@@ -526,6 +583,8 @@ def render(
                 f"{fmt_number(student.runtime, 2, 's'):>10}"
             )
         lines.append(f"  Teacher review  {palette.state(iteration.teacher_review)}")
+        if iteration.teacher_review == RUN and iteration.teacher_review_activity:
+            lines.append(f"  Live activity   {iteration.teacher_review_activity}")
         lines.append("")
 
     best = best_candidate(view)

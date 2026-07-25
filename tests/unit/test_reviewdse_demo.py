@@ -116,7 +116,38 @@ class ReviewDSEDemoTests(unittest.TestCase):
                 ],
             )
             self.assertEqual(first.students[3].delta_percent, -5.0)
+            self.assertTrue(
+                all(row.source == dashboard.WAIT for row in view.iterations[1].students)
+            )
             self.assertFalse(view.final)
+
+    def test_visible_tool_activity_is_reported_for_a_running_teacher(self):
+        with tempfile.TemporaryDirectory() as directory:
+            operation = Path(directory)
+            events = [
+                {
+                    "type": "item.completed",
+                    "item": {
+                        "type": "command_execution",
+                        "command": "sed -n '1,80p' /source/Optdp.cpp",
+                    },
+                },
+                {
+                    "type": "item.started",
+                    "item": {
+                        "type": "command_execution",
+                        "command": "rg -n accept /source/detailed_global.cxx",
+                    },
+                },
+            ]
+            (operation / "codex_events.jsonl").write_text(
+                "".join(json.dumps(event) + "\n" for event in events),
+                encoding="utf-8",
+            )
+            activity = dashboard.operation_activity(operation)
+            self.assertIn("1 tools completed", activity)
+            self.assertIn("inspecting detailed_global.cxx", activity)
+            self.assertIn("active now", activity)
 
     def test_final_snapshot_prints_candidate_and_output_paths(self):
         with tempfile.TemporaryDirectory() as directory:
