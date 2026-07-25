@@ -699,21 +699,13 @@ def current_phase(view: DashboardView) -> tuple[str, str, float | None]:
             if student.worker_state not in {DONE, FAIL}
         ]
         if unfinished:
-            source_done = sum(student.source == DONE for student in iteration.students)
-            build_done = sum(student.build == DONE for student in iteration.students)
-            eval_done = sum(student.evaluate == DONE for student in iteration.students)
             active = next(
                 (
-                    f"Student {student.student:02d}: {student.worker_activity}"
+                    f"Student {student.student:02d} | {student.worker_activity}"
                     for student in unfinished
                     if student.worker_state == RUN and student.worker_activity
                 ),
                 "waiting for the parallel Student wave to start",
-            )
-            counts = (
-                f"source {source_done}/{len(iteration.students)}, "
-                f"build {build_done}/{len(iteration.students)}, "
-                f"evaluate {eval_done}/{len(iteration.students)}"
             )
             elapsed_values = [
                 student.worker_elapsed_seconds
@@ -722,7 +714,7 @@ def current_phase(view: DashboardView) -> tuple[str, str, float | None]:
             ]
             return (
                 f"Iteration {iteration.number} / parallel Students",
-                f"{counts} | {active}",
+                active,
                 max(elapsed_values) if elapsed_values else None,
             )
 
@@ -941,7 +933,6 @@ def render(
         f"Run {view.round_id or '(creating batch)'} | {palette.paint(view.batch_status, status_color)}",
         f"Heartbeat {spinner} {time.strftime('%H:%M:%S')} | backend {backend}",
         f"Current phase : {phase}",
-        f"Doing         : {doing}",
         f"Phase elapsed : {format_duration(phase_elapsed)}",
         f"ETA           : {adaptive_eta(view)}",
         f"Progress      : {progress_bar(complete, total)} {complete}/{total} observable milestones",
@@ -950,8 +941,6 @@ def render(
     for iteration in view.iterations:
         lines.append(palette.paint(f"Iteration {iteration.number}", "1;37"))
         lines.append(f"  Teacher plan    {palette.state(iteration.teacher_plan)}")
-        if iteration.teacher_plan == RUN and iteration.teacher_plan_activity:
-            lines.append(f"  Live activity   {iteration.teacher_plan_activity}")
         lines.append("  Student     Source Build Eval  Legal      Gate   HPWL (um)    delta    runtime")
         for student in iteration.students:
             lines.append(
@@ -965,11 +954,7 @@ def render(
                 f"{fmt_number(student.delta_percent, 3, '%'):>9} "
                 f"{fmt_number(student.runtime, 2, 's'):>10}"
             )
-            if student.worker_state == RUN and student.worker_activity:
-                lines.append(f"              -> {student.worker_activity}")
         lines.append(f"  Teacher review  {palette.state(iteration.teacher_review)}")
-        if iteration.teacher_review == RUN and iteration.teacher_review_activity:
-            lines.append(f"  Live activity   {iteration.teacher_review_activity}")
         lines.append("")
 
     best = best_candidate(view)
@@ -986,6 +971,7 @@ def render(
 
     if view.final or view.failed:
         lines.extend(["", *final_result_visual(view), "", *final_paths(view, launcher_log)])
+    lines.extend(["", f"Doing         : {doing}"])
     return "\n".join(lines) + "\n"
 
 

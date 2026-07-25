@@ -134,6 +134,9 @@ class ReviewDSEDemoTests(unittest.TestCase):
             self.assertIn("Current phase : Iteration 1 / parallel Students", output)
             self.assertIn("ETA           : learning Iteration 1 timings", output)
             self.assertIn("observable milestones", output)
+            self.assertEqual(output.rstrip().splitlines()[-1].split()[0], "Doing")
+            self.assertNotIn("Live activity", output)
+            self.assertNotIn("              ->", output)
 
     def test_visible_tool_activity_is_reported_for_a_running_teacher(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -346,6 +349,7 @@ class ReviewDSEDemoTests(unittest.TestCase):
             )
             self.assertIn(f"Doing         : {error}", output)
             self.assertIn("FAIL  SKIP  SKIP", output)
+            self.assertEqual(output.rstrip().splitlines()[-1], f"Doing         : {error}")
 
 
 if __name__ == "__main__":
