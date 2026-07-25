@@ -26,11 +26,11 @@ class ReviewDSEDemoTests(unittest.TestCase):
         state = root / "state"
         batch = state / "experiment_batches" / "demo_paper9_place"
         batch.mkdir(parents=True)
-        round_id = "demo_paper9_place_aes_nangate45_4x2_tgpt56sol_xhigh_sgpt55terra_xhigh"
+        round_id = "demo_paper9_place_aes_nangate45_4x2_tgpt56sol_xhigh_sgpt56terra_high"
         (batch / "experiments.tsv").write_text(
             "case\tflow_variant\tround_id\tstart_kind\tchildren\titerations\tteacher\tstudent\n"
             f"aes_nangate45\tpaper9_place\t{round_id}\tframework\t4\t2\t"
-            "gpt-5.6-sol/xhigh\tgpt-5.5-terra/xhigh\n",
+            "gpt-5.6-sol/xhigh\tgpt-5.6-terra/high\n",
             encoding="utf-8",
         )
         round_root = state / round_id / "teacher_rounds"
@@ -125,7 +125,7 @@ class ReviewDSEDemoTests(unittest.TestCase):
                 view=view,
                 case_id="aes_nangate45",
                 teacher_model="gpt-5.6-sol",
-                student_model="gpt-5.5-terra",
+                student_model="gpt-5.6-terra",
                 elapsed_seconds=12,
                 palette=dashboard.Palette(False),
                 heartbeat_tick=2,
@@ -201,7 +201,7 @@ class ReviewDSEDemoTests(unittest.TestCase):
                 view=view,
                 case_id="aes_nangate45",
                 teacher_model="gpt-5.6-sol",
-                student_model="gpt-5.5-terra",
+                student_model="gpt-5.6-terra",
                 elapsed_seconds=61,
                 palette=dashboard.Palette(False),
                 launcher_log=batch / "demo-launcher.log",
@@ -288,12 +288,64 @@ class ReviewDSEDemoTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertIn("gpt-5.6-sol", result.stdout)
-        self.assertIn("gpt-5.5-terra", result.stdout)
+        self.assertIn("gpt-5.6-terra", result.stdout)
+        self.assertIn("high", result.stdout)
         self.assertIn("--children 4", result.stdout)
         self.assertIn("--iterations 2", result.stdout)
         self.assertIn("--threads 3", result.stdout)
         self.assertIn("--run-prefix unit_demo", result.stdout)
         self.assertIn("--dry-run", result.stdout)
+
+    def test_model_startup_failure_marks_later_stages_skipped_and_shows_cause(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state, batch, round_id = self.make_state(Path(directory))
+            operation = (
+                state
+                / round_id
+                / "checkpoints/operations"
+                / f"{round_id}_iter_01_student_01"
+            )
+            error = "The 'gpt-5.5-terra' model is not supported with this account."
+            (operation / "codex_events.jsonl").write_text(
+                json.dumps({"type": "error", "message": json.dumps({"detail": error})})
+                + "\n"
+                + json.dumps({"type": "turn.failed", "error": {"message": error}})
+                + "\n",
+                encoding="utf-8",
+            )
+            write_json(
+                operation / "codex_usage_summary.json",
+                {"returncode": 1, "elapsed_seconds": 1.5},
+            )
+            (batch / "status.tsv").write_text(
+                "case\tstatus\tstart\tend\tlog\tround_id\n"
+                f"aes_nangate45\tFAIL(1)\tstart\tend\tlog\t{round_id}\n",
+                encoding="utf-8",
+            )
+
+            view = dashboard.collect_view(
+                state_root=state,
+                batch_root=batch,
+                case_id="aes_nangate45",
+                students=4,
+                iterations=2,
+            )
+            first = view.iterations[0].students[0]
+            self.assertEqual(
+                (first.source, first.build, first.evaluate),
+                (dashboard.FAIL, dashboard.SKIP, dashboard.SKIP),
+            )
+            self.assertEqual(view.root_cause, error)
+            output = dashboard.render(
+                view=view,
+                case_id="aes_nangate45",
+                teacher_model="gpt-5.6-sol",
+                student_model="gpt-5.6-terra",
+                elapsed_seconds=10,
+                palette=dashboard.Palette(False),
+            )
+            self.assertIn(f"Doing         : {error}", output)
+            self.assertIn("FAIL  SKIP  SKIP", output)
 
 
 if __name__ == "__main__":

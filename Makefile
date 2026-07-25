@@ -37,7 +37,7 @@ export DPL_EVOLVE_PYTHON THREADS
 .PHONY: reproduce-figure4 reproduce-figure5 reproduce-figures
 .PHONY: check-ariane-diagnostic-sources reproduce-ariane-diagnostic
 .PHONY: reproduce-available-results reproduce-paper-results reproduce-paper-search
-.PHONY: run-dse-small demo-reviewdse plan-demo-reviewdse
+.PHONY: run-dse-small check-demo-models demo-reviewdse plan-demo-reviewdse
 .PHONY: plan-dse-paper run-dse-paper summarize-dse-paper paper-data-check paper-data-check-available
 .PHONY: fetch-table6-data table5-status check-table5-data check-table6-data
 .PHONY: toolchain-smoke smoke smoke-check doctor-smoke
@@ -83,6 +83,7 @@ help:
 	@echo "  make plan-level1             Print the three-case Level 1 calibration"
 	@echo "  make reproduce-level1 ACKNOWLEDGE_LLM_COST=yes"
 	@echo "  make run-dse-small CASE=aes_nangate45  Real 1-Student/1-iteration run"
+	@echo "  make check-demo-models       Probe the exact demo models; Student first"
 	@echo "  make demo-reviewdse          Live AES terminal demo (4 Students x 2 iterations)"
 	@echo "  make plan-demo-reviewdse     Print the demo launch without API/EDA work"
 	@echo "  make plan-dse-paper         Print exact 9-case paper launch; no API calls"
@@ -269,6 +270,14 @@ run-dse-small:
 	  --profile small --case "$(or $(CASE),aes_nangate45)" --threads "$(THREADS)" \
 	  --children "$(or $(STUDENTS),1)" --iterations "$(or $(ITERATIONS),1)"
 
+check-demo-models:
+	@bash "$(AE_ROOT)/scripts/demo/run_reviewdse_demo.sh" \
+	  --teacher-model "$(or $(TEACHER_MODEL),gpt-5.6-sol)" \
+	  --teacher-reasoning-effort "$(or $(TEACHER_REASONING_EFFORT),xhigh)" \
+	  --student-model "$(or $(STUDENT_MODEL),gpt-5.6-terra)" \
+	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),high)" \
+	  --check-models-only
+
 demo-reviewdse:
 	@DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(AE_ROOT)/scripts/demo/run_reviewdse_demo.sh" \
 	  --case "$(or $(CASE),aes_nangate45)" \
@@ -277,8 +286,8 @@ demo-reviewdse:
 	  --threads "$(THREADS)" \
 	  --teacher-model "$(or $(TEACHER_MODEL),gpt-5.6-sol)" \
 	  --teacher-reasoning-effort "$(or $(TEACHER_REASONING_EFFORT),xhigh)" \
-	  --student-model "$(or $(STUDENT_MODEL),gpt-5.5-terra)" \
-	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),xhigh)"
+	  --student-model "$(or $(STUDENT_MODEL),gpt-5.6-terra)" \
+	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),high)"
 
 plan-demo-reviewdse:
 	@DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(AE_ROOT)/scripts/demo/run_reviewdse_demo.sh" \
@@ -288,8 +297,8 @@ plan-demo-reviewdse:
 	  --threads "$(THREADS)" \
 	  --teacher-model "$(or $(TEACHER_MODEL),gpt-5.6-sol)" \
 	  --teacher-reasoning-effort "$(or $(TEACHER_REASONING_EFFORT),xhigh)" \
-	  --student-model "$(or $(STUDENT_MODEL),gpt-5.5-terra)" \
-	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),xhigh)" \
+	  --student-model "$(or $(STUDENT_MODEL),gpt-5.6-terra)" \
+	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),high)" \
 	  --dry-run
 
 plan-dse-paper:

@@ -13,11 +13,12 @@ THREAD_COUNT="${THREADS:-10}"
 FLOW_VARIANT="${FLOW_VARIANT:-paper9_place}"
 TEACHER="gpt-5.6-sol"
 TEACHER_EFFORT="xhigh"
-STUDENT="gpt-5.5-terra"
-STUDENT_EFFORT="xhigh"
+STUDENT="gpt-5.6-terra"
+STUDENT_EFFORT="high"
 RUN_PREFIX="${DSE_RUN_PREFIX:-}"
 REFRESH_SECONDS="2"
 DRY_RUN=0
+CHECK_MODELS_ONLY=0
 
 usage() {
   cat <<'EOF'
@@ -34,10 +35,11 @@ Options:
   --flow-variant NAME             Prepared input variant. Default: paper9_place.
   --teacher-model NAME            Default: gpt-5.6-sol.
   --teacher-reasoning-effort E    Default: xhigh.
-  --student-model NAME            Default: gpt-5.5-terra.
-  --student-reasoning-effort E    Default: xhigh.
+  --student-model NAME            Default: gpt-5.6-terra.
+  --student-reasoning-effort E    Default: high.
   --run-prefix NAME               Stable output prefix. Default: timestamped.
   --refresh-seconds N             Dashboard refresh interval. Default: 2.
+  --check-models-only             Probe Student then Teacher; do not start DSE.
   --dry-run                       Print the real launch command only.
   --help                          Show this help.
 EOF
@@ -56,6 +58,7 @@ while [[ $# -gt 0 ]]; do
     --student-reasoning-effort) STUDENT_EFFORT="$2"; shift 2 ;;
     --run-prefix) RUN_PREFIX="$2"; shift 2 ;;
     --refresh-seconds) REFRESH_SECONDS="$2"; shift 2 ;;
+    --check-models-only) CHECK_MODELS_ONLY=1; shift ;;
     --dry-run) DRY_RUN=1; shift ;;
     --help|-h) usage; exit 0 ;;
     *) repro_die "unknown argument: $1" ;;
@@ -101,9 +104,23 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
 fi
 
 repro_require_runtime
-command -v setsid >/dev/null 2>&1 || repro_die "setsid is required to manage the demo process group"
-
 batch_root="${DPL_EVOLVE_STATE_ROOT}/experiment_batches/${RUN_PREFIX}_${FLOW_VARIANT}"
+if [[ "${CHECK_MODELS_ONLY}" -eq 0 && -e "${batch_root}" ]]; then
+  repro_die "run prefix '${RUN_PREFIX}' already has batch state: ${batch_root}; choose a fresh DSE_RUN_PREFIX so old and new evidence cannot mix"
+fi
+
+"${DPL_EVOLVE_PYTHON}" "${SCRIPT_DIR}/check_reviewdse_models.py" \
+  --cwd "${AE_ROOT}" \
+  --student-model "${STUDENT}" \
+  --student-effort "${STUDENT_EFFORT}" \
+  --teacher-model "${TEACHER}" \
+  --teacher-effort "${TEACHER_EFFORT}"
+
+if [[ "${CHECK_MODELS_ONLY}" -eq 1 ]]; then
+  exit 0
+fi
+
+command -v setsid >/dev/null 2>&1 || repro_die "setsid is required to manage the demo process group"
 mkdir -p "${batch_root}"
 launcher_log="${batch_root}/demo-launcher.log"
 

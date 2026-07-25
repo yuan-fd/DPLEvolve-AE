@@ -23,6 +23,7 @@ WAIT = "WAIT"
 RUN = "RUN"
 DONE = "DONE"
 FAIL = "FAIL"
+SKIP = "SKIP"
 
 _TEXT_CACHE: dict[Path, tuple[int, int, str]] = {}
 _ACTIVITY_CACHE: dict[Path, tuple[int, int, str, int, str]] = {}
@@ -45,6 +46,7 @@ class StudentView:
     worker_state: str = WAIT
     worker_activity: str = ""
     worker_elapsed_seconds: float | None = None
+    error: str = ""
 
 
 @dataclass(frozen=True)
@@ -69,6 +71,7 @@ class DashboardView:
     final: bool
     failed: bool
     round_dir: Path | None
+    root_cause: str = ""
 
 
 def parse_args() -> argparse.Namespace:
@@ -217,6 +220,43 @@ def operation_text(operation_dir: Path) -> str:
         return ""
 
 
+def public_error(value: Any) -> str:
+    """Extract a compact public error without exposing hidden model reasoning."""
+    if isinstance(value, dict):
+        for key in ("detail", "message", "error"):
+            if key in value:
+                return public_error(value[key])
+        return ""
+    text = str(value or "").strip()
+    for _ in range(2):
+        if not (text.startswith("{") and text.endswith("}")):
+            break
+        try:
+            decoded = json.loads(text)
+        except json.JSONDecodeError:
+            break
+        nested = public_error(decoded)
+        if not nested or nested == text:
+            break
+        text = nested
+    return " ".join(text.split())[:1000]
+
+
+def operation_error(operation_dir: Path) -> str:
+    """Return the first actionable Codex error recorded for an operation."""
+    for event in read_events(operation_dir / "codex_events.jsonl"):
+        if event.get("type") == "error":
+            message = public_error(event.get("message"))
+            if message:
+                return message
+        if event.get("type") == "turn.failed":
+            message = public_error(event.get("error"))
+            if message:
+                return message
+    summary = load_json(operation_dir / "codex_usage_summary.json") or {}
+    return public_error(summary.get("last_error_message"))
+
+
 def operation_elapsed_seconds(operation_dir: Path) -> float | None:
     summary = load_json(operation_dir / "codex_usage_summary.json")
     if summary is not None:
@@ -341,6 +381,7 @@ def student_view(
     metrics_path = artifact_dir / "candidate_metrics_summary.json"
     metrics_payload = load_json(metrics_path)
     event_text = operation_text(operation_dir)
+    error = operation_error(operation_dir)
 
     build_seen = any(
         token in event_text
@@ -383,10 +424,16 @@ def student_view(
         pass
 
     if op_state == FAIL:
-        if source == RUN:
+        if source in {WAIT, RUN}:
             source = FAIL
-        elif build == RUN:
+            if build == WAIT:
+                build = SKIP
+            if evaluate == WAIT:
+                evaluate = SKIP
+        elif build in {WAIT, RUN}:
             build = FAIL
+            if evaluate == WAIT:
+                evaluate = SKIP
         elif evaluate in {WAIT, RUN}:
             evaluate = FAIL
     elif op_state == DONE and metrics_payload is None:
@@ -429,6 +476,7 @@ def student_view(
         worker_state=op_state,
         worker_activity=operation_activity(operation_dir),
         worker_elapsed_seconds=operation_elapsed_seconds(operation_dir),
+        error=error,
     )
 
 
@@ -489,6 +537,7 @@ def collect_view(
             final=bool(result),
             failed=result.startswith("FAIL"),
             round_dir=None,
+            root_cause="",
         )
 
     case_root = state_root / round_id
@@ -545,6 +594,26 @@ def collect_view(
         for event in events
     )
     status = result or ("FAILED" if failed else "RUNNING")
+    root_cause = next(
+        (
+            student.error
+            for iteration in iteration_views
+            for student in iteration.students
+            if student.error
+        ),
+        "",
+    )
+    if not root_cause:
+        for number in range(1, iterations + 1):
+            iter_name = f"iter_{number:02d}"
+            for kind in ("teacher_plan", "teacher_review"):
+                root_cause = operation_error(
+                    operations_root / f"{round_id}_{iter_name}_{kind}"
+                )
+                if root_cause:
+                    break
+            if root_cause:
+                break
     return DashboardView(
         round_id=round_id,
         batch_status=status,
@@ -554,6 +623,7 @@ def collect_view(
         final=final,
         failed=failed,
         round_dir=round_root,
+        root_cause=root_cause,
     )
 
 
@@ -565,7 +635,13 @@ class Palette:
         return f"\033[{code}m{value}\033[0m" if self.enabled else value
 
     def state(self, value: str) -> str:
-        code = {WAIT: "2;37", RUN: "1;33", DONE: "1;32", FAIL: "1;31"}.get(value, "0")
+        code = {
+            WAIT: "2;37",
+            RUN: "1;33",
+            DONE: "1;32",
+            FAIL: "1;31",
+            SKIP: "2;37",
+        }.get(value, "0")
         return self.paint(f"{value:<5}", code)
 
 
@@ -602,7 +678,7 @@ def best_candidate(view: DashboardView) -> StudentView | None:
 
 def current_phase(view: DashboardView) -> tuple[str, str, float | None]:
     if view.failed:
-        return "Run failed", "inspect the launcher and operation logs", None
+        return "Run failed", view.root_cause or "inspect the launcher and operation logs", None
     if view.final:
         return "Run complete", "final results ready", None
     if view.round_id is None:
@@ -665,12 +741,12 @@ def milestone_progress(view: DashboardView) -> tuple[int, int]:
     total = 0
     for iteration in view.iterations:
         total += 2 + 3 * len(iteration.students)
-        complete += iteration.teacher_plan in {DONE, FAIL}
-        complete += iteration.teacher_review in {DONE, FAIL}
+        complete += iteration.teacher_plan in {DONE, FAIL, SKIP}
+        complete += iteration.teacher_review in {DONE, FAIL, SKIP}
         for student in iteration.students:
-            complete += student.source in {DONE, FAIL}
-            complete += student.build in {DONE, FAIL}
-            complete += student.evaluate in {DONE, FAIL}
+            complete += student.source in {DONE, FAIL, SKIP}
+            complete += student.build in {DONE, FAIL, SKIP}
+            complete += student.evaluate in {DONE, FAIL, SKIP}
     return int(complete), total
 
 
