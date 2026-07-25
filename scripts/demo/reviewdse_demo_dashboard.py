@@ -11,6 +11,7 @@ import csv
 import json
 import os
 import re
+import statistics
 import sys
 import time
 from dataclasses import dataclass
@@ -23,6 +24,9 @@ RUN = "RUN"
 DONE = "DONE"
 FAIL = "FAIL"
 
+_TEXT_CACHE: dict[Path, tuple[int, int, str]] = {}
+_ACTIVITY_CACHE: dict[Path, tuple[int, int, str, int, str]] = {}
+
 
 @dataclass(frozen=True)
 class StudentView:
@@ -32,11 +36,15 @@ class StudentView:
     build: str = WAIT
     evaluate: str = WAIT
     legality: str = "-"
+    eligible: bool | None = None
     hpwl: float | None = None
     runtime: float | None = None
     delta_percent: float | None = None
     diff_path: Path | None = None
     metrics_path: Path | None = None
+    worker_state: str = WAIT
+    worker_activity: str = ""
+    worker_elapsed_seconds: float | None = None
 
 
 @dataclass(frozen=True)
@@ -44,9 +52,11 @@ class IterationView:
     number: int
     teacher_plan: str
     teacher_plan_activity: str
+    teacher_plan_elapsed_seconds: float | None
     students: tuple[StudentView, ...]
     teacher_review: str
     teacher_review_activity: str
+    teacher_review_elapsed_seconds: float | None
 
 
 @dataclass(frozen=True)
@@ -115,6 +125,15 @@ def as_float(value: Any) -> float | None:
         return None if value in (None, "") else float(value)
     except (TypeError, ValueError):
         return None
+
+
+def format_duration(seconds: float | None) -> str:
+    if seconds is None:
+        return "-"
+    total = max(0, int(seconds))
+    hours, remainder = divmod(total, 3600)
+    minutes, secs = divmod(remainder, 60)
+    return f"{hours:02d}:{minutes:02d}:{secs:02d}"
 
 
 def discover_round_id(batch_root: Path, case_id: str) -> str | None:
@@ -186,54 +205,96 @@ def teacher_state(
 def operation_text(operation_dir: Path) -> str:
     path = operation_dir / "codex_events.jsonl"
     try:
-        return path.read_text(encoding="utf-8", errors="replace")[-2_000_000:].lower()
+        stat = path.stat()
+        cached = _TEXT_CACHE.get(path)
+        cache_key = (stat.st_mtime_ns, stat.st_size)
+        if cached is not None and cached[:2] == cache_key:
+            return cached[2]
+        text = path.read_text(encoding="utf-8", errors="replace")[-2_000_000:].lower()
+        _TEXT_CACHE[path] = (stat.st_mtime_ns, stat.st_size, text)
+        return text
     except OSError:
         return ""
+
+
+def operation_elapsed_seconds(operation_dir: Path) -> float | None:
+    summary = load_json(operation_dir / "codex_usage_summary.json")
+    if summary is not None:
+        elapsed = as_float(summary.get("elapsed_seconds"))
+        if elapsed is not None:
+            return max(0.0, elapsed)
+    if not operation_dir.is_dir():
+        return None
+    timestamps: list[float] = []
+    try:
+        timestamps.append(operation_dir.stat().st_mtime)
+        timestamps.extend(path.stat().st_mtime for path in operation_dir.iterdir())
+    except OSError:
+        return None
+    return max(0.0, time.time() - min(timestamps)) if timestamps else None
 
 
 def operation_activity(operation_dir: Path) -> str:
     """Summarize visible Codex tool events without exposing hidden reasoning."""
     events_path = operation_dir / "codex_events.jsonl"
     try:
-        lines = events_path.read_text(encoding="utf-8", errors="replace").splitlines()
-        updated = time.strftime("%H:%M:%S", time.localtime(events_path.stat().st_mtime))
+        stat = events_path.stat()
     except OSError:
-        return ""
-
-    command_count = 0
-    last_command = ""
-    turn_done = False
-    for raw in lines:
+        elapsed = operation_elapsed_seconds(operation_dir)
+        if elapsed is None:
+            return ""
+        return f"model session starting | elapsed {format_duration(elapsed)}"
+    cache_key = (stat.st_mtime_ns, stat.st_size)
+    cached = _ACTIVITY_CACHE.get(events_path)
+    if cached is not None and cached[:2] == cache_key:
+        updated, command_count, detail = cached[2:]
+    else:
         try:
-            event = json.loads(raw)
-        except json.JSONDecodeError:
-            continue
-        item = event.get("item") if isinstance(event.get("item"), dict) else {}
-        if event.get("type") == "item.completed" and item.get("type") == "command_execution":
-            command_count += 1
-            last_command = str(item.get("command", ""))
-        elif event.get("type") == "item.started" and item.get("type") == "command_execution":
-            last_command = str(item.get("command", ""))
-        elif event.get("type") == "turn.completed":
-            turn_done = True
+            lines = events_path.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            return ""
+        command_count = 0
+        last_command = ""
+        turn_done = False
+        for raw in lines:
+            try:
+                event = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            item = event.get("item") if isinstance(event.get("item"), dict) else {}
+            if event.get("type") == "item.completed" and item.get("type") == "command_execution":
+                command_count += 1
+                last_command = str(item.get("command", ""))
+            elif event.get("type") == "item.started" and item.get("type") == "command_execution":
+                last_command = str(item.get("command", ""))
+            elif event.get("type") == "turn.completed":
+                turn_done = True
 
-    detail = "working"
-    basename_matches = re.findall(
-        r"([A-Za-z0-9_.+-]+\.(?:cxx|cpp|cc|h|hpp|py|md|json|jsonl|tcl))",
-        last_command,
-        flags=re.IGNORECASE,
-    )
-    if basename_matches:
-        detail = f"inspecting {basename_matches[-1]}"
-    elif "query_knowledge" in last_command:
-        detail = "querying the mechanism knowledge index"
-    elif re.search(r"(?:^|\s)rg(?:\s|$)", last_command):
-        detail = "searching source evidence"
-    elif last_command:
-        detail = "running a repository tool"
-    if turn_done:
-        detail = "model turn completed"
-    age = max(0, int(time.time() - events_path.stat().st_mtime))
+        detail = "working"
+        basename_matches = re.findall(
+            r"([A-Za-z0-9_.+-]+\.(?:cxx|cpp|cc|h|hpp|py|md|json|jsonl|tcl))",
+            last_command,
+            flags=re.IGNORECASE,
+        )
+        if basename_matches:
+            detail = f"inspecting {basename_matches[-1]}"
+        elif "query_knowledge" in last_command:
+            detail = "querying the mechanism knowledge index"
+        elif re.search(r"(?:^|\s)rg(?:\s|$)", last_command):
+            detail = "searching source evidence"
+        elif last_command:
+            detail = "running a repository tool"
+        if turn_done:
+            detail = "model turn completed"
+        updated = time.strftime("%H:%M:%S", time.localtime(stat.st_mtime))
+        _ACTIVITY_CACHE[events_path] = (
+            stat.st_mtime_ns,
+            stat.st_size,
+            updated,
+            command_count,
+            detail,
+        )
+    age = max(0, int(time.time() - stat.st_mtime))
     freshness = "active now" if age < 30 else f"last event {age}s ago"
     return f"{updated} | {command_count} tools completed | {detail} | {freshness}"
 
@@ -342,6 +403,12 @@ def student_view(
     hpwl = as_float(canonical.get("final_hpwl_micron"))
     runtime = as_float(canonical.get("runtime_seconds"))
     legality = str(canonical.get("legality", "-")) or "-"
+    eligibility = metrics_payload.get("eligibility") if metrics_payload is not None else None
+    eligible = (
+        bool(eligibility.get("eligible"))
+        if isinstance(eligibility, dict) and "eligible" in eligibility
+        else None
+    )
     delta = None
     if hpwl is not None and baseline_hpwl not in (None, 0):
         delta = 100.0 * (hpwl - float(baseline_hpwl)) / float(baseline_hpwl)
@@ -353,11 +420,15 @@ def student_view(
         build=build,
         evaluate=evaluate,
         legality=legality,
+        eligible=eligible,
         hpwl=hpwl,
         runtime=runtime,
         delta_percent=delta,
         diff_path=diff_path if diff_has_content(diff_path) else None,
         metrics_path=metrics_path if metrics_payload is not None else None,
+        worker_state=op_state,
+        worker_activity=operation_activity(operation_dir),
+        worker_elapsed_seconds=operation_elapsed_seconds(operation_dir),
     )
 
 
@@ -405,9 +476,11 @@ def collect_view(
                     number=index,
                     teacher_plan=WAIT,
                     teacher_plan_activity="",
+                    teacher_plan_elapsed_seconds=None,
                     students=tuple(StudentView(student=i) for i in range(1, students + 1)),
                     teacher_review=WAIT,
                     teacher_review_activity="",
+                    teacher_review_elapsed_seconds=None,
                 )
                 for index in range(1, iterations + 1)
             ),
@@ -441,6 +514,7 @@ def collect_view(
                     kind="plan",
                 ),
                 teacher_plan_activity=operation_activity(plan_operation),
+                teacher_plan_elapsed_seconds=operation_elapsed_seconds(plan_operation),
                 students=tuple(
                     student_view(
                         round_id=round_id,
@@ -460,6 +534,7 @@ def collect_view(
                     kind="review",
                 ),
                 teacher_review_activity=operation_activity(review_operation),
+                teacher_review_elapsed_seconds=operation_elapsed_seconds(review_operation),
             )
         )
     final = bool(result) or any(
@@ -502,6 +577,14 @@ def clean_legal(value: str) -> str:
     return "CLEAN" if value.lower() == "clean" else value[:9]
 
 
+def eligibility_text(value: bool | None) -> str:
+    if value is True:
+        return "PASS"
+    if value is False:
+        return "FAIL"
+    return "-"
+
+
 def all_students(view: DashboardView) -> list[StudentView]:
     return [student for iteration in view.iterations for student in iteration.students]
 
@@ -510,9 +593,209 @@ def best_candidate(view: DashboardView) -> StudentView | None:
     candidates = [
         student
         for student in all_students(view)
-        if student.hpwl is not None and student.legality.lower() == "clean"
+        if student.hpwl is not None
+        and student.legality.lower() == "clean"
+        and student.eligible is True
     ]
     return min(candidates, key=lambda item: (float(item.hpwl), item.runtime or float("inf"))) if candidates else None
+
+
+def current_phase(view: DashboardView) -> tuple[str, str, float | None]:
+    if view.failed:
+        return "Run failed", "inspect the launcher and operation logs", None
+    if view.final:
+        return "Run complete", "final results ready", None
+    if view.round_id is None:
+        return "Initialization", "creating the experiment batch", None
+
+    for iteration in view.iterations:
+        if iteration.teacher_plan != DONE:
+            activity = iteration.teacher_plan_activity or "waiting for the Teacher model session"
+            return (
+                f"Iteration {iteration.number} / Teacher planning",
+                activity,
+                iteration.teacher_plan_elapsed_seconds,
+            )
+
+        unfinished = [
+            student
+            for student in iteration.students
+            if student.worker_state not in {DONE, FAIL}
+        ]
+        if unfinished:
+            source_done = sum(student.source == DONE for student in iteration.students)
+            build_done = sum(student.build == DONE for student in iteration.students)
+            eval_done = sum(student.evaluate == DONE for student in iteration.students)
+            active = next(
+                (
+                    f"Student {student.student:02d}: {student.worker_activity}"
+                    for student in unfinished
+                    if student.worker_state == RUN and student.worker_activity
+                ),
+                "waiting for the parallel Student wave to start",
+            )
+            counts = (
+                f"source {source_done}/{len(iteration.students)}, "
+                f"build {build_done}/{len(iteration.students)}, "
+                f"evaluate {eval_done}/{len(iteration.students)}"
+            )
+            elapsed_values = [
+                student.worker_elapsed_seconds
+                for student in iteration.students
+                if student.worker_elapsed_seconds is not None
+            ]
+            return (
+                f"Iteration {iteration.number} / parallel Students",
+                f"{counts} | {active}",
+                max(elapsed_values) if elapsed_values else None,
+            )
+
+        if iteration.teacher_review != DONE:
+            activity = iteration.teacher_review_activity or "waiting for Teacher review"
+            return (
+                f"Iteration {iteration.number} / Teacher review",
+                activity,
+                iteration.teacher_review_elapsed_seconds,
+            )
+    return "Finalization", "writing the final round manifest", None
+
+
+def milestone_progress(view: DashboardView) -> tuple[int, int]:
+    complete = 0
+    total = 0
+    for iteration in view.iterations:
+        total += 2 + 3 * len(iteration.students)
+        complete += iteration.teacher_plan in {DONE, FAIL}
+        complete += iteration.teacher_review in {DONE, FAIL}
+        for student in iteration.students:
+            complete += student.source in {DONE, FAIL}
+            complete += student.build in {DONE, FAIL}
+            complete += student.evaluate in {DONE, FAIL}
+    return int(complete), total
+
+
+def progress_bar(complete: int, total: int, width: int = 28) -> str:
+    filled = 0 if total <= 0 else min(width, round(width * complete / total))
+    return "[" + "#" * filled + "-" * (width - filled) + "]"
+
+
+def adaptive_eta(view: DashboardView) -> str:
+    if view.failed:
+        return "stopped"
+    if view.final:
+        return "complete"
+    plan_samples = [
+        iteration.teacher_plan_elapsed_seconds
+        for iteration in view.iterations
+        if iteration.teacher_plan == DONE and iteration.teacher_plan_elapsed_seconds is not None
+    ]
+    student_samples = [
+        student.worker_elapsed_seconds
+        for iteration in view.iterations
+        for student in iteration.students
+        if student.worker_state in {DONE, FAIL} and student.worker_elapsed_seconds is not None
+    ]
+    review_samples = [
+        iteration.teacher_review_elapsed_seconds
+        for iteration in view.iterations
+        if iteration.teacher_review == DONE and iteration.teacher_review_elapsed_seconds is not None
+    ]
+    missing: list[str] = []
+    if not plan_samples:
+        missing.append("Teacher plan")
+    if not student_samples:
+        missing.append("Student wave")
+    if not review_samples:
+        missing.append("Teacher review")
+    if missing:
+        return "learning Iteration 1 timings; awaiting " + ", ".join(missing)
+
+    plan_estimate = statistics.median(plan_samples)
+    student_estimate = statistics.median(student_samples)
+    review_estimate = statistics.median(review_samples)
+    remaining = 0.0
+    for iteration in view.iterations:
+        if iteration.teacher_plan == WAIT:
+            remaining += plan_estimate
+        elif iteration.teacher_plan == RUN:
+            remaining += max(
+                0.0, plan_estimate - (iteration.teacher_plan_elapsed_seconds or 0.0)
+            )
+
+        unfinished = [
+            student
+            for student in iteration.students
+            if student.worker_state not in {DONE, FAIL}
+        ]
+        if unfinished:
+            student_remaining = []
+            for student in unfinished:
+                if student.worker_state == RUN:
+                    student_remaining.append(
+                        max(0.0, student_estimate - (student.worker_elapsed_seconds or 0.0))
+                    )
+                else:
+                    student_remaining.append(student_estimate)
+            remaining += max(student_remaining, default=0.0)
+
+        if iteration.teacher_review == WAIT:
+            remaining += review_estimate
+        elif iteration.teacher_review == RUN:
+            remaining += max(
+                0.0,
+                review_estimate - (iteration.teacher_review_elapsed_seconds or 0.0),
+            )
+    return f"~{format_duration(remaining)} remaining (adaptive, same-run samples)"
+
+
+def final_result_visual(view: DashboardView) -> list[str]:
+    candidates = [student for student in all_students(view) if student.hpwl is not None]
+    clean = [student for student in candidates if student.legality.lower() == "clean"]
+    eligible = [student for student in clean if student.eligible is True]
+    best = best_candidate(view)
+    lines = [
+        "Final QoR",
+        f"  Evaluated candidates : {len(candidates)}",
+        f"  Legal candidates     : {len(clean)}",
+        f"  Protected-gate pass  : {len(eligible)}",
+    ]
+    if best is None:
+        lines.append("  Best candidate       : none")
+        return lines
+    if view.baseline_hpwl is not None:
+        difference = float(best.hpwl) - view.baseline_hpwl
+        direction = "better" if difference < 0 else ("worse" if difference > 0 else "equal")
+        lines.extend(
+            [
+                f"  Default HPWL         : {view.baseline_hpwl:,.1f} um",
+                "                         |",
+                "                         v",
+                f"  Best HPWL            : {float(best.hpwl):,.1f} um",
+                f"  Difference           : {difference:+,.1f} um "
+                f"({fmt_number(best.delta_percent, 3, '%')}, {direction})",
+            ]
+        )
+    lines.extend(
+        [
+            f"  Winner               : Iteration {best.iteration} / Student {best.student:02d}",
+            f"  Legality             : {clean_legal(best.legality)}",
+            f"  Runtime              : {fmt_number(best.runtime, 2, 's')}",
+        ]
+    )
+    if eligible:
+        lines.append("  Top eligible candidates:")
+        for rank, candidate in enumerate(
+            sorted(eligible, key=lambda item: (float(item.hpwl), item.runtime or float("inf")))[:4],
+            start=1,
+        ):
+            marker = "*" if rank == 1 else " "
+            lines.append(
+                f"    {marker}{rank}. I{candidate.iteration}/S{candidate.student:02d}  "
+                f"HPWL {float(candidate.hpwl):,.1f}  "
+                f"delta {fmt_number(candidate.delta_percent, 3, '%'):>9}  "
+                f"runtime {fmt_number(candidate.runtime, 2, 's'):>10}"
+            )
+    return lines
 
 
 def final_paths(view: DashboardView, launcher_log: Path | None) -> list[str]:
@@ -552,8 +835,25 @@ def render(
     elapsed_seconds: float,
     palette: Palette,
     launcher_log: Path | None = None,
+    heartbeat_tick: int = 0,
+    backend_alive: bool = True,
 ) -> str:
     status_color = "1;31" if view.failed else ("1;32" if view.final else "1;33")
+    phase, doing, phase_elapsed = current_phase(view)
+    complete, total = milestone_progress(view)
+    spinner = "|/-\\"[heartbeat_tick % 4]
+    if view.failed:
+        backend = "FAILED"
+    elif view.final:
+        backend = "COMPLETE"
+    elif not backend_alive:
+        backend = "STOPPED"
+    elif "active now" in doing:
+        backend = "ACTIVE"
+    elif "last event" in doing:
+        backend = "MODEL THINKING / NO NEW TOOL EVENT"
+    else:
+        backend = "RUNNING"
     lines = [
         palette.paint("DPLEvolve — Live ReviewDSE Demo", "1;36"),
         (
@@ -563,6 +863,12 @@ def render(
         ),
         f"Teacher {teacher_model} | Students {student_model}",
         f"Run {view.round_id or '(creating batch)'} | {palette.paint(view.batch_status, status_color)}",
+        f"Heartbeat {spinner} {time.strftime('%H:%M:%S')} | backend {backend}",
+        f"Current phase : {phase}",
+        f"Doing         : {doing}",
+        f"Phase elapsed : {format_duration(phase_elapsed)}",
+        f"ETA           : {adaptive_eta(view)}",
+        f"Progress      : {progress_bar(complete, total)} {complete}/{total} observable milestones",
         "",
     ]
     for iteration in view.iterations:
@@ -570,7 +876,7 @@ def render(
         lines.append(f"  Teacher plan    {palette.state(iteration.teacher_plan)}")
         if iteration.teacher_plan == RUN and iteration.teacher_plan_activity:
             lines.append(f"  Live activity   {iteration.teacher_plan_activity}")
-        lines.append("  Student     Source Build Eval  Legal          HPWL (um)    delta    runtime")
+        lines.append("  Student     Source Build Eval  Legal      Gate   HPWL (um)    delta    runtime")
         for student in iteration.students:
             lines.append(
                 f"  Student {student.student:02d}  "
@@ -578,10 +884,13 @@ def render(
                 f"{palette.state(student.build)} "
                 f"{palette.state(student.evaluate)} "
                 f"{clean_legal(student.legality):<10} "
+                f"{eligibility_text(student.eligible):<5} "
                 f"{fmt_number(student.hpwl):>12} "
                 f"{fmt_number(student.delta_percent, 3, '%'):>9} "
                 f"{fmt_number(student.runtime, 2, 's'):>10}"
             )
+            if student.worker_state == RUN and student.worker_activity:
+                lines.append(f"              -> {student.worker_activity}")
         lines.append(f"  Teacher review  {palette.state(iteration.teacher_review)}")
         if iteration.teacher_review == RUN and iteration.teacher_review_activity:
             lines.append(f"  Live activity   {iteration.teacher_review_activity}")
@@ -600,7 +909,7 @@ def render(
     lines.append(f"Latest real event: {view.latest_event}")
 
     if view.final or view.failed:
-        lines.extend(["", *final_paths(view, launcher_log)])
+        lines.extend(["", *final_result_visual(view), "", *final_paths(view, launcher_log)])
     return "\n".join(lines) + "\n"
 
 
@@ -651,6 +960,8 @@ def main() -> int:
             elapsed_seconds=time.monotonic() - started,
             palette=palette,
             launcher_log=args.launcher_log,
+            heartbeat_tick=int((time.monotonic() - started) / max(0.25, args.refresh_seconds)),
+            backend_alive=alive,
         )
         if sys.stdout.isatty():
             sys.stdout.write("\033[2J\033[H")

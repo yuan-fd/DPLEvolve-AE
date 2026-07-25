@@ -89,6 +89,7 @@ class ReviewDSEDemoTests(unittest.TestCase):
                 artifact4 / "candidate_metrics_summary.json",
                 {
                     "status": "ok",
+                    "eligibility": {"eligible": True, "problems": []},
                     "canonical": {
                         "final_hpwl_micron": 95.0,
                         "runtime_seconds": 12.5,
@@ -120,6 +121,19 @@ class ReviewDSEDemoTests(unittest.TestCase):
                 all(row.source == dashboard.WAIT for row in view.iterations[1].students)
             )
             self.assertFalse(view.final)
+            output = dashboard.render(
+                view=view,
+                case_id="aes_nangate45",
+                teacher_model="gpt-5.6-sol",
+                student_model="gpt-5.5-terra",
+                elapsed_seconds=12,
+                palette=dashboard.Palette(False),
+                heartbeat_tick=2,
+            )
+            self.assertIn("Heartbeat -", output)
+            self.assertIn("Current phase : Iteration 1 / parallel Students", output)
+            self.assertIn("ETA           : learning Iteration 1 timings", output)
+            self.assertIn("observable milestones", output)
 
     def test_visible_tool_activity_is_reported_for_a_running_teacher(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -168,6 +182,7 @@ class ReviewDSEDemoTests(unittest.TestCase):
                 artifact / "candidate_metrics_summary.json",
                 {
                     "status": "ok",
+                    "eligibility": {"eligible": True, "problems": []},
                     "canonical": {
                         "final_hpwl_micron": 91.25,
                         "runtime_seconds": 8.0,
@@ -197,6 +212,64 @@ class ReviewDSEDemoTests(unittest.TestCase):
             self.assertIn("implementation.diff", output)
             self.assertIn("candidate_metrics_summary.json", output)
             self.assertIn("demo-launcher.log", output)
+            self.assertIn("Final QoR", output)
+            self.assertIn("Default HPWL", output)
+            self.assertIn("Difference", output)
+            self.assertIn("Protected-gate pass", output)
+            self.assertIn("Top eligible candidates", output)
+
+    def test_eta_uses_completed_first_iteration_operations(self):
+        completed_students = tuple(
+            dashboard.StudentView(
+                student=index,
+                iteration=1,
+                source=dashboard.DONE,
+                build=dashboard.DONE,
+                evaluate=dashboard.DONE,
+                worker_state=dashboard.DONE,
+                worker_elapsed_seconds=100.0,
+            )
+            for index in range(1, 5)
+        )
+        waiting_students = tuple(
+            dashboard.StudentView(student=index, iteration=2)
+            for index in range(1, 5)
+        )
+        view = dashboard.DashboardView(
+            round_id="round",
+            batch_status="RUNNING",
+            iterations=(
+                dashboard.IterationView(
+                    number=1,
+                    teacher_plan=dashboard.DONE,
+                    teacher_plan_activity="",
+                    teacher_plan_elapsed_seconds=60.0,
+                    students=completed_students,
+                    teacher_review=dashboard.DONE,
+                    teacher_review_activity="",
+                    teacher_review_elapsed_seconds=30.0,
+                ),
+                dashboard.IterationView(
+                    number=2,
+                    teacher_plan=dashboard.WAIT,
+                    teacher_plan_activity="",
+                    teacher_plan_elapsed_seconds=None,
+                    students=waiting_students,
+                    teacher_review=dashboard.WAIT,
+                    teacher_review_activity="",
+                    teacher_review_elapsed_seconds=None,
+                ),
+            ),
+            latest_event="review done",
+            baseline_hpwl=100.0,
+            final=False,
+            failed=False,
+            round_dir=None,
+        )
+        self.assertEqual(
+            dashboard.adaptive_eta(view),
+            "~00:03:10 remaining (adaptive, same-run samples)",
+        )
 
     def test_demo_dry_run_assembles_requested_models_and_shape(self):
         result = subprocess.run(
