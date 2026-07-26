@@ -53,7 +53,7 @@ Options:
   --iterations N                Iterations per case/utilization. Default: 12.
   --max-parallel N              Parallel students inside one round. Default: 4.
   --start-kind KIND             framework, diamond, default_negotiation,
-                                evolved_diamond, evolved_negotiation,
+                                source_topk_diamond, evolved_diamond, evolved_negotiation,
                                 or prepared.
                                 Default: framework.
   --teacher-model NAME          Default: gpt-5.5.
@@ -95,7 +95,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${START_KIND}" in
-  diamond|framework|default_negotiation|evolved_diamond|evolved_negotiation|prepared) ;;
+  diamond|framework|source_topk_diamond|default_negotiation|evolved_diamond|evolved_negotiation|prepared) ;;
   *)
     echo "[ERROR] Unsupported --start-kind: ${START_KIND}" >&2
     exit 1

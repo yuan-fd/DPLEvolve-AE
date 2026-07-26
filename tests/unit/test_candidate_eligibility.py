@@ -19,6 +19,7 @@ from scripts.evaluator.candidate_provenance import (
     source_ref_fingerprint,
     source_worktree_fingerprint,
 )
+from scripts.evaluator.evaluation_trial import allocate_trial
 from scripts.teacher_loop.common import MetricSummary
 from scripts.teacher_loop.common import student_workspace_paths
 from scripts.teacher_loop.evidence import candidate_artifact_problems
@@ -49,6 +50,25 @@ def valid_metric_summary() -> dict:
 
 
 class CandidateEligibilityTests(unittest.TestCase):
+    def test_evaluation_trial_allocator_never_reuses_or_overwrites(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "evaluation_trials"
+            first = allocate_trial(root, timestamp="20260726_120000")
+            marker = first / "metrics.json"
+            marker.write_text("first immutable result\n", encoding="utf-8")
+            before = file_sha256(marker)
+
+            second = allocate_trial(root, timestamp="20260726_120000")
+
+            third = allocate_trial(root, timestamp="20260726_120100")
+
+            self.assertEqual(first.name, "eval_001_20260726_120000")
+            self.assertEqual(second.name, "eval_002_20260726_120000")
+            self.assertEqual(third.name, "eval_003_20260726_120100")
+            self.assertNotEqual(first, second)
+            self.assertEqual(file_sha256(marker), before)
+            self.assertFalse((second / "metrics.json").exists())
+
     def test_complete_candidate_passes_exact_metric_contract(self):
         verdict = metric_eligibility(valid_metric_summary())
         self.assertTrue(verdict["eligible"])
@@ -208,6 +228,10 @@ class CandidateEligibilityTests(unittest.TestCase):
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                     )
                     self.assertEqual(result.returncode, 0, f"{name}: {result.stdout}")
+            evaluate = scripts["evaluate"].read_text(encoding="utf-8")
+            self.assertIn("evaluation_trials", evaluate)
+            self.assertIn("TRIAL_RUN_TAG", evaluate)
+            self.assertIn("trial_output_odb", evaluate)
 
     def test_protected_run_contract_detects_mutation_and_uses_hash_cache(self):
         with tempfile.TemporaryDirectory() as directory:

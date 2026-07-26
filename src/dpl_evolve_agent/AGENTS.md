@@ -207,6 +207,11 @@ Evolved start seeds are cataloged under:
 patches/evolved_legalizers/
 ```
 
+The `source_topk_diamond` seed is retained implementation knowledge for the
+independently reproduced broad exact-sourceTopK/hot-frontier chain. Use it as
+an incumbent or donor when the route calls for that already-proven mechanism;
+do not ask a Student to reinvent the entire chain from an abstract card.
+
 Teacher/Student use prepared start branches in generated workspaces. Patch
 catalogs are release/reproduction artifacts used by repo-maintenance scripts to
 materialize those starts; they are evidence, not manual Student commands.

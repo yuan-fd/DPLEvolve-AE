@@ -5,6 +5,10 @@ as prepared start branches:
 
 - `negotiation`: negotiation-primary NBLG/resource-allocation-oriented line.
 - `diamond`: Diamond/local-greedy-oriented line.
+- `source_topk_diamond`: the validated Diamond exact-sourceTopK producer,
+  cumulative hot-segment handoff, and selected-reorder consumer that produced
+  a 4.882% clean Ariane133 HPWL reduction in an independent historical run and
+  again in the current validation environment.
 
 Use the stable line names and patch paths below as the portable interface for
 these donor sources.
@@ -19,6 +23,7 @@ The clean OpenROAD target is the `openroad_base_commit` in
 | --- | --- | --- | --- |
 | `negotiation` | `evolved_negotiation` | `openroad_dpl_evolve_negotiation_iter30_from_clean.patch` | `openroad_dpl_evolve_negotiation_iter30_framework_delta.patch` |
 | `diamond` | `evolved_diamond` | `openroad_dpl_evolve_diamond_iter30_from_clean.patch` | `openroad_dpl_evolve_diamond_iter30_framework_delta.patch` |
+| `source_topk_diamond` | `source_topk_diamond` | — | `validated_source_topk_diamond.patch` applied to the prepared `diamond` seed |
 
 The table is the patch base contract.  If a patch is used outside that target
 state, conflicts or misleading partial application are expected.

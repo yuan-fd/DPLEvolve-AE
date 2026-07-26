@@ -64,6 +64,19 @@ reference_deltas:
       algorithm implementation.
 
 evolved_legalizer_patches:
+  - path: patches/evolved_legalizers/validated_source_topk_diamond.patch
+    status: active_seed_materialization_patch
+    source_commit: c19541c8153ce0c380b89d6f76923612fe78ab41
+    source_tag: ariane133_independently_verified_diamond_da
+    meaning: >
+      Retains the implementation-level Blueprint-D knowledge that produced a
+      clean 4.882% Ariane133 HPWL reduction. prepare_workspace.sh applies it
+      to the Diamond seed and materializes source_topk_diamond_dpl_evolve so
+      later searches extend the proven mechanism instead of reconstructing a
+      weaker approximation from prose.
+    apply_target: prepared diamond_dpl_evolve seed source
+    verification: git_apply_check_ok; historical_independent_full_flow_pass; current_environment_full_flow_pass
+
   - path: patches/evolved_legalizers/openroad_dpl_evolve_negotiation_iter30_from_clean.patch
     status: active_evolved_candidate_patch
     source_commit: tracked_patch

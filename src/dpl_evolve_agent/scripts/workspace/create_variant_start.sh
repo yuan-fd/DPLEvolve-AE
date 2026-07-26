@@ -31,15 +31,16 @@ Create the initial private dpl_evolve source tree for one experiment variant.
 This copies one prepared seed source:
   framework:    $DPL_EVOLVE_STATE_ROOT/seed_sources/framework_dpl_evolve
   diamond:      $DPL_EVOLVE_STATE_ROOT/seed_sources/diamond_dpl_evolve
+  source_topk_diamond:
+                $DPL_EVOLVE_STATE_ROOT/seed_sources/source_topk_diamond_dpl_evolve
+                validated exact sourceTopK plus hot-frontier consumer seed.
   default_negotiation:
                 $DPL_EVOLVE_STATE_ROOT/seed_sources/default_negotiation_dpl_evolve
                 framework-compatible source layout with negotiation enabled
                 by default.
   prepared:     $ORFS_ROOT/tools/OpenROAD/src/dpl_evolve
 
-  Additional archival seed snapshots may exist under seed_sources, but normal
-  Teacher/Student workspaces prepare only framework, diamond, and
-  default_negotiation start branches.
+  Additional archival seed snapshots may exist under seed_sources.
 
 into:
   <variant-root>/dpl_evolve
@@ -56,7 +57,7 @@ Options:
   --dpl-src PATH         Destination dpl_evolve source path.
                          Default: <variant-root>/dpl_evolve.
   --start-kind KIND      Seed type: framework, diamond,
-                         default_negotiation, or prepared.
+                         source_topk_diamond, default_negotiation, or prepared.
                          Default: framework.
   --seed-src PATH        Source dpl_evolve tree to copy instead of the prepared
                          ORFS root seed.  Useful for continuing from a
@@ -127,6 +128,9 @@ else
     diamond)
       seed_src="${state_root}/seed_sources/diamond_dpl_evolve"
       ;;
+    source_topk_diamond)
+      seed_src="${state_root}/seed_sources/source_topk_diamond_dpl_evolve"
+      ;;
     default_negotiation)
       seed_src="${state_root}/seed_sources/default_negotiation_dpl_evolve"
       ;;
@@ -135,7 +139,7 @@ else
       ;;
     *)
       echo "[ERROR] Unsupported --start-kind: ${start_kind}" >&2
-      echo "[ERROR] Expected one of: framework, diamond, default_negotiation, prepared" >&2
+      echo "[ERROR] Expected one of: framework, diamond, source_topk_diamond, default_negotiation, prepared" >&2
       exit 1
       ;;
   esac

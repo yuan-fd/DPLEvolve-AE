@@ -35,10 +35,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "`framework` starts from the constrained top-level framework with "
             "LEGALM-style producer/frontier support and bounded DPO handoff; "
             "`diamond` starts from the clean dpl_evolve/base implementation; "
+            "`source_topk_diamond` starts from the retained, independently "
+            "reproduced exact-sourceTopK/hot-frontier implementation; "
             "`default_negotiation` starts from a framework-compatible source "
-            "layout with negotiation enabled by default. "
-            "Only these three prepared start branches are active for normal "
-            "Teacher/Student workspaces."
+            "layout with negotiation enabled by default."
         ),
     )
     parser.add_argument(

@@ -113,7 +113,9 @@ class ReviewDSEDemoTests(unittest.TestCase):
                     (dashboard.DONE, dashboard.RUN, dashboard.WAIT),
                     (dashboard.DONE, dashboard.DONE, dashboard.WAIT),
                     (dashboard.DONE, dashboard.DONE, dashboard.RUN),
-                    (dashboard.DONE, dashboard.DONE, dashboard.DONE),
+                    # Metrics produced while the Student process is still
+                    # active are provisional; self-repair may evaluate again.
+                    (dashboard.DONE, dashboard.DONE, dashboard.RUN),
                 ],
             )
             self.assertEqual(first.students[3].delta_percent, -5.0)
@@ -292,9 +294,10 @@ class ReviewDSEDemoTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertIn("gpt-5.6-sol", result.stdout)
         self.assertIn("gpt-5.6-terra", result.stdout)
-        self.assertIn("high", result.stdout)
+        self.assertIn("xhigh", result.stdout)
         self.assertIn("case       : ariane133_nangate45", result.stdout)
         self.assertIn("--case ariane133_nangate45", result.stdout)
+        self.assertIn("--start-kind framework", result.stdout)
         self.assertIn("--children 4", result.stdout)
         self.assertIn("--iterations 2", result.stdout)
         self.assertIn("--threads 3", result.stdout)

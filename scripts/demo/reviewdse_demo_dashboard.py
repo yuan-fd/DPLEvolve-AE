@@ -398,6 +398,11 @@ def student_view(
     if metrics_payload is not None:
         metrics_ok = str(metrics_payload.get("status", "ok")).lower() == "ok"
         evaluate = FAIL if evaluation_provenance == FAIL or not metrics_ok else DONE
+        # A Student may evaluate, inspect the result, edit, and evaluate again
+        # before it finalizes the iteration.  Metrics visible during that
+        # self-repair window are provisional, not proof that the worker is done.
+        if evaluate == DONE and op_state == RUN:
+            evaluate = RUN
     elif eval_start is not None or evaluate_seen:
         evaluate = RUN
 

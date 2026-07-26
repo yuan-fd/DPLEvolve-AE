@@ -6,6 +6,7 @@ source "${SCRIPT_DIR}/common.sh"
 
 PROFILE="small"
 FLOW_VARIANT="${FLOW_VARIANT:-paper9_place}"
+START_KIND="${DSE_START_KIND:-framework}"
 THREADS="${THREADS:-10}"
 CASE_ID="aes_nangate45"
 CHILDREN="1"
@@ -34,6 +35,7 @@ Options:
   --children N          Small-profile Student count. Default: 1.
   --iterations N        Small-profile review iterations. Default: 1.
   --flow-variant NAME   Prepared input variant. Default: paper9_place.
+  --start-kind KIND     Prepared source seed. Default: framework.
   --threads N           OpenROAD threads per evaluation. Default: 10.
   --acknowledge-cost    Equivalent to ACKNOWLEDGE_LLM_COST=yes.
   --level1-evidence P   Frozen output of make reproduce-level1.
@@ -56,6 +58,7 @@ while [[ $# -gt 0 ]]; do
     --children) CHILDREN="$2"; shift 2 ;;
     --iterations) ITERATIONS="$2"; shift 2 ;;
     --flow-variant) FLOW_VARIANT="$2"; shift 2 ;;
+    --start-kind) START_KIND="$2"; shift 2 ;;
     --threads) THREADS="$2"; shift 2 ;;
     --acknowledge-cost) ACKNOWLEDGE_COST=yes; shift ;;
     --level1-evidence) LEVEL1_EVIDENCE="$2"; shift 2 ;;
@@ -76,7 +79,7 @@ repro_positive_integer threads "${THREADS}"
 args=(
   --flow-variant "${FLOW_VARIANT}"
   --threads "${THREADS}"
-  --start-kind framework
+  --start-kind "${START_KIND}"
   --runtime-multiplier 2.0
   --teacher-model "${TEACHER_MODEL}"
   --teacher-reasoning-effort "${TEACHER_REASONING_EFFORT}"

@@ -53,7 +53,8 @@ Options:
   --flow-variant NAME          Default: place_batch_20260421_220319.
   --run-prefix NAME            Round-id prefix. Default includes launch stamp.
   --start-kind KIND            framework, diamond, default_negotiation,
-                               evolved_diamond, evolved_negotiation, prepared.
+                               source_topk_diamond, evolved_diamond,
+                               evolved_negotiation, prepared.
   --children N                 Student count per iteration. Default: 16.
   --iterations N               Iterations per case. Default: 4.
   --max-parallel N             Parallel students inside one case. Default: 8.
@@ -106,7 +107,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${START_KIND}" in
-  framework|diamond|default_negotiation|evolved_diamond|evolved_negotiation|prepared) ;;
+  framework|diamond|source_topk_diamond|default_negotiation|evolved_diamond|evolved_negotiation|prepared) ;;
   *) echo "[ERROR] Unsupported --start-kind: ${START_KIND}" >&2; exit 1 ;;
 esac
 

@@ -167,11 +167,16 @@ mechanism hypotheses and implementation roadmap sections.
   rollback fallback. A feature-matched donor is plausible because the current
   design has matching stage/physical features; it can be aggressively optimized
   for this case even if it may not transfer universally.
-- prepared start branches include `framework`, `diamond`, and
-  `default_negotiation`
+- prepared start branches include `framework`, `diamond`,
+  `source_topk_diamond`, and `default_negotiation`
 - `framework` contains the current LEGALM-style producer/frontier base plus
   bounded DPO handoff support. Treat it as a normal editable source parent, not
   as proof that legalization-only changes are sufficient.
+- `source_topk_diamond` retains the independently reproduced Blueprint D+A
+  implementation: full-source exact sourceTopK production, cumulative native
+  hot-segment handoff, and selected-reorder consumption. When it is the round
+  start, keep at least one Student on it as the incumbent/continuation lane;
+  do not replace implementation-level knowledge with a prose reconstruction.
 - Student private source trees use materialized seed sources and prepared git
   start branches. Student start-point switches are branch-only.
 

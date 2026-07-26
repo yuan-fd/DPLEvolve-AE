@@ -97,9 +97,12 @@
 - Do not route tuning through Tcl/flow-script knobs, ORFS scripts, evaluator
   scripts, or repeated external endpoint invocation. Public command interfaces
   and external evaluators remain stable.
-- Prepared starts (`framework`, `diamond`, `default_negotiation`) are source
-  parents, not edit-scope restrictions. Choose the parent that best tests the
-  current HPWL source.
+- Prepared starts (`framework`, `diamond`, `source_topk_diamond`,
+  `default_negotiation`) are source parents, not edit-scope restrictions.
+  `source_topk_diamond` is retained implementation-level D+A knowledge. When it
+  is the round default, keep at least one Student on that incumbent and assign
+  a continuation or controlled repair; do not make every Student rediscover the
+  same full chain from the lean `diamond` seed.
 - Hybrid means staged mechanisms inside one source implementation; do not make a
   case-level selector among complete algorithms.
 - Handoff should use compact native OpenROAD state where useful (`dbInst*`,

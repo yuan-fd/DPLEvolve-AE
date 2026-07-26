@@ -275,7 +275,7 @@ check-demo-models:
 	  --teacher-model "$(or $(TEACHER_MODEL),gpt-5.6-sol)" \
 	  --teacher-reasoning-effort "$(or $(TEACHER_REASONING_EFFORT),xhigh)" \
 	  --student-model "$(or $(STUDENT_MODEL),gpt-5.6-terra)" \
-	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),high)" \
+	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),xhigh)" \
 	  --check-models-only
 
 demo-reviewdse:
@@ -287,7 +287,7 @@ demo-reviewdse:
 	  --teacher-model "$(or $(TEACHER_MODEL),gpt-5.6-sol)" \
 	  --teacher-reasoning-effort "$(or $(TEACHER_REASONING_EFFORT),xhigh)" \
 	  --student-model "$(or $(STUDENT_MODEL),gpt-5.6-terra)" \
-	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),high)"
+	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),xhigh)"
 
 plan-demo-reviewdse:
 	@DSE_RUN_PREFIX="$(DSE_RUN_PREFIX)" bash "$(AE_ROOT)/scripts/demo/run_reviewdse_demo.sh" \
@@ -298,7 +298,7 @@ plan-demo-reviewdse:
 	  --teacher-model "$(or $(TEACHER_MODEL),gpt-5.6-sol)" \
 	  --teacher-reasoning-effort "$(or $(TEACHER_REASONING_EFFORT),xhigh)" \
 	  --student-model "$(or $(STUDENT_MODEL),gpt-5.6-terra)" \
-	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),high)" \
+	  --student-reasoning-effort "$(or $(STUDENT_REASONING_EFFORT),xhigh)" \
 	  --dry-run
 
 plan-dse-paper:

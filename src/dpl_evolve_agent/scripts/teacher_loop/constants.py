@@ -9,10 +9,13 @@ from __future__ import annotations
 START_KINDS = (
     "framework",
     "diamond",
+    "source_topk_diamond",
     "default_negotiation",
 )
 
-PREPARED_START_KIND_PATTERN = r"(?:framework|diamond|default_negotiation)"
+PREPARED_START_KIND_PATTERN = (
+    r"(?:framework|diamond|source_topk_diamond|default_negotiation)"
+)
 
 CANONICAL_LINES = (
     "openroad_dpl_flow",

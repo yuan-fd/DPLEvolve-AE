@@ -27,6 +27,8 @@ def start_kind_source(runtime: Any, start_kind: str) -> Path:
         return runtime.state_root / "seed_sources" / "framework_dpl_evolve"
     if start_kind == "diamond":
         return runtime.state_root / "seed_sources" / "diamond_dpl_evolve"
+    if start_kind == "source_topk_diamond":
+        return runtime.state_root / "seed_sources" / "source_topk_diamond_dpl_evolve"
     if start_kind == "default_negotiation":
         return runtime.state_root / "seed_sources" / "default_negotiation_dpl_evolve"
     if start_kind == "prepared":
@@ -287,6 +289,9 @@ seed_for_kind() {{
     diamond)
       printf '%s\\n' "$STATE_ROOT/seed_sources/diamond_dpl_evolve"
       ;;
+    source_topk_diamond)
+      printf '%s\\n' "$STATE_ROOT/seed_sources/source_topk_diamond_dpl_evolve"
+      ;;
     default_negotiation)
       printf '%s\\n' "$STATE_ROOT/seed_sources/default_negotiation_dpl_evolve"
       ;;
@@ -348,7 +353,7 @@ prepare_start_branches() {{
     echo "[WARN] current branch is $return_branch, expected $SOURCE_BRANCH; skip start branch materialization" >&2
     return 0
   fi
-  for kind in framework diamond default_negotiation; do
+  for kind in framework diamond source_topk_diamond default_negotiation; do
     materialize_start_branch "$kind"
   done
   git -C "$DPL_SRC" switch "$SOURCE_BRANCH" >/dev/null
@@ -957,11 +962,23 @@ acquire_workspace_git_lock
 ensure_dpl_git_repo
 assert_no_git_index_lock
 RUN_BASELINE="$AGENT_ROOT/baseline/run_baseline.sh"
-mkdir -p "$ARTIFACT_DIR"
+EVALUATION_TRIALS_DIR="$ARTIFACT_DIR/evaluation_trials"
+mkdir -p "$ARTIFACT_DIR" "$EVALUATION_TRIALS_DIR"
 if [[ ! -f "$BUILD_PROVENANCE_JSON" ]]; then
   echo "[ERROR] build provenance missing; run 10_build_variant.sh first: $BUILD_PROVENANCE_JSON" >&2
   exit 2
 fi
+EVALUATION_ID="$("$DPL_EVOLVE_PYTHON" \
+  "$AGENT_ROOT/scripts/evaluator/evaluation_trial.py" \
+  --root "$EVALUATION_TRIALS_DIR")"
+EVALUATION_DIR="$EVALUATION_TRIALS_DIR/$EVALUATION_ID"
+TRIAL_RUN_TAG="${{RUN_TAG}}_${{EVALUATION_ID}}"
+TRIAL_METRICS_PATH="$(dirname "$(dirname "$METRICS_PATH")")/$TRIAL_RUN_TAG/metrics.json"
+TRIAL_METRICS_SUMMARY_JSON="$EVALUATION_DIR/candidate_metrics_summary.json"
+TRIAL_METRICS_SUMMARY_MD="$EVALUATION_DIR/candidate_metrics_summary.md"
+TRIAL_EVALUATION_START_JSON="$EVALUATION_DIR/candidate_evaluation_start.json"
+TRIAL_EVALUATION_PROVENANCE_JSON="$EVALUATION_DIR/candidate_evaluation_provenance.json"
+cp "$BUILD_PROVENANCE_JSON" "$EVALUATION_DIR/candidate_build_provenance.json"
 "$DPL_EVOLVE_PYTHON" "$AGENT_ROOT/scripts/evaluator/candidate_provenance.py" start-evaluation \
   --source "$DPL_SRC" \
   --binary "$PRIVATE_BINARY" \
@@ -970,7 +987,7 @@ fi
   --protected-file "$AGENT_ROOT/baseline/collect_metrics.py" \
   --protected-file "$AGENT_ROOT/scripts/evaluator/report_candidate_metrics.py" \
   --protected-file "$AGENT_ROOT/scripts/evaluator/candidate_eligibility.py" \
-  --output "$EVALUATION_START_JSON"
+  --output "$TRIAL_EVALUATION_START_JSON"
 set +e
 "$RUN_BASELINE" \\
   --line evolve_default \\
@@ -979,21 +996,24 @@ set +e
   --threads "$THREADS" \\
   --openroad-binary "$PRIVATE_BINARY" \\
 {legalize_timeout_arg}\
-  --run-tag "$RUN_TAG"
+  --run-tag "$TRIAL_RUN_TAG"
 status=$?
 set -e
+echo "$status" > "$EVALUATION_DIR/evaluate_exit_status.txt"
 echo "$status" > "$ARTIFACT_DIR/evaluate_exit_status.txt"
 if [[ "$status" -ne 0 ]]; then
-  ATTEMPT_STATUS="$status" ATTEMPT_METRICS="$METRICS_PATH" ATTEMPT_TAG="$RUN_TAG" "$DPL_EVOLVE_PYTHON" - "$ARTIFACT_DIR/failed_attempts.jsonl" <<'PY'
+  ATTEMPT_STATUS="$status" ATTEMPT_METRICS="$TRIAL_METRICS_PATH" ATTEMPT_TAG="$TRIAL_RUN_TAG" ATTEMPT_ID="$EVALUATION_ID" "$DPL_EVOLVE_PYTHON" - "$ARTIFACT_DIR/failed_attempts.jsonl" "$EVALUATION_DIR/trial_manifest.json" <<'PY'
 import json
 import os
 import sys
 from pathlib import Path
 
 path = Path(sys.argv[1])
+manifest_path = Path(sys.argv[2])
 path.parent.mkdir(parents=True, exist_ok=True)
 metrics_path = Path(os.environ["ATTEMPT_METRICS"])
 payload = {{
+    "evaluation_id": os.environ["ATTEMPT_ID"],
     "run_tag": os.environ["ATTEMPT_TAG"],
     "exit_status": int(os.environ["ATTEMPT_STATUS"]),
     "metrics_path": str(metrics_path),
@@ -1009,15 +1029,81 @@ if metrics_path.exists():
         payload["metrics_parse_error"] = str(exc)
 with path.open("a", encoding="utf-8") as fh:
     fh.write(json.dumps(payload, sort_keys=True) + "\\n")
+manifest_path.write_text(
+    json.dumps(payload, indent=2, sort_keys=True) + "\\n", encoding="utf-8"
+)
 PY
-  echo "[ERROR] DPL flow/evaluation wrapper returned status $status" >&2
+  echo "[ERROR] immutable evaluation $EVALUATION_ID returned status $status" >&2
+  echo "[INFO] trial_run_tag=$TRIAL_RUN_TAG" >&2
+  echo "[INFO] trial_dir=$EVALUATION_DIR" >&2
   exit "$status"
 fi
-if [[ ! -f "$METRICS_PATH" ]]; then
-  echo "[ERROR] evaluator succeeded but metrics.json is missing: $METRICS_PATH" >&2
+if [[ ! -f "$TRIAL_METRICS_PATH" ]]; then
+  echo "[ERROR] evaluator succeeded but immutable metrics are missing: $TRIAL_METRICS_PATH" >&2
   exit 2
 fi
-echo "[INFO] metrics=$METRICS_PATH"
+cp "$TRIAL_EVALUATION_START_JSON" "$EVALUATION_START_JSON"
+"$DPL_EVOLVE_PYTHON" "$AGENT_ROOT/scripts/evaluator/report_candidate_metrics.py" \
+  --metrics "$TRIAL_METRICS_PATH" \
+  $([[ -f "$BASELINE_METRICS_PATH" ]] && printf '%s %q' --reference-metrics "$BASELINE_METRICS_PATH") \
+  --output-json "$TRIAL_METRICS_SUMMARY_JSON" \
+  --output-md "$TRIAL_METRICS_SUMMARY_MD" >/dev/null
+"$DPL_EVOLVE_PYTHON" "$AGENT_ROOT/scripts/evaluator/candidate_provenance.py" finish-evaluation \
+  --source "$DPL_SRC" \
+  --binary "$PRIVATE_BINARY" \
+  --start-provenance "$TRIAL_EVALUATION_START_JSON" \
+  --metrics "$TRIAL_METRICS_PATH" \
+  --summary "$TRIAL_METRICS_SUMMARY_JSON" \
+  --output "$TRIAL_EVALUATION_PROVENANCE_JSON"
+TRIAL_METRICS_PATH="$TRIAL_METRICS_PATH" \
+CANONICAL_METRICS_PATH="$METRICS_PATH" \
+CANONICAL_RUN_TAG="$RUN_TAG" \
+EVALUATION_ID="$EVALUATION_ID" \
+TRIAL_RUN_TAG="$TRIAL_RUN_TAG" \
+EVALUATION_DIR="$EVALUATION_DIR" \
+"$DPL_EVOLVE_PYTHON" - <<'PY'
+import json
+import os
+from pathlib import Path
+
+source = Path(os.environ["TRIAL_METRICS_PATH"])
+target = Path(os.environ["CANONICAL_METRICS_PATH"])
+payload = json.loads(source.read_text(encoding="utf-8"))
+manifest = payload.setdefault("manifest", {{}})
+trial_run_tag = os.environ["TRIAL_RUN_TAG"]
+flow_home = Path(manifest["flow_home"])
+result_dir = flow_home / manifest["results_dir"] / "dpl_evolve_baseline" / trial_run_tag
+log_dir = flow_home / manifest["log_dir"] / "dpl_evolve_baseline" / trial_run_tag
+manifest["run_tag"] = os.environ["CANONICAL_RUN_TAG"]
+payload["immutable_evaluation"] = {{
+    "evaluation_id": os.environ["EVALUATION_ID"],
+    "trial_run_tag": trial_run_tag,
+    "trial_metrics_path": str(source),
+    "trial_log_dir": str(log_dir),
+    "trial_output_odb": str(result_dir / "legalized.odb"),
+}}
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\\n", encoding="utf-8")
+trial_manifest = {{
+    "evaluation_id": os.environ["EVALUATION_ID"],
+    "status": "ok",
+    "trial_run_tag": trial_run_tag,
+    "trial_metrics_path": str(source),
+    "trial_log_dir": str(log_dir),
+    "trial_output_odb": str(result_dir / "legalized.odb"),
+    "canonical_run_tag": os.environ["CANONICAL_RUN_TAG"],
+    "canonical_metrics_path": str(target),
+    "orfs_report_dir": str(source.parent),
+}}
+Path(os.environ["EVALUATION_DIR"], "trial_manifest.json").write_text(
+    json.dumps(trial_manifest, indent=2, sort_keys=True) + "\\n",
+    encoding="utf-8",
+)
+Path(os.environ["EVALUATION_DIR"]).parent.joinpath("latest.json").write_text(
+    json.dumps(trial_manifest, indent=2, sort_keys=True) + "\\n",
+    encoding="utf-8",
+)
+PY
 "$SCRIPT_DIR/21_report_candidate_metrics.sh"
 "$DPL_EVOLVE_PYTHON" "$AGENT_ROOT/scripts/evaluator/candidate_provenance.py" finish-evaluation \
   --source "$DPL_SRC" \
@@ -1026,6 +1112,10 @@ echo "[INFO] metrics=$METRICS_PATH"
   --metrics "$METRICS_PATH" \
   --summary "$METRICS_SUMMARY_JSON" \
   --output "$EVALUATION_PROVENANCE_JSON"
+echo "[INFO] evaluation_id=$EVALUATION_ID"
+echo "[INFO] immutable_metrics=$TRIAL_METRICS_PATH"
+echo "[INFO] immutable_trial_dir=$EVALUATION_DIR"
+echo "[INFO] canonical_metrics=$METRICS_PATH"
 echo "[INFO] evaluation_provenance=$EVALUATION_PROVENANCE_JSON"
 """,
     )

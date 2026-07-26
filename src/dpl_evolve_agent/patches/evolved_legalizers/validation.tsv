@@ -3,3 +3,4 @@ patches/evolved_legalizers/openroad_dpl_evolve_diamond_iter30_from_clean.patch	c
 patches/evolved_legalizers/openroad_dpl_evolve_negotiation_iter30_from_clean.patch	clean_openroad_anchor	apply_check_ok	repaired negotiation-primary; final-applied source verified; validated by negotiation_primary_validation.tsv
 patches/evolved_legalizers/openroad_dpl_evolve_diamond_iter30_framework_delta.patch	base_plus_framework	apply_check_ok
 patches/evolved_legalizers/openroad_dpl_evolve_negotiation_iter30_framework_delta.patch	base_plus_framework	apply_check_ok	repaired negotiation-primary; final-applied source verified; validated by negotiation_primary_validation.tsv
+patches/evolved_legalizers/validated_source_topk_diamond.patch	diamond_dpl_evolve	apply_check_ok	independently reproduced Ariane133 result: 5502492.2 um final HPWL, 4.882% below OpenROAD default

@@ -11,10 +11,11 @@ STUDENTS="4"
 ITERATIONS="2"
 THREAD_COUNT="${THREADS:-10}"
 FLOW_VARIANT="${FLOW_VARIANT:-paper9_place}"
+START_KIND="${DSE_START_KIND:-framework}"
 TEACHER="gpt-5.6-sol"
 TEACHER_EFFORT="xhigh"
 STUDENT="gpt-5.6-terra"
-STUDENT_EFFORT="high"
+STUDENT_EFFORT="xhigh"
 RUN_PREFIX="${DSE_RUN_PREFIX:-}"
 REFRESH_SECONDS="2"
 DRY_RUN=0
@@ -25,7 +26,9 @@ usage() {
 Usage: run_reviewdse_demo.sh [options]
 
 Launch one real ReviewDSE closed loop and render its observable state in a
-recording-friendly terminal dashboard.
+recording-friendly terminal dashboard.  It keeps the single-target paper
+protocol and reduces only the search depth from 10 iterations to 2; the model
+names are the currently available replacements for the historical deployment.
 
 Options:
   --case ID                       Target. Default: ariane133_nangate45.
@@ -33,10 +36,11 @@ Options:
   --iterations N                  Teacher/Student iterations. Default: 2.
   --threads N                     OpenROAD threads per evaluation. Default: 10.
   --flow-variant NAME             Prepared input variant. Default: paper9_place.
+  --start-kind KIND               Prepared source seed. Default: framework.
   --teacher-model NAME            Default: gpt-5.6-sol.
   --teacher-reasoning-effort E    Default: xhigh.
   --student-model NAME            Default: gpt-5.6-terra.
-  --student-reasoning-effort E    Default: high.
+  --student-reasoning-effort E    Default: xhigh.
   --run-prefix NAME               Stable output prefix. Default: timestamped.
   --refresh-seconds N             Dashboard refresh interval. Default: 2.
   --check-models-only             Probe Student then Teacher; do not start DSE.
@@ -52,6 +56,7 @@ while [[ $# -gt 0 ]]; do
     --iterations) ITERATIONS="$2"; shift 2 ;;
     --threads) THREAD_COUNT="$2"; shift 2 ;;
     --flow-variant) FLOW_VARIANT="$2"; shift 2 ;;
+    --start-kind) START_KIND="$2"; shift 2 ;;
     --teacher-model) TEACHER="$2"; shift 2 ;;
     --teacher-reasoning-effort) TEACHER_EFFORT="$2"; shift 2 ;;
     --student-model) STUDENT="$2"; shift 2 ;;
@@ -85,6 +90,7 @@ launch=(
   --iterations "${ITERATIONS}"
   --threads "${THREAD_COUNT}"
   --flow-variant "${FLOW_VARIANT}"
+  --start-kind "${START_KIND}"
   --teacher-model "${TEACHER}"
   --teacher-reasoning-effort "${TEACHER_EFFORT}"
   --student-model "${STUDENT}"
@@ -99,6 +105,7 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
   printf '  Teacher    : %s / %s\n' "${TEACHER}" "${TEACHER_EFFORT}"
   printf '  Students   : %s / %s\n' "${STUDENT}" "${STUDENT_EFFORT}"
   printf '  run prefix : %s\n\n' "${RUN_PREFIX}"
+  printf '  start seed : %s\n\n' "${START_KIND}"
   "${launch[@]}" --dry-run
   exit 0
 fi
