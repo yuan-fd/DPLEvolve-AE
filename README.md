@@ -5,6 +5,8 @@ mechanisms in OpenROAD detailed placement.
 
 [Paper link](https://arxiv.org/abs/2607.11294)
 
+[Demo Video (3.5 minutes)](https://github.com/yuan-fd/DPLEvolve-AE/releases/download/demo-video-v1/RiviewDSE-demo.mp4)
+
 <img src="images/reviewdse-workflow.png" width="100%">
 
 ## Code Structure
