@@ -1,3 +1,7 @@
 # Preserve exact author-commit source trees even when an upstream CMakeLists
 # intentionally contains a blank final line.
 artifacts/01-table4-qor/diagnostics/ariane-warmstart/programs/**/CMakeLists.txt whitespace=-blank-at-eof
+
+# Unified-diff context uses a literal leading space on otherwise blank lines.
+# Do not report those required patch markers as trailing whitespace.
+*.patch whitespace=-blank-at-eol
