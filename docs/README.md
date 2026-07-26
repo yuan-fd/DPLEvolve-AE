@@ -4,6 +4,7 @@ The root README is the execution guide. Use these documents only when a step
 needs additional detail:
 
 - `requirements.md`: reviewer host, software, storage, access, and writable-path checklist.
+- `artifact-submission-draft.md`: draft Artifact Abstract and paper appendix text.
 - `environment.md`: pinned tool revisions and environment details.
 - `reviewer-walkthrough.md`: clean-machine terminal and Web Demo walkthrough.
 - `expected-results.md`: generated fields and numerical acceptance rules.

@@ -50,7 +50,12 @@ if [[ "${REPRO_DRY_RUN}" -eq 0 ]]; then
 fi
 
 RUN_ID="ariane_diagnostic_$(date +%Y%m%d_%H%M%S)"
-RUN_ROOT="${REPRO_OUTPUT_ROOT}/${RUN_ID}"
+if [[ "${REPRO_DRY_RUN}" -eq 1 ]]; then
+  RUN_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/dplevolve-ariane-dry-run.XXXXXX")"
+  trap 'rm -rf "${RUN_ROOT}"' EXIT
+else
+  RUN_ROOT="${REPRO_OUTPUT_ROOT}/${RUN_ID}"
+fi
 MATRIX_ROOT="${RUN_ROOT}/matrices"
 MANIFEST="${RUN_ROOT}/runs.tsv"
 mkdir -p "${RUN_ROOT}"

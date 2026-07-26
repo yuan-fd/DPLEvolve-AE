@@ -1,6 +1,8 @@
 import csv
+import os
 import subprocess
 import sys
+import tempfile
 import unittest
 from collections import defaultdict
 from pathlib import Path
@@ -10,6 +12,31 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class ArianeDiagnosticTests(unittest.TestCase):
+    def test_dry_run_does_not_write_to_the_experiment_state_root(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            forbidden_state = Path(temp_dir) / "must-not-be-created"
+            env = os.environ.copy()
+            env["DPL_EVOLVE_STATE_ROOT"] = str(forbidden_state)
+            result = subprocess.run(
+                [
+                    "bash",
+                    str(ROOT / "scripts/reproduce/reproduce_ariane_diagnostic.sh"),
+                    "--dry-run",
+                    "--label",
+                    "guided_iter_01",
+                    "--threads",
+                    "2",
+                ],
+                cwd=ROOT,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=True,
+            )
+            self.assertIn("partial/dry diagnostic complete", result.stdout)
+            self.assertFalse(forbidden_state.exists())
+
     def test_six_sources_and_retained_group_means_are_verified(self):
         retained_root = ROOT / "artifacts/01-table4-qor/inputs/diagnostics"
         result = subprocess.run(
