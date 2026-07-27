@@ -47,7 +47,7 @@ Options:
   --student-model NAME  Student model. Default: gpt-5.4.
   --student-reasoning-effort E
                         Student effort: low, medium, high, or xhigh.
-  --dry-run             Print the exact launch configuration; no API/EDA work.
+  --dry-run             Inspect the configured launch without dispatching it.
 EOF
 }
 

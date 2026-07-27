@@ -32,7 +32,8 @@ The page is organized in two stages:
 
 Commands are serialized and their output is streamed into the reviewer terminal.
 The complete ReviewDSE search requires authenticated model/API access and the
-paper-scale token budget. Table 5 reports its known missing-input condition.
+paper-scale token budget. Table 5 first verifies its three retained program
+snapshots and then regenerates its placement inputs before the six role runs.
 
 The backend accepts predefined task names only. SSH credentials remain in server
 memory while tasks exist and are excluded from status and exported session data.

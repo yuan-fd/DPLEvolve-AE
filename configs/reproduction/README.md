@@ -17,7 +17,7 @@ by the fresh summarizers only to apply the documented numerical tolerances.
 
 `table6-replay.tsv` records the retained cut-row data identifiers, design names,
 macro LEF/Liberty dependencies, and 7200-second caps. `table5-sources.tsv`
-records the six paper commit IDs and their current missing recovery status.
-`table5-inputs.tsv` distinguishes the regenerable AES/JPEG inputs from the
-missing untracked SWERV `config_dense2.mk`; the standard SWERV config is not
-silently treated as equivalent.
+records how the six selected/reference roles reuse the three tracked LEGALM,
+Diamond, and Negotiation snapshots. `table5-inputs.tsv` records the local
+AES/JPEG/SWERV utilization overrides 70/90/60 and the pinned ORFS design
+configuration used to regenerate each input.

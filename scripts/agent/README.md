@@ -12,7 +12,7 @@ bash scripts/agent/run_artifact.sh --artifact search
 bash scripts/agent/run_artifact.sh --artifact ariane
 ```
 
-Use `--dry-run` to print the selected command. `search` prints launch plans and
-does not authorize model calls. `inspect_environment.sh` writes a machine JSON
-report under `$DPL_EVOLVE_STATE_ROOT/agent_runs/` after the pinned workspace is
-available.
+Use `--dry-run` to print the selected command. `search` inspects the configured
+launch plans but does not dispatch or replace the model-backed method.
+`inspect_environment.sh` writes a machine JSON report under
+`$DPL_EVOLVE_STATE_ROOT/agent_runs/` after the pinned workspace is available.

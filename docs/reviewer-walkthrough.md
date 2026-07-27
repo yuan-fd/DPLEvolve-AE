@@ -138,7 +138,8 @@ make plan-dse-paper
 make run-dse-small CASE=aes_nangate45 STUDENTS=1 ITERATIONS=1 THREADS=8
 ```
 
-The plan commands make no API calls. `run-dse-small` is a real, bounded
+The plan commands inspect the configured launch without dispatching it; they
+are not an alternative method path. `run-dse-small` is a real, bounded
 Teacher/Student source-edit, build, evaluate, and review loop and therefore
 requires model access.
 
@@ -148,16 +149,17 @@ Do not run the following unless the budget is explicitly authorized:
 make reproduce-paper-search ACKNOWLEDGE_LLM_COST=yes THREADS=10
 ```
 
-## 9. Expected Table 5 outcome
+## 9. Reproduce Table 5
 
 ```bash
 make check-table5-data
-make reproduce-table5
+make reproduce-table5 THREADS=10
 ```
 
-The current expected result is `BLOCKED`, with a list of the missing SWERV
-DENSE_2 configuration and six source trees. This is the only blocked reported
-table. The artifact does not substitute a standard config or archived values.
+The check verifies the complete manifest for the retained LEGALM, Diamond, and
+Negotiation snapshots. The replay regenerates the three inputs with Table-5-
+local utilization values 70/90/60, executes all six mapped roles, and writes
+`table5-fresh.tsv` under the timestamped Table 5 reproduction directory.
 
 ## 10. Preserve the evaluation record
 

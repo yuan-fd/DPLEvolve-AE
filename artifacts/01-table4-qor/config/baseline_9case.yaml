@@ -1,6 +1,7 @@
 # DPLEvolve Paper Experiment: Baseline Comparison
 # Reproduces the three canonical baseline lines on all 9 paper cases.
-# No LLM API required.
+# Fixed baseline inside the configured LLM-Agent artifact; this stage normally
+# issues no new model requests.
 
 experiment: baseline
 description: >

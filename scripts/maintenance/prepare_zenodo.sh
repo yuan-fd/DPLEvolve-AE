@@ -31,10 +31,15 @@ required_paths=(
   README.md
   CITATION.cff
   .zenodo.json
+  paper/artifact_evaluation.pdf
   configs/reproduction/paper-experiments.json
   artifacts/01-table4-qor/inputs/bo_paper
   artifacts/01-table4-qor/selected-programs/manifest.json
   artifacts/02-table5-composability/inputs/provenance.json
+  artifacts/02-table5-composability/programs/MANIFEST.sha256
+  artifacts/02-table5-composability/programs/legalm/dpl_evolve/CMakeLists.txt
+  artifacts/02-table5-composability/programs/diamond/dpl_evolve/CMakeLists.txt
+  artifacts/02-table5-composability/programs/negotiation/dpl_evolve/CMakeLists.txt
   artifacts/03-table6-cutrow/inputs/provenance.json
   tests/toolchain/aes-smoke/expected/ae_reproduction_lock.json
   src/dpl_evolve_agent
@@ -78,6 +83,7 @@ echo " DPLEvolve AE - Zenodo Archive Preparation"
 echo "============================================"
 echo ""
 echo "[1/5] Running repository and configuration gates..."
+make -C "${AE_ROOT}" check-table5-data
 make -C "${AE_ROOT}" test
 make -C "${AE_ROOT}" validate-configs
 
@@ -154,13 +160,14 @@ nine-case default, BO, selected-source replay, and cost-gated DSE commands.
 - `QUICKSTART.md`: detailed clean-machine instructions
 - `MANIFEST.sha256`: archive file-integrity manifest
 
-## Known Limitation
+## Paper Data
 
 Table 4 ODBs can be regenerated, but only AES Nangate45 currently has an
 archived input checksum. Table 6 is replayable after `make fetch-table6-data`.
-Table 5 is incomplete: the untracked SWERV DENSE_2 input config and six exact
-candidate source trees were not retained, so its replay command reports
-`BLOCKED`. See `docs/paper-data-layout.md`.
+Table 5 is runnable from three checksummed source snapshots in the archive; its
+input generator applies local AES/JPEG/SWERV utilization values 70/90/60. Run
+`make check-table5-data` before `make reproduce-table5 THREADS=10`. See
+`docs/paper-data-layout.md`.
 
 All versions are pinned in `DPLEvolve-AE/provenance/source-commits.json`.
 ZENODOEOF
@@ -179,10 +186,15 @@ LISTING="${STAGING}/archive-list.txt"
 tar -tzf "${ARCHIVE_PATH}" > "${LISTING}"
 for required in \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/README.md" \
+  "${ARCHIVE_ROOT}/DPLEvolve-AE/paper/artifact_evaluation.pdf" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/configs/reproduction/paper-experiments.json" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/01-table4-qor/inputs/bo_paper/aes_asap7.trials.tsv" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/01-table4-qor/selected-programs/manifest.json" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/02-table5-composability/inputs/counterexamples.tsv" \
+  "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/02-table5-composability/programs/MANIFEST.sha256" \
+  "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/02-table5-composability/programs/legalm/dpl_evolve/CMakeLists.txt" \
+  "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/02-table5-composability/programs/diamond/dpl_evolve/CMakeLists.txt" \
+  "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/02-table5-composability/programs/negotiation/dpl_evolve/CMakeLists.txt" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/artifacts/03-table6-cutrow/inputs/reviewdse.tsv" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/tests/toolchain/aes-smoke/expected/ae_reproduction_lock.json" \
   "${ARCHIVE_ROOT}/DPLEvolve-AE/src/dpl_evolve_agent/baseline/run_baseline.sh" \

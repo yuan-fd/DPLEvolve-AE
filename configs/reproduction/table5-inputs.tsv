@@ -1,4 +1,4 @@
 row_id	flow_variant	design_config	core_utilization	recovery_status	notes
-aes_dense_n45	DENSE	designs/nangate45/aes/config.mk	default	regenerable	Tracked fixed-floorplan configuration
-jpeg_dense_n45	DENSE	designs/nangate45/jpeg/config.mk	90	regenerable	Tracked config plus recorded CORE_UTILIZATION override
-swerv_dense_n45	DENSE_2	designs/nangate45/swerv_wrapper/config_dense2.mk	default	missing	Untracked paper-time dense2 config was deleted; standard config.mk is not an exact substitute
+aes_dense_n45	DENSE	designs/nangate45/aes/config.mk	70	available	Table-5-local CORE_UTILIZATION override
+jpeg_dense_n45	DENSE	designs/nangate45/jpeg/config.mk	90	available	Table-5-local CORE_UTILIZATION override
+swerv_dense_n45	DENSE_2	designs/nangate45/swerv_wrapper/config.mk	60	available	Table-5-local CORE_UTILIZATION override

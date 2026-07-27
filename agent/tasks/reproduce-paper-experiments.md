@@ -7,7 +7,7 @@ make doctor
 bash scripts/agent/run_artifact.sh --artifact prepare
 ```
 
-## EDA results without model calls
+## Fixed-result validation in the configured Agent artifact
 
 ```bash
 bash scripts/agent/run_artifact.sh --artifact table4
@@ -17,13 +17,15 @@ bash scripts/agent/run_artifact.sh --artifact ariane
 bash scripts/agent/run_artifact.sh --artifact figures
 ```
 
-Table 5 is expected to return `BLOCKED` until the exact missing sources are
-recovered. Continue the independent Table 6, Ariane, and figure stages.
+Table 5 verifies the LEGALM, Diamond, and Negotiation snapshots before it
+regenerates the local 70/90/60-utilization inputs and executes six mapped roles.
+These fixed-result stages may not issue new model requests, but they validate
+retained programs and are not a substitute for the Teacher--Student method.
 
 ## ReviewDSE search
 
 ```bash
-# No model calls
+# Inspect the configured launch only; this is not an alternative method path.
 bash scripts/agent/run_artifact.sh --artifact search
 
 # Bounded live search; requires user-authorized model/API use

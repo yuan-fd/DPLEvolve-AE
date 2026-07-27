@@ -69,15 +69,15 @@ help:
 	@echo "  make replay-reviewdse TRACK=ghr   Replay nine runtime-aware programs"
 	@echo "  make reproduce-table4       Default + BO + both ReviewDSE replay tracks"
 	@echo "  make summarize-table4       Build fresh Table 4 TSV from generated metrics"
-	@echo "  make prepare-table5-inputs  Rebuild Table 5 inputs after DENSE_2 config recovery"
-	@echo "  make reproduce-table5       Prepare inputs + replay six Table 5 sources"
+	@echo "  make prepare-table5-inputs  Rebuild Table 5 inputs with local 70/90/60 utilization"
+	@echo "  make reproduce-table5       Prepare inputs + replay three retained programs"
 	@echo "  make reproduce-table6       Replay 27 runs from exact cut-row DEF/V/SDC"
 	@echo "  make reproduce-ariane-diagnostic  Replay six exact Ariane diagnostic sources"
 	@echo "  make reproduce-figures      Redraw Figures 4/5 from retained author-run logs"
 	@echo "  make reproduce-figures FIGURE_SOURCE=fresh DSE_RUN_PREFIX=NAME"
 	@echo "                              Redraw Figures 4/5 from a fresh full DSE run"
-	@echo "  make reproduce-available-results  All runnable non-LLM results (Table 5 excluded)"
-	@echo "  make reproduce-paper-results  All non-LLM paper result experiments"
+	@echo "  make reproduce-available-results  Fixed-result validation in the configured Agent artifact"
+	@echo "  make reproduce-paper-results  Complete fixed-result paper validation"
 	@echo ""
 	@echo "3. Exercise or rerun the LLM search itself:"
 	@echo "  make plan-level1             Print the three-case Level 1 calibration"
@@ -85,8 +85,8 @@ help:
 	@echo "  make run-dse-small CASE=aes_nangate45  Real 1-Student/1-iteration run"
 	@echo "  make check-demo-models       Probe the exact demo models; Student first"
 	@echo "  make demo-reviewdse          Live Ariane133 terminal demo (4 Students x 2 iterations)"
-	@echo "  make plan-demo-reviewdse     Print the demo launch without API/EDA work"
-	@echo "  make plan-dse-paper         Print exact 9-case paper launch; no API calls"
+	@echo "  make plan-demo-reviewdse     Inspect the configured demo launch"
+	@echo "  make plan-dse-paper         Inspect the configured 9-case paper launch"
 	@echo "  make run-dse-paper ACKNOWLEDGE_LLM_COST=yes"
 	@echo "  make summarize-dse-paper DSE_RUN_PREFIX=NAME"
 	@echo "  make reproduce-paper-search ACKNOWLEDGE_LLM_COST=yes"
@@ -94,7 +94,7 @@ help:
 	@echo "Supporting checks (not paper reproduction):"
 	@echo "  make fetch-table6-data      Download and verify retained Table 6 data"
 	@echo "  make check-table6-data      Verify Table 6 DEF/V/SDC/source package"
-	@echo "  make check-table5-data      Report Table 5 source/config recovery status"
+	@echo "  make check-table5-data      Verify three checksummed Table 5 snapshots"
 	@echo "  make paper-data-check       Run both external-data status checks"
 	@echo "  make toolchain-smoke        Optional AES toolchain exercise"
 	@echo "  make test                   Repository regression tests"
@@ -208,16 +208,16 @@ reproduce-ariane-diagnostic:
 	 ARIANE_RUNTIME_RATIO_TOLERANCE="$(ARIANE_RUNTIME_RATIO_TOLERANCE)" \
 	 bash "$(REPRO_SCRIPTS)/reproduce_ariane_diagnostic.sh" --threads "$(THREADS)"
 
-# All currently runnable no-LLM result paths. Table 5 is deliberately omitted
-# here and remains an explicit recovery gate in reproduce-paper-results.
 reproduce-available-results: paper-data-check-available
 	@$(MAKE) reproduce-table4 THREADS="$(THREADS)"
+	@$(MAKE) reproduce-table5 THREADS="$(THREADS)"
 	@$(MAKE) reproduce-table6 THREADS="$(THREADS)"
 	@$(MAKE) reproduce-ariane-diagnostic THREADS="$(THREADS)"
 	@$(MAKE) reproduce-figures FIGURE_SOURCE=retained
 
-# Complete no-LLM result reproduction. Check external data before spending the
-# 3,600-run BO budget so an incomplete package fails early.
+# Complete fixed-result validation. Check external data before spending the
+# 3,600-run BO budget so an incomplete package fails early. This replay is not
+# an alternative to the configured Teacher--Student method.
 reproduce-paper-results: paper-data-check
 	@$(MAKE) reproduce-table4 THREADS="$(THREADS)"
 	@$(MAKE) reproduce-table5 THREADS="$(THREADS)"
@@ -244,12 +244,7 @@ check-table5-data:
 	@bash "$(REPRO_SCRIPTS)/reproduce_table5.sh" --check-paper-data
 
 table5-status:
-	@rc=0; bash "$(REPRO_SCRIPTS)/reproduce_table5.sh" --check-paper-data || rc=$$?; \
-	 if [[ $$rc -eq 3 ]]; then \
-	   echo "[NOTICE] Table 5 reproduction is unavailable; see docs/table5-status.md."; \
-	   exit 0; \
-	 fi; \
-	 exit $$rc
+	@bash "$(REPRO_SCRIPTS)/reproduce_table5.sh" --check-paper-data
 
 check-table6-data:
 	@bash "$(REPRO_SCRIPTS)/reproduce_table6.sh" --check-paper-data

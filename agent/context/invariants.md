@@ -10,8 +10,9 @@
    stay in `agent/` and `scripts/agent/`.
 5. Missing hashes affect provenance only; legality and fresh numerical
    evaluation remain mandatory.
-6. Missing Table 5 assets produce `BLOCKED`; no substitute config, source, or
-   retained number is accepted.
+6. Table 5 accepts only its three checksummed program snapshots and locally
+   regenerated 70/90/60-utilization inputs; no substitute source, global config
+   edit, or retained number is accepted.
 7. Paid model calls require explicit user authorization and the cost gate.
 8. Failed execution, legality, or numerical checks return nonzero and retain
    their generated logs.

@@ -23,22 +23,21 @@ make zenodo-audit
 make zenodo
 ```
 
-`make zenodo` refuses missing author metadata or an unavailable/mismatched
-Table 6 data package. `make zenodo-audit` permits those only so maintainers can
-inspect archive composition. The missing Table 5 SWERV config and six sources
-remain a required prominent limitation; the release must not describe Table 5
-as reproduced.
+`make zenodo` refuses missing author metadata, a damaged Table 5 snapshot
+manifest, or an unavailable/mismatched Table 6 data package. `make
+zenodo-audit` permits only the Table 6-data condition so maintainers can inspect
+archive composition.
 
 The packaging script runs repository and configuration tests, includes the
 Table 4 BO campaign records, 18 frozen programs, framework, execution scripts,
-documentation, and provenance, then creates `MANIFEST.sha256` and checks
-excluded state. The paper PDF is distributed by the publisher and is not
-duplicated in the repository.
+documentation, provenance, and the paper PDF with its Artifact Appendix, then
+creates `MANIFEST.sha256` and checks excluded state. The tracked submission copy
+is `paper/artifact_evaluation.pdf`; its SHA-256 is recorded in
+`paper/README.md`.
 
-A formal release must pass `make check-table6-data` and publish the exact
-Table 6 package described in `docs/paper-data-layout.md`. Because Table 5's
-SWERV input config and six source trees are unrecovered, even the formal release
-is not a complete Table 5 reproduction package.
+A formal release must pass `make check-table5-data` and `make
+check-table6-data`, include the three Table 5 source snapshots, and publish the
+exact Table 6 package described in `docs/paper-data-layout.md`.
 
 Before upload:
 
@@ -48,7 +47,10 @@ Before upload:
 - run the one-case fresh path through `make validate-evaluator` on the Rocky
   Linux reference environment;
 - verify the separately distributed Table 6 archive, checksum, and public URL;
-- confirm every public page discloses the unrecovered Table 5 config/source gap;
+- verify `paper/artifact_evaluation.pdf` is the submitted camera-ready copy and
+  contains the final Zenodo DOI;
+- verify the Table 5 program manifest and all three snapshot `CMakeLists.txt`
+  files occur in the archive listing;
 - confirm every paper experiment directory contains an executable
   `reproduce.sh`, `inputs/`, `expected/`, and `output/` contract;
 - confirm `make reviewer-prepare`, `make reviewer-aes-result`, and

@@ -26,10 +26,9 @@ Fresh candidates are accepted from newly generated OpenROAD evidence: complete
 stage-wise HPWL, strict placement legality, displacement, runtime,
 mechanism-liveness signals, and source/binary/metric consistency. Numerical
 agreement is evaluated within documented cross-host tolerances rather than by
-requiring bit-identical binaries. The exact Table 5 reproduction is the one
-known limitation: its untracked SWERV `DENSE_2` configuration and six generated
-source trees were not retained, and the corresponding command reports this
-experiment as blocked instead of substituting archived values.
+requiring bit-identical binaries. Table 5 uses three checksummed legalizer
+snapshots and regenerates its AES, JPEG, and SWERV inputs with recorded local
+utilization values 70, 90, and 60.
 
 The tested platform is Rocky Linux 8.10 x86-64. No GPU or commercial EDA
 license is required. The source release is under the BSD 3-Clause License.
@@ -47,11 +46,10 @@ review access is available at <https://github.com/yuan-fd/DPLEvolve-AE>.
 - Release tag / commit: **[final release tag and commit SHA]**.
 - License: BSD 3-Clause.
 
-The artifact supports fresh execution of Table 4, Table 6, Figures 4 and 5,
-the ReviewDSE search process, and the Ariane mechanism diagnostic. Table 5 is
-explicitly blocked by missing author-time source assets. Supporting repository
-tests and the AES toolchain check diagnose installation but are not substitutes
-for the paper experiments.
+The artifact supports fresh execution of Tables 4--6, Figures 4 and 5, the
+ReviewDSE search process, and the Ariane mechanism diagnostic. Supporting
+repository tests and the AES toolchain check diagnose installation but are not
+substitutes for the paper experiments.
 
 ### B. Hardware and software requirements
 
@@ -114,13 +112,15 @@ windows are 0.06 percentage point for the reported mean HPWL differences and
 #### D.2 Table 5: stage composability
 
 ```bash
-make table5-status
+make check-table5-data
+make reproduce-table5 THREADS=10
 ```
 
-The expected outcome is `BLOCKED`. The command lists the missing SWERV
-`config_dense2.mk` and six complete selected/reference source trees. The
-released artifact does not claim fresh Table 5 reproduction and never treats
-retained paper values as observed results.
+The first command verifies the LEGALM, Diamond, and Negotiation snapshots. The
+runner regenerates AES/JPEG/SWERV inputs with Table-5-local utilization values
+70/90/60, executes the mappings LEGALM/Diamond, Negotiation/Negotiation, and
+Diamond/Negotiation, and writes a fresh `table5-fresh.tsv`. Retained paper
+values remain comparison targets and are never treated as observations.
 
 #### D.3 Table 6: hard cut-row legality
 
@@ -137,7 +137,7 @@ contains 27 fresh rows under
 #### D.4 ReviewDSE search
 
 ```bash
-# Inspect the exact launch plan without model calls.
+# Inspect the configured launch; this is not an alternative method path.
 bash artifacts/05-reviewdse-search/reproduce.sh --plan
 
 # Execute one bounded but real Teacher/Student loop.
@@ -188,11 +188,11 @@ implement a separate evaluation path.
 
 ### F. Reproducibility limitations
 
-1. Table 5 is blocked by the missing SWERV `DENSE_2` configuration and six
-   source trees.
-2. The original Level 1 breadth and frozen packet were not retained; the public
+1. The original Level 1 breadth and frozen packet were not retained; the public
    Level 1 profile is a disclosed reconstruction.
-3. The full LLM search is stochastic and expensive. Selected-program replay,
-   baselines, Table 6, figures, and diagnostics do not require model calls.
-4. Cross-host numerical reproduction, not bit-for-bit replay, is claimed where
+2. The full LLM search is stochastic and expensive. Teacher and Student
+   configuration remains mandatory; selected-program, baseline, Table 5/6,
+   figure, and diagnostic replays may validate fixed results without issuing
+   new model requests, but do not replace the model-backed method.
+3. Cross-host numerical reproduction, not bit-for-bit replay, is claimed where
    paper-time input hashes or linked binaries are unavailable.

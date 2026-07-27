@@ -16,8 +16,9 @@ Usage: run_artifact.sh --artifact ID [--dry-run]
 
 IDs: prepare, table4, table5, table6, figures, search, ariane, smoke
 
-Each ID invokes the experiment's fresh reproduce.sh wrapper. Search prints the
-Level 1/2 plans and never starts paid model calls through this dispatcher.
+Each ID invokes the experiment's fresh reproduce.sh wrapper. Search inspects
+the configured Level 1/2 plans without dispatching them; it is not an
+alternative method path.
 Smoke checks for an existing diagnostic result unless --run-smoke is supplied.
 EOF
 }

@@ -73,14 +73,9 @@ if bash scripts/agent/run_artifact.sh --artifact unsupported --dry-run >/dev/nul
   exit 1
 fi
 
-blocked_state="$(mktemp -d)"
-if DPL_EVOLVE_STATE_ROOT="${blocked_state}" \
-   bash scripts/agent/run_artifact.sh --artifact table5 >/dev/null 2>&1; then
-  echo '[FAIL] Missing Table 5 sources were not reported as blocked.' >&2
-  exit 1
-else
-  [[ "$?" -eq 3 ]] || { echo '[FAIL] Table 5 blocked exit code is not 3.' >&2; exit 1; }
-fi
-grep -F '"status": "BLOCKED"' "${blocked_state}"/agent_runs/table5_*.json >/dev/null
+table5_dry_run="$(bash scripts/reproduce/reproduce_table5.sh --dry-run)"
+grep -F 'programs/legalm/dpl_evolve' <<<"${table5_dry_run}" >/dev/null
+grep -F 'programs/diamond/dpl_evolve' <<<"${table5_dry_run}" >/dev/null
+grep -F 'programs/negotiation/dpl_evolve' <<<"${table5_dry_run}" >/dev/null
 
 echo '[PASS] Fresh experiment wrappers and machine dispatcher work as expected.'

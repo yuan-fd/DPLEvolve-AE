@@ -12,13 +12,15 @@ It can:
 - regenerate nine Table 4 placement inputs;
 - rerun OpenROAD default and 400-trial BO baselines;
 - rebuild and replay 18 selected ReviewDSE source programs;
+- rebuild and compare the three retained Table 5 legalizers;
 - run a bounded or complete Teacher/Student search;
 - execute all 27 Table 6 cut-row jobs;
 - regenerate Figures 4/5 from retained or fresh campaign products; and
 - replay the six-source Ariane diagnostic.
 
-Table 5 is the only blocked reported table. Its SWERV DENSE_2 configuration and
-six source trees were not retained.
+For Table 5, the six roles reuse checksummed LEGALM, Diamond, and Negotiation
+snapshots; its input script applies only the recorded 70/90/60 utilization
+overrides.
 
 ## Reference platform
 
@@ -54,6 +56,8 @@ make replay-reviewdse CASE=aes_nangate45 TRACK=hpwl THREADS=8
 
 ```bash
 make reproduce-table4 THREADS=10
+make check-table5-data
+make reproduce-table5 THREADS=10
 make fetch-table6-data
 make check-table6-data
 make reproduce-table6 THREADS=10
@@ -67,13 +71,16 @@ The current aggregate is:
 make reproduce-available-results THREADS=10
 ```
 
-It excludes Table 5 explicitly.
+It includes Table 5 and writes each table to its own fresh summary.
 
 ## Search-cost boundary
 
-No LLM is needed for fresh baseline, BO, selected-source, Table 6, figure, or
-diagnostic runs. `make run-dse-small` exercises the real method with bounded
-model use. The complete nine-case search is runnable but requires explicit
+The artifact requires configured Teacher and Student Agents. Fixed baseline,
+BO, selected-source, Table 5/6, figure, and diagnostic replays may not issue new
+model requests, but they validate retained results and are not an alternative
+ReviewDSE path. `make check-demo-models` verifies both configured Agents, and
+`make run-dse-small` exercises the live method with bounded model use. The
+complete nine-case search is runnable but requires explicit
 `ACKNOWLEDGE_LLM_COST=yes`; a reviewer is not expected to fund it.
 
 ## Reproducibility interpretation

@@ -33,13 +33,14 @@ bash scripts/agent/run_artifact.sh --artifact ariane
 bash scripts/agent/run_artifact.sh --artifact search
 ```
 
-Table 5 returns `BLOCKED` until the assets in `docs/table5-status.md` are
-recovered. A blocked Table 5 run does not invalidate independently completed
-experiments.
+Table 5 verifies the three checksummed program snapshots, regenerates the
+70/90/60-utilization inputs used only by that experiment, and executes all six
+selected/reference roles. See `docs/table5-status.md` for the exact mapping.
 
-The search dispatcher prints the exact plan. A live or full model-backed search
-must use the cost-gated commands in `tasks/reproduce-paper-experiments.md` after
-the user authorizes API/model use.
+The search dispatcher prints the exact configured plan. This inspection is not
+an alternative method path: Teacher and Student configuration remains required.
+A live or full model-backed search must use the cost-gated commands in
+`tasks/reproduce-paper-experiments.md` after the user authorizes API/model use.
 
 ## Machine outputs
 

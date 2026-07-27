@@ -458,8 +458,9 @@ and native-baseline gate documented in `docs/AE_ENVIRONMENT_AND_SMOKE.md`:
 ./scripts/ae/run_aes_smoke.sh --check-only
 ```
 
-This gate performs no model calls. A fresh EDA run is an explicit
-`run_aes_smoke.sh --run` operation.
+The artifact still requires configured Teacher and Student Agents. This gate
+only checks the pinned environment; a fresh EDA run is an explicit
+`run_aes_smoke.sh --run` operation, and neither step replaces ReviewDSE.
 
 ## 9. Run DSE Replay Across A Plan
 

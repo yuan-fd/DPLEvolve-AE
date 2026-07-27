@@ -1,27 +1,30 @@
 # Table 5 Source Status
 
-The Table 5 reproduction runner is implemented, but the exact experiment
-cannot currently start because the following paper-time assets were not
-retained:
+Table 5 is reproduced from three source snapshots tracked in the artifact:
 
-- the untracked SWERV Nangate45 `config_dense2.mk` configuration;
-- three selected legalizer source trees; and
-- three matching reference source trees.
+| Row | Selected | Reference | Utilization |
+|---|---|---|---:|
+| AES dense Nangate45 | LEGALM | Diamond | 70 |
+| JPEG dense Nangate45 | Negotiation | Negotiation | 90 |
+| SWERV dense Nangate45 | Diamond | Negotiation | 60 |
 
-AES and JPEG dense inputs can be regenerated. They are insufficient for the
-complete three-row table because the SWERV configuration and all six source
-trees are part of the experiment contract.
+The six roles intentionally reuse these implementations; duplicate per-row
+source directories are unnecessary. Every regular file below
+`artifacts/02-table5-composability/programs/` is enumerated by
+`programs/MANIFEST.sha256` and is archived by Git and Zenodo.
 
 ```bash
 make check-table5-data
 make reproduce-table5 THREADS=10
 ```
 
-Until those assets are recovered, both commands report `BLOCKED`. The runner
-does not replace the missing configuration with a standard SWERV setup and
-does not use retained Table 5 numbers as fresh results.
+The first command verifies all three snapshots. The second regenerates only
+the Table 5 placement inputs with `CORE_UTILIZATION=70/90/60`, builds the mapped
+programs, and writes `table5-fresh.tsv` below the timestamped reproduction
+directory. Retained paper values are comparison targets, never fresh observed
+results.
 
-The required rows and source identifiers are recorded in:
+The rows, source mapping, and input settings are recorded in:
 
 ```text
 configs/reproduction/table5-inputs.tsv

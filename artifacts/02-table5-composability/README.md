@@ -12,17 +12,21 @@ make reproduce-table5 THREADS=10
 bash artifacts/02-table5-composability/reproduce.sh --threads 10
 ```
 
-The runner is implemented to regenerate inputs, build six selected/reference
-source trees, execute legalization + DPO + final mirroring, and derive the
-three counterexamples from new metrics.
-
-Current status is **BLOCKED**. SWERV's untracked `config_dense2.mk` and all six
-complete source trees were not retained. The command stops before EDA and does
-not substitute the standard SWERV config or archived values.
+The runner regenerates only the Table 5 inputs, using `CORE_UTILIZATION=70`
+for AES, 90 for JPEG, and 60 for SWERV. It maps the six roles to three retained,
+checksummed implementations: LEGALM/ Diamond for AES, Negotiation/Negotiation
+for JPEG, and Diamond/Negotiation for SWERV. It then executes legalization,
+DPO, and final mirroring and derives the three counterexamples from new
+`metrics.json` files. The retained TSV is not copied into fresh results.
 
 ## Directory contents
 
 - `inputs/counterexamples.tsv`: retained paper values for result interpretation.
 - `inputs/provenance.json`: retained-record origin.
+- `programs/{legalm,diamond,negotiation}/dpl_evolve/`: source snapshots.
+- `programs/MANIFEST.sha256`: complete snapshot integrity manifest.
 - `expected/table5.json`: paper comparison target.
 - `output/`: output-contract placeholder; fresh EDA products use the state root.
+
+The fresh summary is written to
+`../dpl_evolve_state/paper_reproduction/table5_*/table5-fresh.tsv`.

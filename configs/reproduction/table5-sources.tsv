@@ -1,7 +1,7 @@
-row_id	role	label	paper_commit	recovery_status
-aes_dense_n45	selected	LEGALM i18	184646b0399533749c100ee03f32468682ab64e0	missing
-aes_dense_n45	reference	Diamond i12	b6c68f7	missing
-jpeg_dense_n45	selected	Negotiation i8	2a37267	missing
-jpeg_dense_n45	reference	Negotiation i32	1d7f390	missing
-swerv_dense_n45	selected	Diamond i2	d061b4411c5455f2499e52af1dad62ad3fc6498a	missing
-swerv_dense_n45	reference	Negotiation i3	e4bed41	missing
+row_id	role	label	snapshot_id	recovery_status
+aes_dense_n45	selected	LEGALM	legalm	available
+aes_dense_n45	reference	Diamond	diamond	available
+jpeg_dense_n45	selected	Negotiation	negotiation	available
+jpeg_dense_n45	reference	Negotiation	negotiation	available
+swerv_dense_n45	selected	Diamond	diamond	available
+swerv_dense_n45	reference	Negotiation	negotiation	available

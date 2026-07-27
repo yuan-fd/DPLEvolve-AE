@@ -15,8 +15,9 @@ usage() {
 Usage: replay_selected.sh --track hpwl|ghr [--case ID ...] [--flow-variant NAME] [--threads N] [--dry-run]
 
 Build each frozen Table 4 ReviewDSE source tree and run the protected complete
-detailed-placement trajectory on its own target ODB. No LLM API is used. This
-is fresh EDA replay, not the archived-number checker.
+detailed-placement trajectory on its own target ODB. The artifact still
+requires configured Teacher and Student Agents; this fixed replay normally
+issues no new model request and is not an alternative ReviewDSE path.
 EOF
 }
 

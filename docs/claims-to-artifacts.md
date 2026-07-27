@@ -10,7 +10,7 @@ observed fresh results.
 | Table 4 BO-DSE | `make reproduce-bo` | 400 trials/case and `best.json` | Runnable |
 | Table 4 ReviewDSE-HPWL | `make replay-reviewdse TRACK=hpwl` | nine rebuilt source runs | Runnable |
 | Table 4 ReviewDSE-GHR | `make replay-reviewdse TRACK=ghr` | nine runtime-aware source runs | Runnable |
-| Table 5 counterexamples | `make reproduce-table5` | three selected/reference comparisons | **BLOCKED** |
+| Table 5 counterexamples | `make reproduce-table5` | three selected/reference comparisons | Runnable |
 | Table 6 cut-row repair | `make reproduce-table6` | 27 status/legality/HPWL/runtime rows | Runnable after data fetch |
 | Figure 4 | `make reproduce-figure4` | best-so-far TSV, SVG, missing-point JSON | Runnable |
 | Figure 5 | `make reproduce-figure5` | runtime-quality TSV and SVG | Runnable |
@@ -47,11 +47,10 @@ identified by `DSE_RUN_PREFIX`.
 
 ## Table 5
 
-The implemented runner regenerates dense inputs, builds selected/reference
-source trees, and compares post-legalization `H_lg` with final `H_f`. It is
-currently blocked because SWERV's `config_dense2.mk` and all six complete
-source trees are absent. Archived counterexample values are never used as
-fresh observations.
+The runner regenerates dense inputs with Table-5-local utilization values
+70/90/60, maps the six roles to the retained LEGALM, Diamond, and Negotiation
+snapshots, and compares post-legalization `H_lg` with final `H_f`. Archived
+counterexample values are never used as fresh observations.
 
 ## Table 6
 

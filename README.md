@@ -5,6 +5,8 @@ mechanisms in OpenROAD detailed placement.
 
 [Paper link](https://arxiv.org/abs/2607.11294)
 
+[Paper with Artifact Appendix](paper/artifact_evaluation.pdf)
+
 [Demo Video (1 minute 49 seconds)](https://github.com/yuan-fd/DPLEvolve-AE/releases/download/demo-video-v1/RiviewDSE-demo.mp4)
 
 <img src="images/reviewdse-workflow.png" width="100%">
@@ -34,6 +36,7 @@ DPLEvolve-AE/
 │   ├── shared/                        # Shared runtime utilities
 │   └── maintenance/                   # Release and provenance scripts
 ├── configs/reproduction/              # Paper experiment configurations
+├── paper/artifact_evaluation.pdf       # Paper PDF with the Artifact Appendix
 ├── paper-data/                        # Downloaded Table 6 inputs
 ├── src/dpl_evolve_agent/              # ReviewDSE implementation
 ├── docs/                              # Human-facing detailed documentation
@@ -112,15 +115,19 @@ Result:
 
 ### Table 5: Stage Composability
 
-The exact SWERV `DENSE_2` configuration and six generated source trees were
-not retained, so this experiment is not presented as runnable. Check the
-released inputs and recovery status with:
+The artifact retains one checksummed source snapshot for each of LEGALM,
+Diamond, and Negotiation. The Table 5 runner maps the six selected/reference
+roles to those three implementations and regenerates the AES, JPEG, and SWERV
+inputs with local `CORE_UTILIZATION` values 70, 90, and 60, respectively.
 
 ```bash
-make table5-status
+make check-table5-data
+make reproduce-table5 THREADS=10
 ```
 
-See [docs/table5-status.md](docs/table5-status.md).
+Fresh comparisons are written to
+`../dpl_evolve_state/paper_reproduction/table5_*/table5-fresh.tsv`. See
+[docs/table5-status.md](docs/table5-status.md) for the exact role mapping.
 
 ### Table 6: Hard Cut-Row Legality
 
@@ -138,7 +145,7 @@ Result:
 ### ReviewDSE Search
 
 ```bash
-# Print the Level 1 and nine-case search plans without launching model calls
+# Inspect the configured Level 1 and nine-case search plans
 bash artifacts/05-reviewdse-search/reproduce.sh --plan
 
 # Run one Teacher/Student iteration

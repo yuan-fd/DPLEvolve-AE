@@ -8,20 +8,25 @@ THREADS="${THREADS:-10}"
 CHECK_MODE=""
 SKIP_PREPARE=0
 ROWS=(aes_dense_n45 jpeg_dense_n45 swerv_dense_n45)
+TABLE5_ARTIFACT_ROOT="${AE_ROOT}/artifacts/02-table5-composability"
+TABLE5_PROGRAM_ROOT="${TABLE5_ARTIFACT_ROOT}/programs"
+LEGALM_PROGRAM="${TABLE5_ARTIFACT_ROOT}/programs/legalm/dpl_evolve"
+DIAMOND_PROGRAM="${TABLE5_ARTIFACT_ROOT}/programs/diamond/dpl_evolve"
+NEGOTIATION_PROGRAM="${TABLE5_ARTIFACT_ROOT}/programs/negotiation/dpl_evolve"
 
 usage() {
   cat <<'EOF'
 Usage: reproduce_table5.sh [options]
 
-Prepare the three deleted dense placement inputs, build the two exact
-candidate source commits for each Table 5 row, and run both candidates through
-the same downstream DPO/final flow.  The output is derived from new
-metrics.json files, not the archived Table 5 transcription.
+Prepare the three dense placement inputs, map each selected/reference role to
+one of the three retained program snapshots, and run both roles through the
+same downstream DPO/final flow. The output is derived from new metrics.json
+files, not the archived Table 5 transcription.
 
 Options:
   --threads N          Build/evaluation threads. Default: 10.
   --skip-prepare       Reuse existing DENSE/DENSE_2 ODBs.
-  --check-paper-data   Check six source trees + recovered DENSE_2 config.
+  --check-paper-data   Verify the three checksummed program snapshots.
   --check-inputs       Also check regenerated ORFS ODB/SDC inputs.
   --dry-run            Print commands without executing them.
 EOF
@@ -56,43 +61,38 @@ variant_for_row() {
   esac
 }
 
-missing=0
-if [[ ! -f "${PAPER_DATA_ROOT}/table5/MANIFEST.sha256" ]]; then
-  printf '[MISSING] %s\n' "${PAPER_DATA_ROOT}/table5/MANIFEST.sha256" >&2
-  missing=$((missing + 1))
-fi
-for row_id in "${ROWS[@]}"; do
-  for role in selected reference; do
-    path="${PAPER_DATA_ROOT}/table5/${row_id}/programs/${role}/dpl_evolve/CMakeLists.txt"
-    if [[ ! -f "${path}" ]]; then
-      printf '[MISSING] %s\n' "${path}" >&2
-      missing=$((missing + 1))
-    fi
-  done
-done
-swerv_config="${PAPER_DATA_ROOT}/table5/swerv_dense_n45/input/config_dense2.mk"
-if [[ ! -f "${swerv_config}" ]]; then
-  printf '[MISSING] %s\n' "${swerv_config}" >&2
-  missing=$((missing + 1))
-fi
-if [[ "${missing}" -eq 0 ]]; then
-  if ! "${DPL_EVOLVE_PYTHON}" "${SCRIPT_DIR}/verify_data_manifest.py" \
-    --root "${PAPER_DATA_ROOT}" --scope table5; then
-    echo "[BLOCKED] Table 5 source-package checksum verification failed" >&2
-    exit 3
-  fi
-fi
-if [[ "${missing}" -gt 0 ]]; then
-  echo "[BLOCKED] Table 5 recovery is incomplete: six source commits and the untracked SWERV config_dense2.mk were not retained." >&2
-  echo "          See docs/table5-status.md and configs/reproduction/table5-{sources,inputs}.tsv." >&2
+program_for_row_role() {
+  case "$1:$2" in
+    aes_dense_n45:selected) echo legalm ;;
+    aes_dense_n45:reference) echo diamond ;;
+    jpeg_dense_n45:selected|jpeg_dense_n45:reference) echo negotiation ;;
+    swerv_dense_n45:selected) echo diamond ;;
+    swerv_dense_n45:reference) echo negotiation ;;
+    *) repro_die "unknown Table 5 row/role: $1/$2" ;;
+  esac
+}
+
+program_path() {
+  case "$1" in
+    legalm) echo "${LEGALM_PROGRAM}" ;;
+    diamond) echo "${DIAMOND_PROGRAM}" ;;
+    negotiation) echo "${NEGOTIATION_PROGRAM}" ;;
+    *) repro_die "unknown Table 5 program snapshot: $1" ;;
+  esac
+}
+
+if ! "${DPL_EVOLVE_PYTHON}" "${SCRIPT_DIR}/verify_data_manifest.py" \
+  --root "${TABLE5_ARTIFACT_ROOT}" --scope programs; then
+  echo "[BLOCKED] Table 5 program-snapshot checksum verification failed" >&2
   exit 3
 fi
 if [[ "${CHECK_MODE}" == paper-data ]]; then
-  echo "[PASS] all six Table 5 source trees and the SWERV DENSE_2 config are present and checksummed"
+  echo "[PASS] Table 5 has three available checksummed snapshots under ${TABLE5_PROGRAM_ROOT}"
   exit 0
 fi
 
 if [[ "${CHECK_MODE}" == inputs ]]; then
+  missing=0
   for row_id in "${ROWS[@]}"; do
     case_id="$(case_for_row "${row_id}")"
     flow_variant="$(variant_for_row "${row_id}")"
@@ -138,13 +138,15 @@ for row_id in "${ROWS[@]}"; do
   fi
 
   for role in selected reference; do
+    program="$(program_for_row_role "${row_id}" "${role}")"
+    candidate_src="$(program_path "${program}")"
     matrix_id="${row_id}_${role}"
     output_root="${RUN_ROOT}/matrices"
     results="${output_root}/${matrix_id}/results.tsv"
     repro_run "${DPL_EVOLVE_AGENT_ROOT}/scripts/matrix/run_candidate_matrix.sh" \
       --matrix-id "${matrix_id}" \
       --output-root "${output_root}" \
-      --candidate-src "${PAPER_DATA_ROOT}/table5/${row_id}/programs/${role}/dpl_evolve" \
+      --candidate-src "${candidate_src}" \
       --candidate-label "${role}" \
       --plan "${plan}" \
       --threads "${THREADS}" \

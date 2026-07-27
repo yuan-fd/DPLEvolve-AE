@@ -6,20 +6,18 @@ source "${SCRIPT_DIR}/common.sh"
 
 THREADS="${THREADS:-10}"
 MAX_PARALLEL="${MAX_PARALLEL:-1}"
-SWERV_DESIGN_CONFIG="${TABLE5_SWERV_DESIGN_CONFIG:-${PAPER_DATA_ROOT}/table5/swerv_dense_n45/input/config_dense2.mk}"
 
 usage() {
   cat <<'EOF'
 Usage: prepare_table5_inputs.sh [options]
 
-Regenerate the dense Nangate45 inputs used by Table 5. AES DENSE and JPEG
-DENSE have retained recipes. SWERV DENSE_2 requires its deleted, untracked
-config_dense2.mk; the standard SWERV config is not used as a silent substitute.
+Regenerate the three dense Nangate45 inputs used only by Table 5. The recorded
+70/90/60 utilization overrides are passed to the pinned ORFS flow without
+editing its tracked design configurations.
 
 Options:
   --threads N                  ORFS threads. Default: 10.
   --max-parallel N             Per-batch parallel jobs. Default: 1.
-  --swerv-design-config FILE   Recovered exact config_dense2.mk.
   --dry-run                    Print commands without executing them.
 EOF
 }
@@ -28,7 +26,6 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --threads) THREADS="$2"; shift 2 ;;
     --max-parallel) MAX_PARALLEL="$2"; shift 2 ;;
-    --swerv-design-config) SWERV_DESIGN_CONFIG="$(realpath -m "$2")"; shift 2 ;;
     --dry-run) REPRO_DRY_RUN=1; shift ;;
     --help|-h) usage; exit 0 ;;
     *) repro_die "unknown argument: $1" ;;
@@ -36,11 +33,6 @@ while [[ $# -gt 0 ]]; do
 done
 repro_positive_integer threads "${THREADS}"
 repro_positive_integer max-parallel "${MAX_PARALLEL}"
-if [[ ! -f "${SWERV_DESIGN_CONFIG}" ]]; then
-  echo "[BLOCKED] Exact SWERV DENSE_2 config is missing: ${SWERV_DESIGN_CONFIG}" >&2
-  echo "          The paper-time untracked config_dense2.mk was deleted; standard config.mk is not equivalent." >&2
-  exit 3
-fi
 if [[ "${REPRO_DRY_RUN}" -eq 0 ]]; then repro_require_runtime; fi
 
 run_input() {
@@ -52,24 +44,13 @@ run_input() {
       --target place \
       --max-tasks "${MAX_PARALLEL}" \
       --num-cores "${THREADS}")
-  if [[ "${core_utilization}" == default ]]; then
-    repro_run "${command[@]}"
-  else
-    repro_run env CORE_UTILIZATION="${core_utilization}" "${command[@]}"
-  fi
+  repro_run env CORE_UTILIZATION="${core_utilization}" "${command[@]}"
 }
 
-# These are the retained paper recipes. JPEG's config uses
-# CORE_UTILIZATION ?=, so the 90 override is required.
-run_input aes_dense_nangate45 DENSE default
+# These overrides are local to Table 5 input preparation. They do not modify
+# the case registry, the tracked ORFS configurations, or any Table 4 profile.
+run_input aes_dense_nangate45 DENSE 70
 run_input jpeg_util90_nangate45 DENSE 90
-
-# The paper-time DENSE_2 flow was launched with an untracked config_dense2.mk.
-# Invoke that recovered file directly rather than the case registry's standard
-# swerv_wrapper/config.mk.
-repro_note "Table 5 input: case=swerv_wrapper_nangate45 FLOW_VARIANT=DENSE_2 DESIGN_CONFIG=${SWERV_DESIGN_CONFIG}"
-repro_run make -C "${ORFS_ROOT}/flow" --no-print-directory \
-  DESIGN_CONFIG="${SWERV_DESIGN_CONFIG}" FLOW_VARIANT=DENSE_2 \
-  NUM_CORES="${THREADS}" check-openroad check-yosys place
+run_input swerv_wrapper_nangate45 DENSE_2 60
 
 repro_note "Table 5 dense inputs regenerated under ORFS flow/results"

@@ -1,6 +1,7 @@
 # DPLEvolve Paper Experiment: Black-Box Bayesian Optimization Baseline
 # Traditional BO over OpenROAD detailed-placement parameters.
-# No source-code modification and no LLM API calls.
+# Fixed black-box baseline; the artifact still requires configured LLM Agents.
+# This stage normally issues no new model requests.
 
 experiment: bo_search
 description: >

@@ -23,7 +23,9 @@ def sha256(path: Path) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", required=True, type=Path)
-    parser.add_argument("--scope", required=True, choices=("table5", "table6"))
+    parser.add_argument(
+        "--scope", required=True, choices=("table5", "table6", "programs")
+    )
     args = parser.parse_args()
 
     root = args.root.resolve()

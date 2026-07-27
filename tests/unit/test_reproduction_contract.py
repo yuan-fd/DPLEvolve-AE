@@ -219,19 +219,18 @@ class ReproductionContractTests(unittest.TestCase):
         ):
             self.assertIn(fragment, output)
 
-    def test_table5_and_table6_refuse_missing_exact_data(self):
+    def test_table6_refuses_missing_exact_data(self):
         missing_root = ROOT / "tests" / "definitely-missing-paper-data"
-        for script in ("reproduce_table5.sh", "reproduce_table6.sh"):
-            result = subprocess.run(
-                ["bash", f"scripts/reproduce/{script}", "--check-inputs"],
-                cwd=ROOT,
-                env={"PATH": "/usr/bin:/bin", "PAPER_DATA_ROOT": str(missing_root)},
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
-            self.assertEqual(result.returncode, 3)
-            self.assertIn("[BLOCKED]", result.stdout)
+        result = subprocess.run(
+            ["bash", "scripts/reproduce/reproduce_table6.sh", "--check-inputs"],
+            cwd=ROOT,
+            env={"PATH": "/usr/bin:/bin", "PAPER_DATA_ROOT": str(missing_root)},
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+        self.assertEqual(result.returncode, 3)
+        self.assertIn("[BLOCKED]", result.stdout)
 
     def test_table6_contract_uses_retained_def_data_and_one_source(self):
         manifest = json.loads(
@@ -258,19 +257,79 @@ class ReproductionContractTests(unittest.TestCase):
             fetcher,
         )
 
-    def test_table5_uses_retained_recipes_and_refuses_a_fake_swerv_substitute(self):
+    def test_table5_uses_three_snapshots_and_local_density_overrides(self):
         prepare = (ROOT / "scripts/reproduce/prepare_table5_inputs.sh").read_text()
         for fragment in (
-            "aes_dense_nangate45 DENSE default",
+            "aes_dense_nangate45 DENSE 70",
             "jpeg_util90_nangate45 DENSE 90",
-            "config_dense2.mk",
-            "DESIGN_CONFIG=\"${SWERV_DESIGN_CONFIG}\" FLOW_VARIANT=DENSE_2",
+            "swerv_wrapper_nangate45 DENSE_2 60",
         ):
             self.assertIn(fragment, prepare)
-        self.assertNotIn("swerv_wrapper_nangate45 DENSE_2 60", prepare)
+        self.assertNotIn("config_dense2.mk", prepare)
         runner = (ROOT / "scripts/reproduce/reproduce_table5.sh").read_text()
-        self.assertIn("prepare_table5_inputs.sh", runner)
-        self.assertNotIn("PAPER_DATA_ROOT}/table5/${row_id}/input/3_4", runner)
+        for program in ("legalm", "diamond", "negotiation"):
+            self.assertIn(f"programs/{program}/dpl_evolve", runner)
+        for mapping in (
+            "aes_dense_n45:selected) echo legalm",
+            "aes_dense_n45:reference) echo diamond",
+            "jpeg_dense_n45:selected|jpeg_dense_n45:reference) echo negotiation",
+            "swerv_dense_n45:selected) echo diamond",
+            "swerv_dense_n45:reference) echo negotiation",
+        ):
+            self.assertIn(mapping, runner)
+        self.assertNotIn("PAPER_DATA_ROOT}/table5", runner)
+
+    def test_table5_program_snapshots_are_fully_checksummed(self):
+        self.run_python(
+            "verify_data_manifest.py",
+            "--root",
+            ROOT / "artifacts/02-table5-composability",
+            "--scope",
+            "programs",
+        )
+
+    def test_release_text_has_no_stale_table5_recovery_claims(self):
+        release_files = (
+            "README.md",
+            "Makefile",
+            ".zenodo.json",
+            "artifacts/02-table5-composability/README.md",
+            "configs/reproduction/README.md",
+            "configs/reproduction/paper-experiments.json",
+            "docs/README.md",
+            "docs/artifact-appendix.md",
+            "docs/artifact-submission-draft.md",
+            "docs/claims-to-artifacts.md",
+            "docs/expected-results.md",
+            "docs/maintainers/release-checklist.md",
+            "docs/paper-data-layout.md",
+            "docs/requirements.md",
+            "docs/reviewer-walkthrough.md",
+            "docs/quickstart.md",
+            "docs/table5-status.md",
+            "docs/troubleshooting.md",
+            "scripts/maintenance/prepare_zenodo.sh",
+            "scripts/reproduce/check_paper_data.sh",
+            "web-demo/README.md",
+            "web-demo/templates/index.html",
+            "agent/AGENTS.md",
+            "agent/README.md",
+            "agent/context/invariants.md",
+            "agent/tasks/reproduce-paper-experiments.md",
+            "agent/tasks/validate-artifact.md",
+        )
+        forbidden = (
+            r"(?i)config_dense2\.mk",
+            r"(?i)six (?:complete )?(?:Table 5 )?source trees",
+            r"(?i)Table 5[^\n]{0,160}\b(?:BLOCKED|unavailable|incomplete)\b",
+            r"(?i)\b(?:BLOCKED|unavailable|incomplete)\b[^\n]{0,160}Table 5",
+        )
+        for relative in release_files:
+            text = (ROOT / relative).read_text()
+            for pattern in forbidden:
+                self.assertNotRegex(
+                    text, pattern, msg=f"stale Table 5 text in {relative}"
+                )
 
     def test_external_paper_data_must_be_fully_checksummed(self):
         with tempfile.TemporaryDirectory() as directory:

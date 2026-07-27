@@ -1,6 +1,6 @@
 {
   "title": "DPLEvolve: Protected White-Box DSE for Open-Source EDA — Artifact Evaluation",
-  "description": "Artifact Evaluation repository for 'From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA'. Provides pinned EDA setup, fresh Table 4 and Table 6 experiment runners, 18 selected ReviewDSE source programs, ReviewDSE search scripts, figure generation, and numerical evaluation.",
+  "description": "Artifact Evaluation repository for 'From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA'. Provides pinned EDA setup, fresh Table 4--6 experiment runners, retained Table 5 legalizer snapshots, 18 selected ReviewDSE source programs, ReviewDSE search scripts, figure generation, and numerical evaluation.",
   "creators": [
     {
       "name": "Zheng, Zhiyu",
@@ -37,5 +37,5 @@
     }
   ],
   "language": "eng",
-  "notes": "A clean OpenROAD-flow-scripts workspace can be prepared with make bootstrap at the revisions recorded in provenance/source-commits.json. The paper run used a Teacher and four Student agents for 10 review iterations. Table 5 is documented as unavailable because its exact SWERV configuration and six generated source trees were not retained."
+  "notes": "A clean OpenROAD-flow-scripts workspace can be prepared with make bootstrap at the revisions recorded in provenance/source-commits.json. The paper run used a Teacher and four Student agents for 10 review iterations. Table 5 reuses three checksummed LEGALM, Diamond, and Negotiation source snapshots and regenerates its inputs with local utilization values 70, 90, and 60."
 }

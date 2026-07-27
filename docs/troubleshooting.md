@@ -89,11 +89,13 @@ make check-table6-data
 For a private GitHub repository, authenticate with `gh auth login` if anonymous
 release download returns 404. The fetch target retries through the GitHub CLI.
 
-## Table 5 reports BLOCKED
+## Table 5 snapshot verification fails
 
-This is the expected current status. The SWERV DENSE_2 config and six complete
-source trees were not retained. See `docs/paper-data-layout.md`. Do not replace
-them with the standard SWERV config or archived TSV values.
+Run `make check-table5-data` and use the reported path to identify a missing or
+modified snapshot file. Restore `artifacts/02-table5-composability/programs/`
+from the evaluated Git commit or Zenodo deposit; do not regenerate the manifest
+to bless a local edit. If `--check-inputs` fails instead, run
+`make prepare-table5-inputs THREADS=10` to regenerate the three ORFS inputs.
 
 ## Paper-profile search refuses to start
 
@@ -111,8 +113,9 @@ make run-dse-paper ACKNOWLEDGE_LLM_COST=yes \
 ```
 
 The launcher validates the Level 1 Markdown/JSON packet before starting. Use
-`make plan-level1` and `make plan-dse-paper` to inspect both commands without
-model calls.
+`make plan-level1` and `make plan-dse-paper` to inspect both configured
+commands without dispatching them; this inspection is not an alternative
+method path.
 
 ## API authentication or budget failure
 

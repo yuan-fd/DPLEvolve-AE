@@ -28,11 +28,13 @@ sibling ORFS workspace. Never change an expected value to make a result pass.
 - Table 4 replay is fresh OpenROAD execution, not a packaged-number check.
 - Table 6 requires its published package; the agent dispatcher fetches and
   verifies it before execution.
-- Table 5 returns `BLOCKED` while the exact configuration and six sources
-  listed in `docs/table5-status.md` are missing. Never substitute another
-  SWERV configuration or retained numbers.
+- Table 5 verifies the three tracked LEGALM, Diamond, and Negotiation source
+  snapshots, regenerates its 70/90/60-utilization inputs, and executes all six
+  mapped roles. Never substitute another source or retained number.
 - ReviewDSE model-backed search requires explicit user authorization and the
-  repository cost acknowledgement. Planning commands make no model calls.
+  repository cost acknowledgement. Teacher and Student configuration is
+  mandatory; planning commands only inspect the configured launch and do not
+  replace the model-backed method.
 - `make toolchain-smoke` is a non-paper diagnostic under `tests/toolchain/`.
 
 ## Result acceptance

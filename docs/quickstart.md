@@ -26,11 +26,15 @@ make reviewer-aes-result THREADS=8
 This generates new OpenROAD metrics and replays one source program reported in
 Table 4. It is the recommended minimum fresh review.
 
-## Complete no-LLM campaigns
+## Reported result replays
 
 ```bash
 # Table 4: nine defaults, 3,600 BO trials, and two nine-program replay tracks
 make reproduce-table4 THREADS=10
+
+# Table 5: verify three program snapshots, then execute six mapped roles
+make check-table5-data
+make reproduce-table5 THREADS=10
 
 # Table 6: install data, then execute 27 cut-row jobs
 make fetch-table6-data
@@ -47,20 +51,20 @@ Or execute the currently available aggregate after fetching Table 6 data:
 make reproduce-available-results THREADS=10
 ```
 
-Table 5 is deliberately excluded because its SWERV configuration and six
-source trees are missing.
-
-## Optional model-backed method check
+## Agent configuration and search check
 
 ```bash
+make check-demo-models
 make plan-level1
 make plan-dse-paper
 make run-dse-small CASE=aes_nangate45 STUDENTS=1 ITERATIONS=1 THREADS=8
 ```
 
-The plan commands are free. The small run uses real model calls. A complete
-nine-case search additionally requires `ACKNOWLEDGE_LLM_COST=yes` and a very
-large budget.
+ReviewDSE requires configured Teacher and Student models. The plan commands
+show the exact configured launch without executing the live loop; they are not
+an alternative method path. The small run uses real model requests. A complete
+nine-case search additionally requires
+`ACKNOWLEDGE_LLM_COST=yes` and a very large budget.
 
 ## Supporting checks
 

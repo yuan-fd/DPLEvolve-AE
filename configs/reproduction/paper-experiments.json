@@ -61,12 +61,12 @@
   },
   "table5": {
     "purpose": "Run the selected stage-local legalizer and its fixed full-flow reference through the same downstream DPO and final mirroring flow.",
-    "requires_external_paper_data": true,
-    "input_policy": "Regenerate AES DENSE and JPEG DENSE from retained recipes. SWERV DENSE_2 requires the deleted untracked config_dense2.mk (or an independently validated exact input); exact candidate source commits must come from the external paper-data package.",
+    "requires_external_paper_data": false,
+    "input_policy": "Regenerate AES, JPEG, and SWERV inputs with Table-5-local CORE_UTILIZATION values 70, 90, and 60, respectively, using the pinned ORFS design configurations. Map all selected/reference roles to the retained LEGALM, Diamond, and Negotiation program snapshots.",
     "rows": [
-      {"id": "aes_dense_n45", "case": "aes_dense_nangate45", "flow_variant": "DENSE", "input_recovery": "regenerable_tracked_fixed_floorplan", "selected": "legalm_i18", "reference": "diamond_i12"},
+      {"id": "aes_dense_n45", "case": "aes_dense_nangate45", "flow_variant": "DENSE", "core_utilization": 70, "input_recovery": "regenerable_tracked_config_and_override", "selected": "legalm", "reference": "diamond"},
       {"id": "jpeg_dense_n45", "case": "jpeg_util90_nangate45", "flow_variant": "DENSE", "core_utilization": 90, "input_recovery": "regenerable_tracked_config_and_override", "selected": "negotiation", "reference": "negotiation"},
-      {"id": "swerv_dense_n45", "case": "swerv_wrapper_nangate45", "flow_variant": "DENSE_2", "input_recovery": "blocked_missing_config_dense2", "selected": "diamond", "reference": "negotiation"}
+      {"id": "swerv_dense_n45", "case": "swerv_wrapper_nangate45", "flow_variant": "DENSE_2", "core_utilization": 60, "input_recovery": "regenerable_tracked_config_and_override", "selected": "diamond", "reference": "negotiation"}
     ]
   },
   "table6": {

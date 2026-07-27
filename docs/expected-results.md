@@ -56,13 +56,20 @@ same-case runtime ratio, and Pareto membership is recomputed.
 
 ## Table 5
 
-A fresh counterexample would require the selected candidate to improve
-post-legalization `H_lg` but worsen final `H_f` relative to its complete
-reference flow. The paper reports final regressions of +1.48%, +20.96%, and
-+0.02% for AES, JPEG, and SWERV dense Nangate45.
+`make reproduce-table5` first verifies the checksummed LEGALM, Diamond, and
+Negotiation snapshots, regenerates only the three Table 5 inputs, and then
+builds and executes the six selected/reference roles. The local
+`CORE_UTILIZATION` values are 70, 90, and 60 for AES, JPEG, and SWERV; global
+ORFS configurations and Table 4 inputs are unchanged.
 
-The current command returns `BLOCKED` because one input configuration and six
-sources are missing. It never substitutes retained values for a fresh run.
+The selected/reference mappings are LEGALM/Diamond for AES,
+Negotiation/Negotiation for JPEG, and Diamond/Negotiation for SWERV. Each fresh
+comparison must satisfy `delta_H_lg < 0` and `delta_H_f > 0`: the selected
+legalizer improves post-legalization HPWL but worsens final HPWL after the
+complete flow. The paper reports `H_lg`/`H_f` changes of -0.76%/+1.48%,
+-14.96%/+20.96%, and -0.12%/+0.02%, respectively. Fresh stage metrics are
+written to `table5_*/table5-fresh.tsv`; retained values are comparison targets
+only and are never substituted for observations.
 
 ## Table 6
 

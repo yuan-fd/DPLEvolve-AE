@@ -51,7 +51,12 @@ required_files=(
   artifacts/01-table4-qor/selected-programs/manifest.json
   artifacts/01-table4-qor/selected-programs/run.sh
   artifacts/02-table5-composability/inputs/counterexamples.tsv
+  artifacts/02-table5-composability/programs/MANIFEST.sha256
+  artifacts/02-table5-composability/programs/legalm/dpl_evolve/CMakeLists.txt
+  artifacts/02-table5-composability/programs/diamond/dpl_evolve/CMakeLists.txt
+  artifacts/02-table5-composability/programs/negotiation/dpl_evolve/CMakeLists.txt
   artifacts/03-table6-cutrow/inputs/reviewdse.tsv
+  paper/artifact_evaluation.pdf
   tests/toolchain/aes-smoke/check.sh
   tests/toolchain/aes-smoke/config/aes_nangate45.yaml
   tests/toolchain/aes-smoke/expected/ae_reproduction_lock.json
@@ -136,10 +141,11 @@ else
   pass "README is limited to the operational reproduction flow"
 fi
 
-if find "${ROOT}" -path "${ROOT}/.git" -prune -o -type f -iname '*.pdf' -print -quit | grep -q .; then
-  fail "generated/reference PDF is tracked in the repository tree"
+if find "${ROOT}" -path "${ROOT}/.git" -prune -o -type f -iname '*.pdf' \
+    ! -path "${ROOT}/paper/artifact_evaluation.pdf" -print -quit | grep -q .; then
+  fail "unexpected generated/reference PDF is tracked in the repository tree"
 else
-  pass "repository tree contains no PDF copies"
+  pass "paper/artifact_evaluation.pdf is the only tracked PDF copy"
 fi
 
 if grep -Fxq 'extras/unsupported/' "${ROOT}/.gitignore"; then
