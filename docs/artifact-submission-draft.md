@@ -1,8 +1,8 @@
 # Artifact submission draft
 
 This document is a working draft for the AE submission form and the Artifact
-Appendix in the paper. Replace the bracketed release fields after the final
-Zenodo deposit is created.
+Appendix in the paper. Replace the remaining bracketed release field after the
+final AE tag is created.
 
 ## Artifact Abstract
 
@@ -32,7 +32,7 @@ utilization values 70, 90, and 60.
 
 The tested platform is Rocky Linux 8.10 x86-64. No GPU or commercial EDA
 license is required. The source release is under the BSD 3-Clause License.
-The archival artifact is available at **[Zenodo DOI and URL]**; development and
+The archival artifact is available at <https://doi.org/10.5281/zenodo.21629308>; development and
 review access is available at <https://github.com/yuan-fd/DPLEvolve-AE>.
 
 ## Artifact Evaluation Appendix
@@ -42,8 +42,7 @@ review access is available at <https://github.com/yuan-fd/DPLEvolve-AE>.
 - Paper: *From Tool Invocation to Source-Mechanism Exploration: Protected
   White-Box DSE for Open-Source EDA*.
 - Development repository: <https://github.com/yuan-fd/DPLEvolve-AE>.
-- Archival release: **[Zenodo DOI and URL]**.
-- Release tag / commit: **[final release tag and commit SHA]**.
+- Archival release: <https://doi.org/10.5281/zenodo.21629308>.
 - License: BSD 3-Clause.
 
 The artifact supports fresh execution of Tables 4--6, Figures 4 and 5, the

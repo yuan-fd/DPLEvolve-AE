@@ -41,7 +41,7 @@ export DPL_EVOLVE_PYTHON THREADS
 .PHONY: plan-dse-paper run-dse-paper summarize-dse-paper paper-data-check paper-data-check-available
 .PHONY: fetch-table6-data table5-status check-table5-data check-table6-data
 .PHONY: toolchain-smoke smoke smoke-check doctor-smoke
-.PHONY: test test-structure test-integration test-unit test-web validate-configs
+.PHONY: test test-structure test-integration test-unit setup-web test-web validate-configs
 .PHONY: provenance zenodo zenodo-audit clean
 
 .DEFAULT_GOAL := help
@@ -336,7 +336,10 @@ test-unit:
 	@"$(DPL_EVOLVE_PYTHON)" -m pytest "$(AE_ROOT)/tests/unit/" -v 2>/dev/null || \
 	 PYTHONPATH="$(AE_ROOT)" "$(DPL_EVOLVE_PYTHON)" -m unittest discover -s "$(AE_ROOT)/tests/unit/" -v
 
-test-web:
+setup-web:
+	@bash "$(AE_ROOT)/web-demo/setup.sh"
+
+test-web: setup-web
 	@PYTHONPATH="$(AE_ROOT)" "$(WEB_DEMO_PYTHON)" -m unittest \
 	  discover -s "$(AE_ROOT)/web-demo/tests/" -v
 

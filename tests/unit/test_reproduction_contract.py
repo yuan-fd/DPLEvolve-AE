@@ -363,6 +363,23 @@ class ReproductionContractTests(unittest.TestCase):
         self.assertIn("reproduce-paper-search", makefile)
         self.assertIn("../.venvs/dplevolve/bin/python", makefile)
 
+    def test_clean_archive_test_prepares_web_dependencies(self):
+        plan = subprocess.run(
+            ["make", "-n", "test-web"],
+            cwd=ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=True,
+        ).stdout
+        self.assertIn("web-demo/setup.sh", plan)
+        makefile = (ROOT / "Makefile").read_text()
+        self.assertRegex(makefile, r"(?m)^test-web: setup-web$")
+        self.assertIn('"$(WEB_DEMO_PYTHON)" -m unittest', makefile)
+        setup = ROOT / "web-demo/setup.sh"
+        self.assertTrue(setup.is_file())
+        self.assertTrue(os.access(setup, os.X_OK))
+
     def test_bo_space_matches_manifest_and_archived_trial_columns(self):
         manifest = json.loads(
             (ROOT / "configs/reproduction/paper-experiments.json").read_text()

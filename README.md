@@ -7,7 +7,12 @@ mechanisms in OpenROAD detailed placement.
 
 [Paper with Artifact Appendix](paper/artifact_evaluation.pdf)
 
+[Evaluated Zenodo snapshot](https://doi.org/10.5281/zenodo.21629308)
+
 [Demo Video (1 minute 49 seconds)](https://github.com/yuan-fd/DPLEvolve-AE/releases/download/demo-video-v1/RiviewDSE-demo.mp4)
+
+Artifact contact: Wenjie Yuan, Fudan University
+([25303060069@m.fudan.edu.cn](mailto:25303060069@m.fudan.edu.cn)).
 
 <img src="images/reviewdse-workflow.png" width="100%">
 

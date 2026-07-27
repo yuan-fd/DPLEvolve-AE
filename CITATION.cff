@@ -21,6 +21,7 @@ authors:
     email: zhiangwang@fudan.edu.cn
 conference: "2026 ACM/IEEE Workshop on Machine Learning for CAD (MLCAD)"
 year: 2026
+doi: 10.5281/zenodo.21629308
 url: "https://arxiv.org/abs/2607.11294"
-repository-code: "https://github.com/CODA-Team/DPLEvolve"
+repository-code: "https://github.com/yuan-fd/DPLEvolve-AE"
 license: BSD-3-Clause
