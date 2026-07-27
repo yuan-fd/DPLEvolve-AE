@@ -32,9 +32,9 @@ They will be copied without `.git` metadata from these retained prepared
 sources:
 
 ```text
-../dpl_evolve_agent/.dpl_evolve_state/seed_sources/framework_dpl_evolve
-../dpl_evolve_agent/.dpl_evolve_state/seed_sources/diamond_dpl_evolve
-../dpl_evolve_agent/.dpl_evolve_state/seed_sources/default_negotiation_dpl_evolve
+../../dpl_evolve_agent/.dpl_evolve_state/seed_sources/framework_dpl_evolve
+../../dpl_evolve_agent/.dpl_evolve_state/seed_sources/diamond_dpl_evolve
+../../dpl_evolve_agent/.dpl_evolve_state/seed_sources/default_negotiation_dpl_evolve
 ```
 
 The framework source is the LEGALM implementation: its active student pipeline
