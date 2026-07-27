@@ -44,6 +44,38 @@ DPLEvolve-AE/
 └── LICENSE
 ```
 
+## Dependencies
+
+- [Python](https://www.python.org/) 3.11 or newer
+
+  - PyYAML 6.0.3 is installed automatically by the setup script.
+
+- [GCC/G++](https://gcc.gnu.org/) 9 or newer
+
+- [CMake](https://cmake.org/) 3.16 or newer
+
+- Bison, Flex, SWIG, Tcl/Tk, Boost, Eigen, spdlog, zlib, and libffi
+
+  - These are standard OpenROAD build dependencies.
+
+- [OpenROAD-flow-scripts](https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts)
+
+- [OpenROAD](https://github.com/The-OpenROAD-Project/OpenROAD)
+
+- [Yosys](https://github.com/YosysHQ/yosys) 0.64
+
+- [yosys-slang](https://github.com/povik/yosys-slang)
+
+  - The exact EDA source revisions are recorded in
+    [`provenance/source-commits.json`](provenance/source-commits.json) and are
+    prepared by `make bootstrap` and `make build-tools`.
+
+- [Ray Tune](https://docs.ray.io/en/latest/tune/) 2.31.0,
+  [Optuna](https://optuna.org/) >= 3.6 and < 5.0, and
+  [NumPy](https://numpy.org/) >= 1.26 and < 2.0 (Table 4 BO only)
+
+  - Installed by `make setup-bo`.
+
 ## 1. Install the Environment
 
 Review the host and filesystem checklist in [docs/requirements.md](docs/requirements.md).
