@@ -2,7 +2,7 @@
   "schema_version": 1,
   "paper": {
     "title": "From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA",
-    "pdf_sha256": "89f4b8932594eba872d6ef1f8342710ae65f9d12494dbd8497651f1d56657cfc",
+    "pdf_sha256": "0518f0a994131f361b7b3d3de3bdcb2799671c64fcaf7f2400d45ea0b1ecebc5",
     "primary_metric": "final post-DPL HPWL H_f",
     "runtime_gate": 2.0
   },

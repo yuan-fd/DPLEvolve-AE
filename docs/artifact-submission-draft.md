@@ -1,70 +1,76 @@
 # Artifact submission draft
 
-This document is a working draft for the AE submission form and the Artifact
-Appendix in the paper. Replace the remaining bracketed release field after the
-final AE tag is created.
+This document provides the artifact abstract and the expanded instructions for
+the AE submission form. The paper contains the shorter two-page version.
 
 ## Artifact Abstract
 
 This artifact accompanies *From Tool Invocation to Source-Mechanism
-Exploration: Protected White-Box DSE for Open-Source EDA*. It provides the
-source code, pinned open-source EDA environment, experiment configurations,
-protected evaluator, retained source programs, and command-line and Web entry
-points needed to reproduce the paper's detailed-placement experiments.
+Exploration: Protected White-Box DSE for Open-Source EDA*. It includes the
+ReviewDSE source code, a pinned open-source EDA environment, the experiment
+configurations, the protected evaluator, the source programs used in the
+paper, and command-line and Web interfaces for the detailed-placement
+experiments.
 
-The artifact regenerates the nine incoming placement inputs used in Table 4,
-runs the OpenROAD default and 400-trial Bayesian-optimization baselines,
-rebuilds and evaluates the 18 selected ReviewDSE programs, executes the 27-job
-cut-row matrix in Table 6, and reconstructs Figures 4 and 5 from retained or
-fresh campaign outputs. It also exposes the complete Teacher/Student
-source-edit, build, protected-evaluation, and review loop. The full nine-target
-ReviewDSE search is executable but stochastic and requires authenticated model
-access and the paper-scale paid token budget; selected-program replay does not
-require an LLM.
+The supplied workflows regenerate the nine placement inputs used in Table 4,
+run the OpenROAD default and 400-trial Bayesian-optimization baselines, rebuild
+and evaluate the 18 selected ReviewDSE programs, execute the 27-job cut-row
+matrix in Table 6, and reconstruct Figures 4 and 5 from either the paper
+outputs or a new campaign. The repository also provides the complete
+Teacher--Student loop for source editing, building, protected evaluation, and
+review. A full nine-target search is stochastic and requires authenticated
+model access and a paper-scale token budget. The Functional workflow verifies
+access to both configured models before it reruns the reported experiments.
 
-Fresh candidates are accepted from newly generated OpenROAD evidence: complete
-stage-wise HPWL, strict placement legality, displacement, runtime,
-mechanism-liveness signals, and source/binary/metric consistency. Numerical
-agreement is evaluated within documented cross-host tolerances rather than by
-requiring bit-identical binaries. Table 5 uses three checksummed legalizer
-snapshots and regenerates its AES, JPEG, and SWERV inputs with recorded local
-utilization values 70, 90, and 60.
+The protected evaluator measures stage-wise HPWL, strict placement legality,
+displacement, runtime, mechanism liveness, and source/binary/metric
+consistency for every new candidate. The comparison uses documented
+cross-host tolerances instead of requiring bit-identical binaries. Table 5
+uses three checksummed legalizer snapshots and regenerates the AES, JPEG, and
+SWERV inputs at utilization values of 70, 90, and 60, respectively.
 
-The tested platform is Rocky Linux 8.10 x86-64. No GPU or commercial EDA
-license is required. The source release is under the BSD 3-Clause License.
-The archival artifact is available at <https://doi.org/10.5281/zenodo.21629308>; development and
-review access is available at <https://github.com/yuan-fd/DPLEvolve-AE>.
+We tested the artifact on Rocky Linux 8.10/x86-64. It requires neither a GPU
+nor a commercial EDA license. The source code is released under the BSD
+3-Clause License. The evaluated archive is available at
+<https://doi.org/10.5281/zenodo.21629308>, and the live repository is available
+at <https://github.com/yuan-fd/DPLEvolve-AE>.
 
 ## Artifact Evaluation Appendix
 
 ### A. Artifact identification and scope
 
-- Paper: *From Tool Invocation to Source-Mechanism Exploration: Protected
-  White-Box DSE for Open-Source EDA*.
-- Development repository: <https://github.com/yuan-fd/DPLEvolve-AE>.
-- Archival release: <https://doi.org/10.5281/zenodo.21629308>.
-- License: BSD 3-Clause.
+- The artifact accompanies *From Tool Invocation to Source-Mechanism
+  Exploration: Protected White-Box DSE for Open-Source EDA*.
+- The live repository is available at
+  <https://github.com/yuan-fd/DPLEvolve-AE>.
+- The evaluated archive is available at
+  <https://doi.org/10.5281/zenodo.21629308>.
+- The source code is released under the BSD 3-Clause License.
+- Wenjie Yuan of Fudan University
+  (<25303060069@m.fudan.edu.cn>) prepared and maintains the artifact package
+  and its reproduction workflow.
 
-The artifact supports fresh execution of Tables 4--6, Figures 4 and 5, the
-ReviewDSE search process, and the Ariane mechanism diagnostic. Supporting
-repository tests and the AES toolchain check diagnose installation but are not
-substitutes for the paper experiments.
+The artifact can rerun Tables 4--6, Figures 4 and 5, the ReviewDSE search, and
+the Ariane mechanism diagnostic. The repository tests and AES toolchain check
+help diagnose an installation, but the paper experiments use separate entry
+points.
 
 ### B. Hardware and software requirements
 
-The author reference machine runs Rocky Linux 8.10 x86-64 with two Intel Xeon
-Platinum 8462Y+ processors, 314 GiB RAM, and a 22 TiB home filesystem. This is
-the tested configuration, not a claimed minimum. Smaller machines can execute
-one target at a time with reduced `THREADS`; complete BO, cut-row, and search
-campaigns require server-class memory and storage because they retain build
-trees, logs, metrics, and ODB files.
+We tested the artifact on Rocky Linux 8.10/x86-64 with two Intel Xeon Platinum
+8462Y+ processors, 314 GiB of RAM, and a 22-TiB home filesystem. This machine
+is a reference configuration rather than a minimum requirement. A smaller
+machine can process one target at a time with a lower `THREADS` value. Complete
+BO, cut-row, and search campaigns require server-class memory and storage
+because they preserve their build trees, logs, metrics, and ODB files.
 
-The host requires Linux x86-64, Bash 4+, GNU Make 4+, Python 3.11+, Git,
-rsync, and the standard ORFS/OpenROAD build dependencies. A GPU and commercial
-EDA licenses are not required. Network access is needed during source/data
-download and environment setup. Live ReviewDSE search additionally requires
-authenticated model access. Exact tested and pinned versions are listed in
-`docs/requirements.md` and `docs/environment.md`.
+The host must provide Linux x86-64, Bash 4 or later, GNU Make 4 or later,
+Python 3.11 or later, Git, rsync, and the standard ORFS/OpenROAD build
+dependencies. The workflow needs network access while it downloads the source
+code and data and prepares the environment. It does not require a GPU or a
+commercial EDA license. A ReviewDSE search also requires authenticated model
+access. The OpenROAD baseline follows the upstream `master` branch. The README
+records the tested tool versions and points to the exact pinned revisions.
 
 ### C. Installation
 
@@ -75,11 +81,16 @@ make doctor
 make bootstrap
 make build-tools THREADS=8
 make prepare-paper-inputs THREADS=8
+make check
+make check-demo-models
 ```
 
-`make doctor` is read-only. The remaining commands create sibling ORFS and
-state workspaces and build the pinned Yosys/OpenROAD environment. A prepared
-environment can be inspected with `make check`.
+`make doctor` inspects the host without changing it. The next three commands
+create the ORFS and state workspaces, build the pinned Yosys and OpenROAD
+environment, and generate the placement inputs. `make check` verifies the
+prepared environment. The final command sends one small request to each
+configured model and must report `MODEL_READY` for both the Teacher and
+Student.
 
 ### D. Evaluation workflow
 
@@ -89,9 +100,9 @@ environment can be inspected with `make check`.
 bash artifacts/01-table4-qor/reproduce.sh --threads 10
 ```
 
-This command runs nine OpenROAD defaults, 400 BO trials per target, and both
-nine-program ReviewDSE replay tracks. A reviewer can enter the same path on one
-target first:
+This command runs nine OpenROAD defaults, 400 BO trials per target, and 18
+ReviewDSE program replays across the two selection tracks. Reviewers can first
+exercise the same workflow on one target:
 
 ```bash
 make reproduce-default CASE=aes_nangate45 THREADS=8
@@ -101,12 +112,12 @@ make replay-reviewdse CASE=aes_nangate45 TRACK=hpwl THREADS=8
 make replay-reviewdse CASE=aes_nangate45 TRACK=ghr THREADS=8
 ```
 
-The aggregate fresh result is written to
-`../dpl_evolve_state/paper_reproduction/table4/table4-fresh.tsv`. The paper
-means relative to OpenROAD default are -0.38% for BO-DSE, -1.78% / 1.34x for
-ReviewDSE-HPWL, and -1.68% / 1.11x for ReviewDSE-GHR. The default numerical
-windows are 0.06 percentage point for the reported mean HPWL differences and
-0.20 for runtime ratio; AES Nangate45 also checks absolute HPWL within 0.5%.
+The command writes the aggregate result to `table4-fresh.tsv` in the configured
+state directory. Relative to the OpenROAD default, the paper reports mean
+changes of -0.38% for BO-DSE, -1.78% / 1.34x for ReviewDSE-HPWL, and -1.68% /
+1.11x for ReviewDSE-GHR. The acceptance windows are 0.06 percentage points for
+the mean HPWL change and 0.20 for the runtime ratio. The AES Nangate45 check
+also requires the absolute HPWL to agree within 0.5%.
 
 #### D.2 Table 5: stage composability
 
@@ -116,10 +127,14 @@ make reproduce-table5 THREADS=10
 ```
 
 The first command verifies the LEGALM, Diamond, and Negotiation snapshots. The
-runner regenerates AES/JPEG/SWERV inputs with Table-5-local utilization values
-70/90/60, executes the mappings LEGALM/Diamond, Negotiation/Negotiation, and
-Diamond/Negotiation, and writes a fresh `table5-fresh.tsv`. Retained paper
-values remain comparison targets and are never treated as observations.
+runner regenerates the AES, JPEG, and SWERV inputs at utilization values of 70,
+90, and 60, respectively. It then executes the selected/reference mappings
+LEGALM/Diamond, Negotiation/Negotiation, and Diamond/Negotiation and writes a
+new `table5-fresh.tsv`. The scripts read the paper values only as comparison
+targets and never treat them as observations. Each selected/reference pair
+must satisfy $\Delta H_{lg}<0$ and $\Delta H_f>0$. The reported AES, JPEG, and
+SWERV changes are -0.76%/+1.48%, -14.96%/+20.96%, and -0.12%/+0.02%,
+respectively.
 
 #### D.3 Table 6: hard cut-row legality
 
@@ -127,36 +142,44 @@ values remain comparison targets and are never treated as observations.
 bash artifacts/03-table6-cutrow/reproduce.sh --fetch --threads 10
 ```
 
-The runner verifies the external package and executes Diamond, Negotiation,
-and the retained ReviewDSE repair on nine DEF/Verilog/SDC patterns. Each job has
-a 7200-second cap and must pass strict `check_placement`. The complete summary
-contains 27 fresh rows under
-`../dpl_evolve_state/paper_reproduction/table6_*/table6-fresh.tsv`.
+The runner verifies the downloaded data package and executes Diamond,
+Negotiation, and the ReviewDSE repair on nine DEF/Verilog/SDC patterns. Each
+job has a 7200-s limit and must pass strict `check_placement`. A complete run
+writes 27 new rows to `table6-fresh.tsv` in the configured state directory.
+Status and strict-legality classifications must match exactly, while runtime
+may vary by 35%. All nine ReviewDSE cases, one Diamond case, and one
+Negotiation case must be legal.
 
 #### D.4 ReviewDSE search
 
 ```bash
-# Inspect the configured launch; this is not an alternative method path.
+# Print the configured launch without starting a run.
 bash artifacts/05-reviewdse-search/reproduce.sh --plan
 
-# Execute one bounded but real Teacher/Student loop.
+# Run one bounded Teacher--Student iteration.
 bash artifacts/05-reviewdse-search/reproduce.sh \
   --small --case aes_nangate45 --threads 8
 
-# Execute the paper-scale Level 1 and Level 2 profiles.
+# Run the paper-scale Level 1 and Level 2 profiles.
 bash artifacts/05-reviewdse-search/reproduce.sh \
   --level1 --acknowledge-cost --threads 10
 bash artifacts/05-reviewdse-search/reproduce.sh \
   --paper --run-prefix review_run_01 --acknowledge-cost --threads 10
 ```
 
-The paper Level 2 profile uses nine targets, one Teacher, four Students, ten
-iterations, and an exact 2x runtime gate. The paper reports approximately
-2.15B logged tokens (about 0.10B active tokens) per target. Search reproduction
-means executing the disclosed protected process and reporting the fresh
-trajectory; identical model proposals are not expected. The released Level 1
-profile is a runnable reconstruction because the exact author-time Level 1
-Student breadth and frozen packet were not retained.
+The paper search ran in April and May 2026. Its Level 2 profile uses nine
+targets, one Teacher, four Students, ten iterations, and a 2x runtime gate. It
+used `gpt-5.5` for the Teacher and `gpt-5.4` for the Students, all with `xhigh`
+reasoning effort. The AE configuration uses `gpt-5.6-sol` for the Teacher and
+`gpt-5.6-terra` for the Student, also with `xhigh` reasoning effort. The paper
+reports approximately 2.15B logged tokens (about 0.10B active tokens) per
+target.
+
+Reproducing the search means running the disclosed protected process and
+reporting the new trajectory; the model is not expected to propose identical
+source edits. The public Level 1 profile reconstructs the calibration stage
+because the exact Student breadth and frozen packet from the original run were
+not preserved.
 
 #### D.5 Figures and supporting diagnostic
 
@@ -165,33 +188,37 @@ bash artifacts/04-figures/reproduce.sh
 bash artifacts/06-ariane-diagnostic/reproduce.sh --threads 10
 ```
 
-Figure 4 preserves three explicitly missing SWERV points instead of imputing
-them. Figure 5 recomputes runtime-ratio Pareto membership. The Ariane command
-rebuilds and evaluates six retained source trees and derives the reported group
-means from fresh metrics; it is supporting mechanism evidence rather than a
-controlled paper ablation.
+Figure 4 must contain 96 observed points and identify the three unavailable
+SWERV points instead of imputing them. Figure 5 recomputes the runtime-ratio
+Pareto set. The Ariane command rebuilds and evaluates all six archived Ariane
+implementations and derives the reported group means from new metrics. This
+diagnostic provides supporting evidence about the mechanism; it is not a
+controlled ablation.
 
 ### E. Result interpretation
 
-Every fresh candidate records incoming, post-legalization, post-DPO, and final
-HPWL; strict legality; average and maximum displacement; runtime; and
-mechanism-liveness signals. ReviewDSE candidates additionally require matching
-source, build, binary, and evaluation provenance. Expected files are comparison
-targets only and are never copied into fresh observed fields.
+Every new candidate records the incoming, post-legalization, post-DPO, and
+final HPWL together with strict legality, average and maximum displacement,
+runtime, and mechanism-liveness signals. A ReviewDSE candidate is eligible only
+when its source, build, binary, and evaluation records agree. The scripts use
+the expected files only for comparison and never copy their values into a new
+observation.
 
-Paper-time hashes and identical linked binaries are unavailable for some
-regenerated inputs. Those cases are evaluated by complete legal execution and
-the documented numerical windows. The Web Demo (`bash web-demo/start.sh`)
-invokes the same fixed Make commands and exposes their live logs; it does not
-implement a separate evaluation path.
+Some regenerated inputs do not have the same hashes or linked binaries as the
+original paper run. The artifact evaluates those cases by requiring a complete
+legal run within the documented numerical windows. The Web interface, started
+with `bash web-demo/start.sh`, invokes the same fixed Make commands and displays
+their live logs. It does not implement a separate workflow.
 
 ### F. Reproducibility limitations
 
-1. The original Level 1 breadth and frozen packet were not retained; the public
-   Level 1 profile is a disclosed reconstruction.
-2. The full LLM search is stochastic and expensive. Teacher and Student
-   configuration remains mandatory; selected-program, baseline, Table 5/6,
-   figure, and diagnostic replays may validate fixed results without issuing
-   new model requests, but do not replace the model-backed method.
-3. Cross-host numerical reproduction, not bit-for-bit replay, is claimed where
-   paper-time input hashes or linked binaries are unavailable.
+1. The exact Level 1 Student breadth and frozen calibration packet from the
+   original run were not preserved. The public Level 1 profile therefore
+   reconstructs that stage from the disclosed procedure.
+2. A complete model search is stochastic and expensive. The Functional
+   workflow verifies the required Teacher and Student access and then reruns
+   the reported experiments. A separate cost-gated command runs the
+   paper-scale search.
+3. When regenerated inputs differ from the original hashes or linked binaries,
+   the artifact claims numerical agreement across hosts rather than bit-for-bit
+   replay.
