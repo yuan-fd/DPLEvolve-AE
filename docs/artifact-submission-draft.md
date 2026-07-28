@@ -29,9 +29,10 @@ cross-host tolerances instead of requiring bit-identical binaries. Table 5
 uses three checksummed legalizer snapshots and regenerates the AES, JPEG, and
 SWERV inputs at utilization values of 70, 90, and 60, respectively.
 
-We tested the artifact on Rocky Linux 8.10/x86-64. It requires neither a GPU
-nor a commercial EDA license. The source code is released under the BSD
-3-Clause License. The evaluated archive is available at
+The artifact runs on Rocky Linux 8.10 (x86-64) and requires authenticated
+Codex access. It does not require a GPU, a commercial EDA license, or a
+proprietary PDK. The source code is released under the BSD 3-Clause License.
+The evaluated release is archived on Zenodo at
 <https://doi.org/10.5281/zenodo.21629308>, and the live repository is available
 at <https://github.com/yuan-fd/DPLEvolve-AE>.
 

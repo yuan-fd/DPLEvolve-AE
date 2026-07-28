@@ -2,7 +2,7 @@
 
 The current paper PDF with its attached two-page Artifact Appendix is tracked
 as [`artifact_evaluation.pdf`](artifact_evaluation.pdf). Its SHA-256 is
-`0518f0a994131f361b7b3d3de3bdcb2799671c64fcaf7f2400d45ea0b1ecebc5`.
+`7156785df1de5e0f83208c686ded6b4911350f8871afcf8a486254060f1309bf`.
 
 The public preprint is available at <https://arxiv.org/abs/2607.11294>. The
 title and complete execution contract are recorded in
