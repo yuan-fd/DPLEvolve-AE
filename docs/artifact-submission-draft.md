@@ -19,13 +19,13 @@ matrix in Table 6, and reconstruct Figures 4 and 5 from either the paper
 outputs or a new campaign. The repository also provides the complete
 Teacher--Student loop for source editing, building, protected evaluation, and
 review. A full nine-target search is stochastic and requires authenticated
-model access and a paper-scale token budget. The Functional workflow verifies
+model access and a paper-scale token budget. The functional workflow verifies
 access to both configured models before it reruns the reported experiments.
 
 The protected evaluator measures stage-wise HPWL, strict placement legality,
 displacement, runtime, mechanism liveness, and source/binary/metric
-consistency for every new candidate. The comparison uses documented
-cross-host tolerances instead of requiring bit-identical binaries. Table 5
+consistency for every new candidate. Results are compared using documented
+cross-host tolerances; bit-identical binaries are not required. Table 5
 uses three checksummed legalizer snapshots and regenerates the AES, JPEG, and
 SWERV inputs at utilization values of 70, 90, and 60, respectively.
 
@@ -48,18 +48,18 @@ at <https://github.com/yuan-fd/DPLEvolve-AE>.
   <https://doi.org/10.5281/zenodo.21629308>.
 - The source code is released under the BSD 3-Clause License.
 - Wenjie Yuan of Fudan University
-  (<25303060069@m.fudan.edu.cn>) prepared and maintains the artifact package
-  and its reproduction workflow.
+  (<25303060069@m.fudan.edu.cn>) maintains the artifact package and its
+  reproduction workflow.
 
-The artifact can rerun Tables 4--6, Figures 4 and 5, the ReviewDSE search, and
-the Ariane mechanism diagnostic. The repository tests and AES toolchain check
-help diagnose an installation, but the paper experiments use separate entry
-points.
+The artifact provides workflows that reproduce Tables 4--6 and Figures 4 and
+5, run the ReviewDSE search, and perform the Ariane mechanism diagnostic. The
+repository tests and AES toolchain check help diagnose installation problems,
+while the paper experiments use dedicated entry points.
 
 ### B. Hardware and software requirements
 
-We tested the artifact on Rocky Linux 8.10/x86-64 with two Intel Xeon Platinum
-8462Y+ processors, 314 GiB of RAM, and a 22-TiB home filesystem. This machine
+The reference platform runs Rocky Linux 8.10/x86-64 and has two Intel Xeon
+Platinum 8462Y+ processors, 314 GiB of RAM, and a 22-TiB home filesystem. This
 is a reference configuration rather than a minimum requirement. A smaller
 machine can process one target at a time with a lower `THREADS` value. Complete
 BO, cut-row, and search campaigns require server-class memory and storage
@@ -101,9 +101,9 @@ Student.
 bash artifacts/01-table4-qor/reproduce.sh --threads 10
 ```
 
-This command runs nine OpenROAD defaults, 400 BO trials per target, and 18
-ReviewDSE program replays across the two selection tracks. Reviewers can first
-exercise the same workflow on one target:
+This command runs the OpenROAD default flow on nine targets, performs 400 BO
+trials per target, and replays 18 ReviewDSE programs across the two selection
+tracks. Reviewers can first exercise the same workflow on one target:
 
 ```bash
 make reproduce-default CASE=aes_nangate45 THREADS=8
@@ -131,8 +131,8 @@ The first command verifies the LEGALM, Diamond, and Negotiation snapshots. The
 runner regenerates the AES, JPEG, and SWERV inputs at utilization values of 70,
 90, and 60, respectively. It then executes the selected/reference mappings
 LEGALM/Diamond, Negotiation/Negotiation, and Diamond/Negotiation and writes a
-new `table5-fresh.tsv`. The scripts read the paper values only as comparison
-targets and never treat them as observations. Each selected/reference pair
+new `table5-fresh.tsv`. The paper values serve only as references; all reported
+observations come from new runs. Each selected/reference pair
 must satisfy $\Delta H_{lg}<0$ and $\Delta H_f>0$. The reported AES, JPEG, and
 SWERV changes are -0.76%/+1.48%, -14.96%/+20.96%, and -0.12%/+0.02%,
 respectively.
@@ -168,19 +168,19 @@ bash artifacts/05-reviewdse-search/reproduce.sh \
   --paper --run-prefix review_run_01 --acknowledge-cost --threads 10
 ```
 
-The paper search ran in April and May 2026. Its Level 2 profile uses nine
-targets, one Teacher, four Students, ten iterations, and a 2x runtime gate. It
-used `gpt-5.5` for the Teacher and `gpt-5.4` for the Students, all with `xhigh`
-reasoning effort. The AE configuration uses `gpt-5.6-sol` for the Teacher and
-`gpt-5.6-terra` for the Student, also with `xhigh` reasoning effort. The paper
-reports approximately 2.15B logged tokens (about 0.10B active tokens) per
-target.
+The paper reports a search conducted in April and May 2026. Its Level 2
+configuration uses nine targets, one Teacher, four Students, ten iterations,
+and a 2x runtime gate. The paper configuration uses `gpt-5.5` for the Teacher
+and `gpt-5.4` for the Students, all with `xhigh` reasoning effort. The AE
+configuration uses `gpt-5.6-sol` for the Teacher and `gpt-5.6-terra` for the
+Student, also with `xhigh` reasoning effort. The reported usage averages 2.15B
+logged tokens (about 0.10B active tokens) per target.
 
 Reproducing the search means running the disclosed protected process and
 reporting the new trajectory; the model is not expected to propose identical
 source edits. The public Level 1 profile reconstructs the calibration stage
-because the exact Student breadth and frozen packet from the original run were
-not preserved.
+because the exact Student count and frozen packet are not available from the
+original run.
 
 #### D.5 Figures and supporting diagnostic
 
@@ -192,9 +192,9 @@ bash artifacts/06-ariane-diagnostic/reproduce.sh --threads 10
 Figure 4 must contain 96 observed points and identify the three unavailable
 SWERV points instead of imputing them. Figure 5 recomputes the runtime-ratio
 Pareto set. The Ariane command rebuilds and evaluates all six archived Ariane
-implementations and derives the reported group means from new metrics. This
-diagnostic provides supporting evidence about the mechanism; it is not a
-controlled ablation.
+implementations and derives the reported group means from freshly generated
+metrics. This diagnostic provides supporting evidence about the mechanism; it
+is not a controlled ablation.
 
 ### E. Result interpretation
 
@@ -213,13 +213,13 @@ their live logs. It does not implement a separate workflow.
 
 ### F. Reproducibility limitations
 
-1. The exact Level 1 Student breadth and frozen calibration packet from the
-   original run were not preserved. The public Level 1 profile therefore
+1. The exact Level 1 Student count and frozen calibration packet are not
+   available from the original run. The public Level 1 profile therefore
    reconstructs that stage from the disclosed procedure.
-2. A complete model search is stochastic and expensive. The Functional
+2. A complete model search is stochastic and expensive. The functional
    workflow verifies the required Teacher and Student access and then reruns
    the reported experiments. A separate cost-gated command runs the
    paper-scale search.
 3. When regenerated inputs differ from the original hashes or linked binaries,
-   the artifact claims numerical agreement across hosts rather than bit-for-bit
-   replay.
+   the artifact targets numerical agreement across hosts rather than
+   bit-for-bit replay.
