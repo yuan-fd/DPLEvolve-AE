@@ -1,7 +1,13 @@
 # From Tool Invocation to Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA
 
-A protected white-box design-space exploration framework for source-level
-mechanisms in OpenROAD detailed placement.
+This repository contains the artifact for *From Tool Invocation to
+Source-Mechanism Exploration: Protected White-Box DSE for Open-Source EDA* and
+the implementation of ReviewDSE, a protected white-box design-space
+exploration framework for OpenROAD detailed placement. It provides the source
+programs, experiment configurations, protected evaluator, and reproduction
+workflows for Tables 4--6 and Figures 4--5. The artifact uses a pinned
+open-source EDA toolchain and requires authenticated Codex access for the
+configured Teacher and Student agents.
 
 [Paper link](https://arxiv.org/abs/2607.11294)
 
@@ -10,9 +16,6 @@ mechanisms in OpenROAD detailed placement.
 [Evaluated Zenodo snapshot](https://doi.org/10.5281/zenodo.21629308)
 
 [Demo Video (1 minute 49 seconds)](https://github.com/yuan-fd/DPLEvolve-AE/releases/download/demo-video-v1/RiviewDSE-demo.mp4)
-
-Artifact contact: Wenjie Yuan, Fudan University
-([25303060069@m.fudan.edu.cn](mailto:25303060069@m.fudan.edu.cn)).
 
 <img src="images/reviewdse-workflow.png" width="100%">
 
@@ -242,3 +245,17 @@ and then open the same address in the local browser:
 ```bash
 ssh -N -L 8080:127.0.0.1:8080 USER@SERVER
 ```
+
+## Authors and Artifact Evaluation Contributor
+
+### Paper Authors
+
+- **Zhiyu Zheng** — Fudan University
+- **Yiming Du** — Fudan University
+- **Ziyi Wang** — The Chinese University of Hong Kong
+- **Zhiang Wang** — Fudan University
+
+### Artifact Evaluation Contributor
+
+- **Wenjie Yuan** — Fudan University
+  ([25303060069@m.fudan.edu.cn](mailto:25303060069@m.fudan.edu.cn))
