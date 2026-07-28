@@ -14,8 +14,8 @@ experiments.
 
 The supplied workflows regenerate the nine placement inputs used in Table 4,
 run the OpenROAD default and 400-trial Bayesian-optimization baselines, rebuild
-and evaluate the 18 selected ReviewDSE programs, execute the 27-job cut-row
-matrix in Table 6, and reconstruct Figures 4 and 5 from either the paper
+and evaluate the 18 selected ReviewDSE programs, run the 27 cut-row experiments
+reported in Table 6, and reconstruct Figures 4 and 5 from either the paper
 outputs or a new campaign. The repository also provides the complete
 Teacher--Student loop for source editing, building, protected evaluation, and
 review. A full nine-target search is stochastic and requires authenticated
@@ -168,7 +168,7 @@ bash artifacts/05-reviewdse-search/reproduce.sh \
   --paper --run-prefix review_run_01 --acknowledge-cost --threads 10
 ```
 
-The paper reports a search conducted in April and May 2026. Its Level 2
+The paper reports a search conducted in April and May 2026. The paper's Level 2
 configuration uses nine targets, one Teacher, four Students, ten iterations,
 and a 2x runtime gate. The paper configuration uses `gpt-5.5` for the Teacher
 and `gpt-5.4` for the Students, all with `xhigh` reasoning effort. The AE
@@ -221,5 +221,5 @@ their live logs. It does not implement a separate workflow.
    the reported experiments. A separate cost-gated command runs the
    paper-scale search.
 3. When regenerated inputs differ from the original hashes or linked binaries,
-   the artifact targets numerical agreement across hosts rather than
-   bit-for-bit replay.
+   the evaluation therefore requires numerical agreement across hosts rather
+   than bit-for-bit replay.
