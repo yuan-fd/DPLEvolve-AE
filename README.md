@@ -15,7 +15,11 @@ configured Teacher and Student agents.
 
 [Evaluated Zenodo snapshot](https://doi.org/10.5281/zenodo.21629308)
 
-[Demo Video (1 minute 49 seconds)](https://github.com/yuan-fd/DPLEvolve-AE/releases/download/demo-video-v1/RiviewDSE-demo.mp4)
+
+
+https://github.com/user-attachments/assets/af3152b9-612f-42a6-b955-9ed0e0f041fa
+
+
 
 <img src="images/reviewdse-workflow.png" width="100%">
 
